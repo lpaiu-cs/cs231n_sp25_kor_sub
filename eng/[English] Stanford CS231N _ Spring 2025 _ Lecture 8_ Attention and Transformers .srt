@@ -1,0 +1,8167 @@
+2
+00:00:04,760 --> 00:00:07,440
+All right, welcome back,
+everyone, to lecture eight.
+
+3
+00:00:07,440 --> 00:00:09,940
+Today, we're going to talk about
+attention and transformers.
+
+4
+00:00:09,940 --> 00:00:12,200
+And I think this is
+a really fun one.
+
+5
+00:00:12,200 --> 00:00:14,005
+So as a quick
+recap, last time, we
+
+6
+00:00:14,005 --> 00:00:15,880
+were talking about
+recurrent neural networks.
+
+7
+00:00:15,880 --> 00:00:18,297
+And recurrent neural networks
+were this new neural network
+
+8
+00:00:18,297 --> 00:00:20,460
+architecture meant for
+processing sequences.
+
+9
+00:00:20,460 --> 00:00:23,200
+And in particular, we saw how
+neural networks, by processing
+
+10
+00:00:23,200 --> 00:00:26,120
+sequences, let us attack a whole
+new different kinds of problems
+
+11
+00:00:26,120 --> 00:00:29,120
+than we could with
+convolutional networks before.
+
+12
+00:00:29,120 --> 00:00:31,073
+So in particular,
+usually, we had
+
+13
+00:00:31,073 --> 00:00:33,240
+been thinking about these
+one-to-one problems, where
+
+14
+00:00:33,240 --> 00:00:36,560
+you input one thing like an
+image and then output one thing
+
+15
+00:00:36,560 --> 00:00:38,780
+like a classification
+for what's in that image.
+
+16
+00:00:38,780 --> 00:00:41,080
+But once you have the
+ability to move beyond images
+
+17
+00:00:41,080 --> 00:00:42,870
+and move towards
+sequences of data,
+
+18
+00:00:42,870 --> 00:00:44,870
+it let us tackle a lot
+of new kinds of problems,
+
+19
+00:00:44,870 --> 00:00:47,218
+like one to many problems,
+image captioning.
+
+20
+00:00:47,218 --> 00:00:49,760
+Maybe we want to input an image,
+output a textual description
+
+21
+00:00:49,760 --> 00:00:52,680
+of that image, which is going
+to be a sequence of words, maybe
+
+22
+00:00:52,680 --> 00:00:55,880
+many to one, where we do input
+a sequence of frames and output
+
+23
+00:00:55,880 --> 00:00:58,000
+a classification
+for those frames,
+
+24
+00:00:58,000 --> 00:01:00,500
+and a bunch of other
+problems along this vein.
+
+25
+00:01:00,500 --> 00:01:03,860
+So now, we're seeing that moving
+into these more sophisticated
+
+26
+00:01:03,860 --> 00:01:05,860
+neural network
+architectures, both
+
+27
+00:01:05,860 --> 00:01:07,720
+is more interesting,
+architecturally,
+
+28
+00:01:07,720 --> 00:01:09,340
+but also lets us
+tackle new problems
+
+29
+00:01:09,340 --> 00:01:12,540
+than we could with more
+traditional feedforward neural
+
+30
+00:01:12,540 --> 00:01:13,637
+networks.
+
+31
+00:01:13,637 --> 00:01:15,220
+So today, we're going
+to build on that
+
+32
+00:01:15,220 --> 00:01:18,140
+and talk about two new
+things in today's lecture.
+
+33
+00:01:18,140 --> 00:01:20,022
+The first thing is
+going to be attention,
+
+34
+00:01:20,022 --> 00:01:21,980
+which is going to be a
+brand new neural network
+
+35
+00:01:21,980 --> 00:01:25,175
+primitive that fundamentally
+operates on sets of vectors.
+
+36
+00:01:25,175 --> 00:01:27,300
+And then the second thing
+we're going to talk about
+
+37
+00:01:27,300 --> 00:01:28,480
+is the transformer.
+
+38
+00:01:28,480 --> 00:01:30,580
+And the transformer is a
+different neural network
+
+39
+00:01:30,580 --> 00:01:33,780
+architecture that has
+self-attention at its core.
+
+40
+00:01:33,780 --> 00:01:37,780
+And the spoiler alert is that
+transformers are basically
+
+41
+00:01:37,780 --> 00:01:40,220
+the architecture that we
+use for almost all problems
+
+42
+00:01:40,220 --> 00:01:41,620
+in deep learning today.
+
+43
+00:01:41,620 --> 00:01:43,620
+So any of the largest
+applications that you're
+
+44
+00:01:43,620 --> 00:01:45,300
+seeing out there
+in the wild today,
+
+45
+00:01:45,300 --> 00:01:48,900
+whether it's classifying images,
+generating images, generating
+
+46
+00:01:48,900 --> 00:01:51,940
+text, classifying text,
+working with audio, basically,
+
+47
+00:01:51,940 --> 00:01:55,160
+any kind of large neural
+network today that is large,
+
+48
+00:01:55,160 --> 00:01:57,700
+state of the art, trained
+in a lot of data, deployed
+
+49
+00:01:57,700 --> 00:01:59,560
+by a big company,
+almost all of them
+
+50
+00:01:59,560 --> 00:02:01,600
+are going to be
+transformers today.
+
+51
+00:02:01,600 --> 00:02:03,958
+So that's really exciting
+that we to get you up
+
+52
+00:02:03,958 --> 00:02:06,000
+to speed on the latest
+and greatest architectures
+
+53
+00:02:06,000 --> 00:02:08,840
+that people are using now.
+
+54
+00:02:08,840 --> 00:02:11,400
+But even though transformers
+are this state of the art
+
+55
+00:02:11,400 --> 00:02:14,020
+architecture that everyone is
+using for everything today,
+
+56
+00:02:14,020 --> 00:02:16,480
+they have a relatively
+long history.
+
+57
+00:02:16,480 --> 00:02:19,240
+And they initially--
+it's interesting
+
+58
+00:02:19,240 --> 00:02:20,538
+watching these fields develop.
+
+59
+00:02:20,538 --> 00:02:23,080
+Because looking back on it, when
+the moment that transformers
+
+60
+00:02:23,080 --> 00:02:24,480
+came out, it feels
+like it ought to have
+
+61
+00:02:24,480 --> 00:02:26,160
+been this big moment,
+this big thing when
+
+62
+00:02:26,160 --> 00:02:28,243
+there was a big sea change,
+this new architecture,
+
+63
+00:02:28,243 --> 00:02:29,140
+this new thing.
+
+64
+00:02:29,140 --> 00:02:30,697
+But it actually
+didn't feel that way.
+
+65
+00:02:30,697 --> 00:02:33,280
+Because even though there was
+one moment where the transformer
+
+66
+00:02:33,280 --> 00:02:36,080
+architecture was born,
+these ideas around
+
+67
+00:02:36,080 --> 00:02:38,858
+self-attention, around using
+attention in various ways,
+
+68
+00:02:38,858 --> 00:02:41,400
+those had actually been around
+in the field for several years
+
+69
+00:02:41,400 --> 00:02:42,340
+at that time.
+
+70
+00:02:42,340 --> 00:02:45,740
+And in particular, these ideas
+around attention self-attention,
+
+71
+00:02:45,740 --> 00:02:48,180
+they actually developed out
+of recurrent neural networks.
+
+72
+00:02:48,180 --> 00:02:50,120
+So we're going to start there
+to talk about and motivate
+
+73
+00:02:50,120 --> 00:02:50,782
+these problems.
+
+74
+00:02:50,782 --> 00:02:52,240
+So this is going
+to be a little bit
+
+75
+00:02:52,240 --> 00:02:55,800
+mirroring the historical
+development of these ideas.
+
+76
+00:02:55,800 --> 00:02:58,352
+So for that reason, we're
+actually going to-- in order
+
+77
+00:02:58,352 --> 00:03:00,060
+to introduce transformers,
+we're actually
+
+78
+00:03:00,060 --> 00:03:01,780
+going to roll back
+and recap a little bit
+
+79
+00:03:01,780 --> 00:03:03,613
+about this idea of
+recurrent neural networks
+
+80
+00:03:03,613 --> 00:03:05,220
+that we saw in the last lecture.
+
+81
+00:03:05,220 --> 00:03:08,580
+So as a motivating problem,
+let's think about this sequence
+
+82
+00:03:08,580 --> 00:03:10,740
+to sequence problem
+of translation.
+
+83
+00:03:10,740 --> 00:03:12,260
+So we want to
+input one sequence,
+
+84
+00:03:12,260 --> 00:03:14,920
+which is going to be a
+sequence of words in English.
+
+85
+00:03:14,920 --> 00:03:16,620
+Then we want to output
+another sequence,
+
+86
+00:03:16,620 --> 00:03:18,287
+which is going to be
+a sequence of words
+
+87
+00:03:18,287 --> 00:03:20,040
+in a different language, Italian
+
+88
+00:03:20,040 --> 00:03:23,420
+And we can't make assumptions
+that there's any correspondence
+
+89
+00:03:23,420 --> 00:03:24,680
+between those words.
+
+90
+00:03:24,680 --> 00:03:26,588
+The number of words in
+the English sentence
+
+91
+00:03:26,588 --> 00:03:28,380
+might be different from
+the number of words
+
+92
+00:03:28,380 --> 00:03:29,427
+in the Italian sentence.
+
+93
+00:03:29,427 --> 00:03:31,760
+And the order of those words
+might be totally different.
+
+94
+00:03:31,760 --> 00:03:33,780
+So this is a perfect application
+of the kind of sequence
+
+95
+00:03:33,780 --> 00:03:35,660
+processing algorithms
+that we-- sequence
+
+96
+00:03:35,660 --> 00:03:37,380
+processing architectures
+that we saw
+
+97
+00:03:37,380 --> 00:03:39,180
+in recurrent neural networks.
+
+98
+00:03:39,180 --> 00:03:42,020
+And indeed, this idea of
+processing these sequence
+
+99
+00:03:42,020 --> 00:03:44,500
+to sequence problems with
+recurrent neural networks, this
+
+100
+00:03:44,500 --> 00:03:48,160
+goes all the way back to 2014,
+even a bit earlier than that.
+
+101
+00:03:48,160 --> 00:03:49,900
+But people have been
+processing sequences
+
+102
+00:03:49,900 --> 00:03:53,420
+with recurrent neural networks
+for more than a decade
+
+103
+00:03:53,420 --> 00:03:54,900
+at this point.
+
+104
+00:03:54,900 --> 00:03:57,680
+So the basic architecture
+for processing sequence
+
+105
+00:03:57,680 --> 00:03:59,960
+to sequence problems with
+recurrent neural networks
+
+106
+00:03:59,960 --> 00:04:02,220
+is that, typically, you'll
+start with one encoder.
+
+107
+00:04:02,220 --> 00:04:04,520
+Your encoder is a
+recurrent neural network.
+
+108
+00:04:04,520 --> 00:04:06,000
+The recurrent neural
+network recall
+
+109
+00:04:06,000 --> 00:04:08,480
+is this function that
+gets applied recursively
+
+110
+00:04:08,480 --> 00:04:09,820
+on two inputs.
+
+111
+00:04:09,820 --> 00:04:12,520
+One is your xt, your input
+at the current time step.
+
+112
+00:04:12,520 --> 00:04:14,380
+And the other is
+your ht minus 1,
+
+113
+00:04:14,380 --> 00:04:16,940
+which is your hidden state
+at the previous time step.
+
+114
+00:04:16,940 --> 00:04:18,523
+And your recurrent
+neural network unit
+
+115
+00:04:18,523 --> 00:04:20,680
+will then spit out
+a next hidden unit--
+
+116
+00:04:20,680 --> 00:04:23,200
+a next hidden state
+at the next time step.
+
+117
+00:04:23,200 --> 00:04:26,160
+And then we can apply that same
+recurrent neural network unit
+
+118
+00:04:26,160 --> 00:04:28,920
+over in time to
+process a sequence
+
+119
+00:04:28,920 --> 00:04:30,948
+of potentially variable length.
+
+120
+00:04:30,948 --> 00:04:33,240
+So in this case, we're using
+a recurrent neural network
+
+121
+00:04:33,240 --> 00:04:36,560
+encoder that inputs the
+input sequence in English.
+
+122
+00:04:36,560 --> 00:04:40,000
+Input sequence-- you got to
+use relatively short sentences
+
+123
+00:04:40,000 --> 00:04:42,340
+to fit on slides and still
+have all the boxes show up.
+
+124
+00:04:42,340 --> 00:04:44,460
+So we're using a kind of
+short, silly sentence,
+
+125
+00:04:44,460 --> 00:04:46,160
+"We see the sky."
+
+126
+00:04:46,160 --> 00:04:48,320
+And this each word
+in that sentence
+
+127
+00:04:48,320 --> 00:04:53,040
+gets processed via one tick of
+the recurrent neural network.
+
+128
+00:04:53,040 --> 00:04:56,500
+And then the idea of this
+encoder recurrent neural network
+
+129
+00:04:56,500 --> 00:04:59,500
+is it wants to process all of
+the words in the input sequence
+
+130
+00:04:59,500 --> 00:05:02,340
+and somehow summarize the
+content of that input sentence
+
+131
+00:05:02,340 --> 00:05:05,460
+so that we can translate it into
+a different-- into our output
+
+132
+00:05:05,460 --> 00:05:07,060
+target language.
+
+133
+00:05:07,060 --> 00:05:10,180
+So the more concrete
+way that this happens
+
+134
+00:05:10,180 --> 00:05:14,080
+is that after processing all
+the words in the input sequence,
+
+135
+00:05:14,080 --> 00:05:17,300
+we are going to summarize the
+entire content of that input
+
+136
+00:05:17,300 --> 00:05:21,077
+sequence into a single vector
+called the context vector.
+
+137
+00:05:21,077 --> 00:05:22,660
+And there's a couple
+of different ways
+
+138
+00:05:22,660 --> 00:05:24,160
+that people would
+typically do these
+
+139
+00:05:24,160 --> 00:05:25,523
+in recurrent neural networks.
+
+140
+00:05:25,523 --> 00:05:27,440
+I don't think the details
+are too interesting.
+
+141
+00:05:27,440 --> 00:05:30,340
+So you can just think that
+context vector is basically
+
+142
+00:05:30,340 --> 00:05:33,300
+the last hidden state of
+the encoder recurrent neural
+
+143
+00:05:33,300 --> 00:05:34,260
+network.
+
+144
+00:05:34,260 --> 00:05:36,900
+And now, the idea
+is that because
+
+145
+00:05:36,900 --> 00:05:39,280
+of the recurrent structure
+of recurrent neural networks,
+
+146
+00:05:39,280 --> 00:05:41,740
+the last hidden state
+incorporates information
+
+147
+00:05:41,740 --> 00:05:43,320
+of the entire input sequence.
+
+148
+00:05:43,320 --> 00:05:45,260
+So we can think of
+that last hidden state
+
+149
+00:05:45,260 --> 00:05:47,820
+as summarizing, or encoding
+all of the information
+
+150
+00:05:47,820 --> 00:05:49,660
+in the entire input sequence.
+
+151
+00:05:49,660 --> 00:05:52,220
+So then that is
+one vector that is
+
+152
+00:05:52,220 --> 00:05:55,240
+going to summarize that entire
+input sequence to do whatever
+
+153
+00:05:55,240 --> 00:05:56,600
+we want with it.
+
+154
+00:05:56,600 --> 00:05:58,360
+And in this case, what
+we want to do with
+
+155
+00:05:58,360 --> 00:06:00,520
+it is translate
+that input sequence
+
+156
+00:06:00,520 --> 00:06:02,582
+into an output sequence
+in a different language.
+
+157
+00:06:02,582 --> 00:06:05,040
+So to do that, we're going to
+use a second recurrent neural
+
+158
+00:06:05,040 --> 00:06:07,760
+network, called the
+decoder, which usually
+
+159
+00:06:07,760 --> 00:06:10,520
+has the same architecture but,
+potentially, a different weight
+
+160
+00:06:10,520 --> 00:06:12,800
+matrix, different set
+of learned parameters.
+
+161
+00:06:12,800 --> 00:06:14,800
+And this decoder,
+gu, is going to be
+
+162
+00:06:14,800 --> 00:06:17,640
+a different recurrent neural
+network with different learnable
+
+163
+00:06:17,640 --> 00:06:20,200
+weights, u, but has
+the same basic idea.
+
+164
+00:06:20,200 --> 00:06:22,840
+Now, if our recurrent
+neural network unit
+
+165
+00:06:22,840 --> 00:06:25,300
+is going to take three
+inputs at every time step,
+
+166
+00:06:25,300 --> 00:06:27,520
+it's going to take
+yt minus 1, which
+
+167
+00:06:27,520 --> 00:06:30,240
+is the token in the output
+sequence at the previous time
+
+168
+00:06:30,240 --> 00:06:30,900
+step.
+
+169
+00:06:30,900 --> 00:06:34,400
+It's going to take st minus 1,
+which is the previous hidden
+
+170
+00:06:34,400 --> 00:06:36,480
+state in the output
+sequence, and C,
+
+171
+00:06:36,480 --> 00:06:39,440
+which is that context vector
+summarizing the entire input
+
+172
+00:06:39,440 --> 00:06:40,400
+sequence.
+
+173
+00:06:40,400 --> 00:06:42,520
+And then we unroll
+that output sequence
+
+174
+00:06:42,520 --> 00:06:45,680
+just as we saw in the last
+lecture and produce words one
+
+175
+00:06:45,680 --> 00:06:47,178
+at a time in the
+output sequence.
+
+176
+00:06:47,178 --> 00:06:48,720
+And I don't speak
+Italian, so I'm not
+
+177
+00:06:48,720 --> 00:06:50,980
+going to try I'm not going
+to try to pronounce these.
+
+178
+00:06:50,980 --> 00:06:54,460
+But there's some Italian words
+on the screen that you can see.
+
+179
+00:06:54,460 --> 00:06:58,780
+And I'm assuming that, that
+indeed translates to "We see
+
+180
+00:06:58,780 --> 00:07:00,380
+the sky."
+
+181
+00:07:00,380 --> 00:07:01,882
+Hopefully, that's correct.
+
+182
+00:07:01,882 --> 00:07:03,340
+But the idea is
+we're going to tick
+
+183
+00:07:03,340 --> 00:07:05,382
+this recurrent neural
+network one tick at a time.
+
+184
+00:07:05,382 --> 00:07:07,200
+It's going to output
+words one at a time.
+
+185
+00:07:07,200 --> 00:07:09,837
+And this is basically a summary
+of what we saw last lecture.
+
+186
+00:07:09,837 --> 00:07:11,420
+So this should this
+should, basically,
+
+187
+00:07:11,420 --> 00:07:15,140
+not be too surprising in
+light of the previous lecture.
+
+188
+00:07:15,140 --> 00:07:16,920
+But there's a
+potential problem here.
+
+189
+00:07:16,920 --> 00:07:19,740
+And there's a
+communication bottleneck
+
+190
+00:07:19,740 --> 00:07:23,460
+here between the input sequence
+and the output sequence.
+
+191
+00:07:23,460 --> 00:07:26,660
+The only way in which the
+input sequence is communicating
+
+192
+00:07:26,660 --> 00:07:30,020
+with the output sequence is
+via that context vector C.
+
+193
+00:07:30,020 --> 00:07:31,740
+And that C is going
+to be a fixed length
+
+194
+00:07:31,740 --> 00:07:33,740
+vector because the
+size of that vector
+
+195
+00:07:33,740 --> 00:07:37,300
+is fixed when we set the size
+of our recurrent neural network.
+
+196
+00:07:37,300 --> 00:07:38,760
+And maybe that's fine.
+
+197
+00:07:38,760 --> 00:07:42,420
+So C might be a fixed length
+vector of like 128 floats,
+
+198
+00:07:42,420 --> 00:07:43,880
+1,024 floats.
+
+199
+00:07:43,880 --> 00:07:46,660
+But the size of that input
+vector is not going to change,
+
+200
+00:07:46,660 --> 00:07:49,300
+as our input and output
+sequence sizes grow or shrink.
+
+201
+00:07:49,300 --> 00:07:51,080
+And that's a potential problem.
+
+202
+00:07:51,080 --> 00:07:53,933
+So if we're doing short
+sequences, like we see the sky,
+
+203
+00:07:53,933 --> 00:07:56,600
+maybe it seems pretty plausible
+that we can summarize everything
+
+204
+00:07:56,600 --> 00:07:58,880
+we need to know about that
+sequence in that fixed
+
+205
+00:07:58,880 --> 00:08:00,320
+vector of 120--
+
+206
+00:08:00,320 --> 00:08:01,780
+the 1,024 floats.
+
+207
+00:08:01,780 --> 00:08:04,180
+But what if we're not trying
+to translate four words?
+
+208
+00:08:04,180 --> 00:08:05,555
+What if we're
+trying to translate
+
+209
+00:08:05,555 --> 00:08:07,360
+a whole paragraph,
+or a whole book,
+
+210
+00:08:07,360 --> 00:08:09,815
+or an entire corpus of data?
+
+211
+00:08:09,815 --> 00:08:12,440
+Then in that case, we're going
+to run into a bottleneck, where,
+
+212
+00:08:12,440 --> 00:08:15,140
+at some point, as we
+scale that input sequence,
+
+213
+00:08:15,140 --> 00:08:18,080
+it's just not going to be
+sensible to ask the network
+
+214
+00:08:18,080 --> 00:08:20,320
+to summarize the
+entire input sequence
+
+215
+00:08:20,320 --> 00:08:22,820
+into a single fixed
+length vector.
+
+216
+00:08:22,820 --> 00:08:25,040
+So that's going to be a problem.
+
+217
+00:08:25,040 --> 00:08:28,160
+So the solution
+here is, actually,
+
+218
+00:08:28,160 --> 00:08:33,400
+let's not bottleneck the network
+through one fixed length vector.
+
+219
+00:08:33,400 --> 00:08:35,600
+Instead, let's change
+the architecture
+
+220
+00:08:35,600 --> 00:08:37,100
+of our recurrent neural network.
+
+221
+00:08:37,100 --> 00:08:40,600
+Intuitively, what we want to
+do is not force a bottleneck
+
+222
+00:08:40,600 --> 00:08:43,020
+in a fixed length vector between
+the input and the output.
+
+223
+00:08:43,020 --> 00:08:45,830
+Instead, as we process
+the output sequence,
+
+224
+00:08:45,830 --> 00:08:48,080
+we're going to give the model
+the ability to look back
+
+225
+00:08:48,080 --> 00:08:49,480
+at the input sequence.
+
+226
+00:08:49,480 --> 00:08:52,080
+And now, every time it
+produces an output vector,
+
+227
+00:08:52,080 --> 00:08:54,860
+we want to give the network
+the opportunity to look back
+
+228
+00:08:54,860 --> 00:08:56,192
+at the entire input sequence.
+
+229
+00:08:56,192 --> 00:08:58,400
+And if we do this, there's
+going to be no bottleneck.
+
+230
+00:08:58,400 --> 00:09:00,238
+It will scale to much
+longer sequences.
+
+231
+00:09:00,238 --> 00:09:01,780
+And hopefully, the
+model architecture
+
+232
+00:09:01,780 --> 00:09:03,060
+will work much better.
+
+233
+00:09:03,060 --> 00:09:04,900
+So that's the
+motivating idea that
+
+234
+00:09:04,900 --> 00:09:06,980
+led to attention and
+transformers and all
+
+235
+00:09:06,980 --> 00:09:08,560
+this great stuff
+that we see today.
+
+236
+00:09:08,560 --> 00:09:10,713
+It all came-- one way
+of telling the story
+
+237
+00:09:10,713 --> 00:09:13,380
+is that it all came from trying
+to solve this bottleneck problem
+
+238
+00:09:13,380 --> 00:09:15,620
+in recurrent neural networks.
+
+239
+00:09:15,620 --> 00:09:18,892
+So let's see how we can actually
+implement this intuition
+
+240
+00:09:18,892 --> 00:09:21,100
+and endow a recurrent neural
+network with the ability
+
+241
+00:09:21,100 --> 00:09:23,980
+to look back at the input
+sequence on every time step.
+
+242
+00:09:23,980 --> 00:09:26,540
+So here, we're going to
+start with the same thing.
+
+243
+00:09:26,540 --> 00:09:28,920
+Our encoder neural network
+is going to remain the same,
+
+244
+00:09:28,920 --> 00:09:29,960
+no changes there.
+
+245
+00:09:29,960 --> 00:09:32,300
+We still need to set
+some initial hidden state
+
+246
+00:09:32,300 --> 00:09:34,980
+for the output sequence.
+
+247
+00:09:34,980 --> 00:09:38,660
+And so we need to set some
+initial decoder state, s0,
+
+248
+00:09:38,660 --> 00:09:39,860
+in some way.
+
+249
+00:09:39,860 --> 00:09:42,160
+But now, once we have
+that decoder hidden state,
+
+250
+00:09:42,160 --> 00:09:45,005
+what we're going to do is look
+back at the input sequence.
+
+251
+00:09:45,005 --> 00:09:46,380
+So the way that
+we're going to do
+
+252
+00:09:46,380 --> 00:09:50,560
+that is by computing some
+alignment scores by comparing
+
+253
+00:09:50,560 --> 00:09:53,920
+that, basically,
+compute a scalar
+
+254
+00:09:53,920 --> 00:09:57,760
+value for each step in the
+input sequence that says,
+
+255
+00:09:57,760 --> 00:09:59,760
+how much does that
+initial decoder state
+
+256
+00:09:59,760 --> 00:10:03,680
+s0, how much does that
+decoder state match each token
+
+257
+00:10:03,680 --> 00:10:04,900
+of the input sequence?
+
+258
+00:10:04,900 --> 00:10:07,623
+So in this case, there were four
+tokens in the input sequence.
+
+259
+00:10:07,623 --> 00:10:10,040
+So we want to compute four
+alignment scores, each of which
+
+260
+00:10:10,040 --> 00:10:12,200
+is just a single
+number that says,
+
+261
+00:10:12,200 --> 00:10:16,940
+what is the similarity
+between the input sequence,
+
+262
+00:10:16,940 --> 00:10:21,880
+the token of the input sequence,
+and this initial decoder state
+
+263
+00:10:21,880 --> 00:10:22,973
+s0?
+
+264
+00:10:22,973 --> 00:10:24,640
+Now, there's a lot
+of ways that we could
+
+265
+00:10:24,640 --> 00:10:26,100
+implement alignment scores.
+
+266
+00:10:26,100 --> 00:10:28,520
+But a simple way is just
+use a simple linear layer
+
+267
+00:10:28,520 --> 00:10:30,400
+that we're calling f sub att.
+
+268
+00:10:30,400 --> 00:10:32,280
+And so that linear layer
+is going to input--
+
+269
+00:10:32,280 --> 00:10:35,560
+is going to concatenate the
+decoder hidden state, s,
+
+270
+00:10:35,560 --> 00:10:37,240
+with one of the
+encoder hidden states,
+
+271
+00:10:37,240 --> 00:10:39,500
+h, concatenate those
+two into a vector,
+
+272
+00:10:39,500 --> 00:10:42,360
+and then apply a linear
+transform that squashes that
+
+273
+00:10:42,360 --> 00:10:43,345
+down into a scalar.
+
+274
+00:10:43,345 --> 00:10:44,720
+And that's just
+a linear operator
+
+275
+00:10:44,720 --> 00:10:46,540
+that can be put into
+a computational graph
+
+276
+00:10:46,540 --> 00:10:49,140
+and learned jointly via gradient
+descent, just in the way
+
+277
+00:10:49,140 --> 00:10:51,660
+that we learn all other
+parameters of a network.
+
+278
+00:10:51,660 --> 00:10:55,020
+So now at this point, we've
+got this scalar alignment score
+
+279
+00:10:55,020 --> 00:10:57,860
+for each step in
+the input sequence.
+
+280
+00:10:57,860 --> 00:11:00,420
+And now, we want to
+apply a softmax function.
+
+281
+00:11:00,420 --> 00:11:03,820
+These scalar alignment
+scores are totally unbounded.
+
+282
+00:11:03,820 --> 00:11:06,520
+They're arbitrary real values
+from minus infinity to infinity.
+
+283
+00:11:06,520 --> 00:11:08,900
+We want to put some
+structure on this
+
+284
+00:11:08,900 --> 00:11:10,460
+to prevent things
+from blowing up.
+
+285
+00:11:10,460 --> 00:11:13,040
+So one way that we do this
+is apply a softmax function.
+
+286
+00:11:13,040 --> 00:11:15,700
+So we've got four
+scalar values telling us
+
+287
+00:11:15,700 --> 00:11:18,020
+the alignment of that
+decoder hidden state
+
+288
+00:11:18,020 --> 00:11:20,460
+with each of the
+encoder hidden states.
+
+289
+00:11:20,460 --> 00:11:22,900
+Now, we apply a softmax
+over those four values
+
+290
+00:11:22,900 --> 00:11:27,125
+to give us a distribution
+over those four values.
+
+291
+00:11:27,125 --> 00:11:28,500
+So remember, the
+softmax function
+
+292
+00:11:28,500 --> 00:11:30,660
+that we saw a few
+lectures ago is going
+
+293
+00:11:30,660 --> 00:11:32,700
+to take a vector
+of arbitrary scores
+
+294
+00:11:32,700 --> 00:11:34,722
+and convert it into a
+probability distribution.
+
+295
+00:11:34,722 --> 00:11:36,180
+Which means it'll
+have the property
+
+296
+00:11:36,180 --> 00:11:39,380
+that each entry in the
+output softmax probabilities
+
+297
+00:11:39,380 --> 00:11:42,900
+will be between 0 and 1,
+and they will sum to 1.
+
+298
+00:11:42,900 --> 00:11:44,460
+So we can think
+of-- so whenever we
+
+299
+00:11:44,460 --> 00:11:46,780
+have whenever we run a
+vector through a softmax,
+
+300
+00:11:46,780 --> 00:11:48,560
+we can think of the
+thing we get out
+
+301
+00:11:48,560 --> 00:11:50,560
+as a probability
+distribution, or rather,
+
+302
+00:11:50,560 --> 00:11:52,240
+a discrete probability
+distribution
+
+303
+00:11:52,240 --> 00:11:54,000
+over those input scores.
+
+304
+00:11:54,000 --> 00:11:55,260
+So in this case--
+
+305
+00:11:55,260 --> 00:11:57,840
+so at this point, after we
+take those alignment scores
+
+306
+00:11:57,840 --> 00:12:01,000
+and run them through a softmax,
+what we've essentially done
+
+307
+00:12:01,000 --> 00:12:04,000
+is predicted a
+distribution over the input
+
+308
+00:12:04,000 --> 00:12:07,880
+tokens, given that
+decoder hidden state.
+
+309
+00:12:07,880 --> 00:12:10,160
+So now, what we want to do
+is take that distribution
+
+310
+00:12:10,160 --> 00:12:13,000
+over the input
+tokens and use them
+
+311
+00:12:13,000 --> 00:12:18,080
+to compute a vector summarizing
+the information in the encoder.
+
+312
+00:12:18,080 --> 00:12:21,560
+So the way that we do that is we
+take our attention scores, which
+
+313
+00:12:21,560 --> 00:12:26,880
+recall, are these numbers
+a11, a12, a13, a14,
+
+314
+00:12:26,880 --> 00:12:28,220
+they're all between 0 and 1.
+
+315
+00:12:28,220 --> 00:12:29,007
+They sum to 1.
+
+316
+00:12:29,007 --> 00:12:30,840
+We're going to take a
+linear combination now
+
+317
+00:12:30,840 --> 00:12:34,880
+of the encoder hidden
+states, h1, h2, h3, h4
+
+318
+00:12:34,880 --> 00:12:38,040
+and take a linear combination
+of those encoder hidden states
+
+319
+00:12:38,040 --> 00:12:40,400
+weighted by our
+attention scores.
+
+320
+00:12:40,400 --> 00:12:42,840
+And this will give
+us a context vector
+
+321
+00:12:42,840 --> 00:12:45,420
+that we're calling c1
+here in purple, which
+
+322
+00:12:45,420 --> 00:12:47,940
+is going to summarize the
+information in the encoder
+
+323
+00:12:47,940 --> 00:12:52,700
+sequence in some way that's
+modulated by those attention
+
+324
+00:12:52,700 --> 00:12:54,260
+weights.
+
+325
+00:12:54,260 --> 00:12:57,140
+And now, at this point, so
+then this c1 is basically
+
+326
+00:12:57,140 --> 00:13:01,460
+some linear combination of the
+input encoder states, h1 to h4.
+
+327
+00:13:01,460 --> 00:13:03,180
+Things look basically
+the same, as they
+
+328
+00:13:03,180 --> 00:13:04,980
+did in the non-attention case.
+
+329
+00:13:04,980 --> 00:13:06,860
+So we have our context vector.
+
+330
+00:13:06,860 --> 00:13:10,180
+We concatenate it with our first
+token of the output sequence,
+
+331
+00:13:10,180 --> 00:13:14,200
+y0, pass that to our
+recurrent unit to get both--
+
+332
+00:13:14,200 --> 00:13:19,100
+to get our next hidden state
+of the decoder recurrent neural
+
+333
+00:13:19,100 --> 00:13:22,140
+network, as well as the first
+output token from the decoder
+
+334
+00:13:22,140 --> 00:13:24,020
+recurrent neural network.
+
+335
+00:13:24,020 --> 00:13:27,580
+So basically, the structure
+of that decoder RNN
+
+336
+00:13:27,580 --> 00:13:29,020
+did not really change.
+
+337
+00:13:29,020 --> 00:13:32,180
+All we did is rather than set,
+we computed the context vector
+
+338
+00:13:32,180 --> 00:13:34,940
+in a different way using this
+attention linear combination
+
+339
+00:13:34,940 --> 00:13:36,780
+mechanism.
+
+340
+00:13:36,780 --> 00:13:40,180
+But now, crucially,
+so the intuition here
+
+341
+00:13:40,180 --> 00:13:42,160
+is that this context
+vector basically
+
+342
+00:13:42,160 --> 00:13:45,840
+attends, or looks at different
+parts of the input sequence that
+
+343
+00:13:45,840 --> 00:13:49,260
+is modulated by whatever the
+output RNN wants to look at,
+
+344
+00:13:49,260 --> 00:13:51,120
+at this moment in time.
+
+345
+00:13:51,120 --> 00:13:54,920
+So for example,
+part of the input--
+
+346
+00:13:54,920 --> 00:13:59,040
+as part of the input sequence
+has this token, these two words
+
+347
+00:13:59,040 --> 00:13:59,920
+we see.
+
+348
+00:13:59,920 --> 00:14:02,840
+So then in trying to produce
+that one word in Italian that
+
+349
+00:14:02,840 --> 00:14:05,640
+corresponds to we see,
+the network probably
+
+350
+00:14:05,640 --> 00:14:08,120
+wants to go back and look at
+those two words in the input
+
+351
+00:14:08,120 --> 00:14:11,280
+sequence in order to know
+what output word to produce.
+
+352
+00:14:11,280 --> 00:14:13,220
+So we might expect--
+
+353
+00:14:13,220 --> 00:14:16,360
+we might want to have some-- we
+might expect that, intuitively,
+
+354
+00:14:16,360 --> 00:14:20,320
+when trying to produce
+the word, "vediamo,"
+
+355
+00:14:20,320 --> 00:14:23,840
+then the network will want to
+look back at the words we see
+
+356
+00:14:23,840 --> 00:14:25,900
+and put higher attention
+weights on those.
+
+357
+00:14:25,900 --> 00:14:27,860
+And it doesn't really
+care about the sky
+
+358
+00:14:27,860 --> 00:14:30,840
+because those words are
+not necessary for producing
+
+359
+00:14:30,840 --> 00:14:32,865
+that vediamo output.
+
+360
+00:14:32,865 --> 00:14:34,240
+And that's the
+kind of intuition.
+
+361
+00:14:34,240 --> 00:14:35,520
+We're giving the
+network, the ability
+
+362
+00:14:35,520 --> 00:14:37,360
+to look back at the
+relevant parts of the input
+
+363
+00:14:37,360 --> 00:14:39,402
+sequence for the word that
+it's trying to predict
+
+364
+00:14:39,402 --> 00:14:42,220
+at this moment in time.
+
+365
+00:14:42,220 --> 00:14:43,780
+And the other thing
+to keep in mind
+
+366
+00:14:43,780 --> 00:14:45,620
+is that this is
+all differentiable.
+
+367
+00:14:45,620 --> 00:14:47,320
+We don't need to
+supervise the network.
+
+368
+00:14:47,320 --> 00:14:50,020
+We don't need to tell it which
+words in the input sequence
+
+369
+00:14:50,020 --> 00:14:52,040
+were required for each
+word in the output.
+
+370
+00:14:52,040 --> 00:14:54,580
+Instead, this is just a big
+computational graph composed
+
+371
+00:14:54,580 --> 00:14:56,580
+of differentiable operations.
+
+372
+00:14:56,580 --> 00:14:59,198
+All of this can be learned
+end-to-end via gradient descent.
+
+373
+00:14:59,198 --> 00:15:00,740
+So at the end of
+the day, we're still
+
+374
+00:15:00,740 --> 00:15:03,525
+going to have this cross-entropy
+softmax loss, where
+
+375
+00:15:03,525 --> 00:15:05,900
+the network is trying to
+predict the tokens of the output
+
+376
+00:15:05,900 --> 00:15:06,680
+sequence.
+
+377
+00:15:06,680 --> 00:15:09,060
+And in the process
+of trying to predict
+
+378
+00:15:09,060 --> 00:15:10,920
+the right tokens in
+the output sequence,
+
+379
+00:15:10,920 --> 00:15:12,940
+it's going to learn
+for itself how
+
+380
+00:15:12,940 --> 00:15:16,140
+to attend to different
+parts of the input sequence.
+
+381
+00:15:16,140 --> 00:15:17,540
+So that's really critical.
+
+382
+00:15:17,540 --> 00:15:19,980
+If we had to go in and
+supervise and tell the network
+
+383
+00:15:19,980 --> 00:15:21,540
+the alignment
+between the two, it
+
+384
+00:15:21,540 --> 00:15:23,373
+would be very difficult
+to get training data
+
+385
+00:15:23,373 --> 00:15:24,460
+for this kind of thing.
+
+386
+00:15:24,460 --> 00:15:26,550
+The question is, how do
+we initialize the decoder?
+
+387
+00:15:26,550 --> 00:15:28,800
+We're actually using the
+word-- you got to be careful,
+
+388
+00:15:28,800 --> 00:15:30,175
+we're using the
+word "initialize"
+
+389
+00:15:30,175 --> 00:15:31,560
+a little bit overloaded here.
+
+390
+00:15:31,560 --> 00:15:34,660
+So one question is, the decoder
+is itself a neural network that
+
+391
+00:15:34,660 --> 00:15:35,500
+has weights.
+
+392
+00:15:35,500 --> 00:15:37,000
+When we start
+training that network,
+
+393
+00:15:37,000 --> 00:15:39,260
+we need to initialize
+those weights in some way.
+
+394
+00:15:39,260 --> 00:15:40,800
+So then we will
+typically initialize
+
+395
+00:15:40,800 --> 00:15:43,652
+the weights of the decoder
+randomly and then optimize them
+
+396
+00:15:43,652 --> 00:15:46,360
+via gradient descent, just as we
+do with any other neural network
+
+397
+00:15:46,360 --> 00:15:47,320
+weights.
+
+398
+00:15:47,320 --> 00:15:49,380
+But there's a second
+notion of initialize.
+
+399
+00:15:49,380 --> 00:15:51,680
+Which is that when the
+network is processing
+
+400
+00:15:51,680 --> 00:15:55,620
+a sequence, whatever its current
+value of the weights are,
+
+401
+00:15:55,620 --> 00:15:58,600
+we need some way to set that
+initial hidden state at the time
+
+402
+00:15:58,600 --> 00:16:01,320
+we start processing
+an output sequence.
+
+403
+00:16:01,320 --> 00:16:05,200
+And in that case, we need
+some rule, or some way
+
+404
+00:16:05,200 --> 00:16:08,757
+to set that initial hidden state
+of the decoder output sequence.
+
+405
+00:16:08,757 --> 00:16:10,840
+There's a couple of different
+mechanisms for this.
+
+406
+00:16:10,840 --> 00:16:12,320
+Sometimes, you
+might initialize it
+
+407
+00:16:12,320 --> 00:16:15,520
+as the last hidden
+state of the encoder
+
+408
+00:16:15,520 --> 00:16:16,980
+is one thing you'll
+sometimes do.
+
+409
+00:16:16,980 --> 00:16:20,120
+You might have a linear
+transform that projects--
+
+410
+00:16:20,120 --> 00:16:22,520
+has some learned projection
+from the last decoder state
+
+411
+00:16:22,520 --> 00:16:23,340
+to the first--
+
+412
+00:16:23,340 --> 00:16:26,240
+from the last encoder state
+to the first decoder state.
+
+413
+00:16:26,240 --> 00:16:28,360
+Or sometimes, people
+even initialize
+
+414
+00:16:28,360 --> 00:16:31,907
+the first hidden state of
+the decoder to be all zeros.
+
+415
+00:16:31,907 --> 00:16:34,240
+Any of those will work, as
+long as you train the network
+
+416
+00:16:34,240 --> 00:16:36,240
+to expect that kind of input.
+
+417
+00:16:36,240 --> 00:16:37,880
+So the question is,
+negations and XORs,
+
+418
+00:16:37,880 --> 00:16:39,160
+will this cause a problem?
+
+419
+00:16:39,160 --> 00:16:39,660
+Maybe.
+
+420
+00:16:39,660 --> 00:16:40,822
+This is a hard problem.
+
+421
+00:16:40,822 --> 00:16:42,780
+But then you need a lot
+of data, a lot of flops
+
+422
+00:16:42,780 --> 00:16:45,460
+to try to hope the network
+can disentangle this.
+
+423
+00:16:45,460 --> 00:16:49,080
+But basically, recurrent unit
+takes three things as input.
+
+424
+00:16:49,080 --> 00:16:50,567
+It takes in the decoder.
+
+425
+00:16:50,567 --> 00:16:52,900
+It takes the previous hidden
+state, the previous decoder
+
+426
+00:16:52,900 --> 00:16:53,800
+hidden state.
+
+427
+00:16:53,800 --> 00:16:55,340
+It takes the current
+context vector.
+
+428
+00:16:55,340 --> 00:16:59,020
+And it takes the current
+token in the output sequence.
+
+429
+00:16:59,020 --> 00:17:01,620
+And then from that, we
+produce the next hidden state.
+
+430
+00:17:01,620 --> 00:17:03,120
+And then from the
+next hidden state,
+
+431
+00:17:03,120 --> 00:17:04,885
+then we go and predict
+the output token.
+
+432
+00:17:04,885 --> 00:17:06,260
+So that's actually
+the same setup
+
+433
+00:17:06,260 --> 00:17:08,380
+as in the non-attention case.
+
+434
+00:17:08,380 --> 00:17:10,060
+I guess there's an
+implicit connection
+
+435
+00:17:10,060 --> 00:17:13,780
+from-- there's a connection from
+s0 to s1 that we're not drawing.
+
+436
+00:17:13,780 --> 00:17:17,060
+Well, so there should have been
+another arrow from s0 to s1.
+
+437
+00:17:17,060 --> 00:17:20,391
+I think I just dropped the s0
+arrow, so sorry about that.
+
+438
+00:17:20,391 --> 00:17:22,099
+Well, we're basically
+letting the network
+
+439
+00:17:22,099 --> 00:17:24,980
+decide for itself to look
+back at any part of the input
+
+440
+00:17:24,980 --> 00:17:28,800
+sequence that it thinks might be
+relevant for the task at hand.
+
+441
+00:17:28,800 --> 00:17:31,860
+But the reason why we think
+that this mechanism is plausible
+
+442
+00:17:31,860 --> 00:17:33,500
+and might be helpful
+for the network
+
+443
+00:17:33,500 --> 00:17:36,160
+is because we know that
+in a language task,
+
+444
+00:17:36,160 --> 00:17:37,920
+there often is some
+kind of correspondence
+
+445
+00:17:37,920 --> 00:17:40,620
+between words in the output
+and words in the input.
+
+446
+00:17:40,620 --> 00:17:43,440
+And we want to let the
+network look back and pick out
+
+447
+00:17:43,440 --> 00:17:45,720
+which are the relevant bits
+of the input for producing
+
+448
+00:17:45,720 --> 00:17:47,025
+this bit of the output.
+
+449
+00:17:47,025 --> 00:17:48,900
+But again, we're not
+directly supervising it.
+
+450
+00:17:48,900 --> 00:17:51,340
+We're not telling it how to
+use these attention scores.
+
+451
+00:17:51,340 --> 00:17:52,960
+But the intuition
+is that we think
+
+452
+00:17:52,960 --> 00:17:55,320
+that's a plausible thing
+that it might choose to do,
+
+453
+00:17:55,320 --> 00:17:56,960
+given this mechanism.
+
+454
+00:17:56,960 --> 00:18:00,520
+OK, so that's one
+tick of the output.
+
+455
+00:18:00,520 --> 00:18:02,500
+And now, basically,
+we do it again.
+
+456
+00:18:02,500 --> 00:18:04,560
+We do this whole process
+again for every time
+
+457
+00:18:04,560 --> 00:18:06,245
+we tick the decoder RNN.
+
+458
+00:18:06,245 --> 00:18:08,120
+Remember, the problem
+we were trying to solve
+
+459
+00:18:08,120 --> 00:18:10,360
+is that, previously, the
+decoder was bottlenecking
+
+460
+00:18:10,360 --> 00:18:11,680
+through a single vector.
+
+461
+00:18:11,680 --> 00:18:12,938
+Now, we're going to compute--
+
+462
+00:18:12,938 --> 00:18:14,980
+instead of bottlenecking
+through a single vector,
+
+463
+00:18:14,980 --> 00:18:17,397
+we're going to repeat this
+whole process again and compute
+
+464
+00:18:17,397 --> 00:18:20,360
+a new context vector for the
+second time step of the decoder
+
+465
+00:18:20,360 --> 00:18:22,920
+and let it go back and look
+at the whole input sequence
+
+466
+00:18:22,920 --> 00:18:23,880
+yet again.
+
+467
+00:18:23,880 --> 00:18:27,120
+So now, basically,
+given our s1, which
+
+468
+00:18:27,120 --> 00:18:31,120
+is our computed first
+hidden state in the decoder,
+
+469
+00:18:31,120 --> 00:18:32,400
+we're going to go back.
+
+470
+00:18:32,400 --> 00:18:35,460
+You take s1, go back
+and compute comparison,
+
+471
+00:18:35,460 --> 00:18:38,540
+and use our attention
+mechanism to compute
+
+472
+00:18:38,540 --> 00:18:41,820
+similarity scores between s1
+and all of the hidden states
+
+473
+00:18:41,820 --> 00:18:43,020
+in the encoder.
+
+474
+00:18:43,020 --> 00:18:44,900
+That will compute our
+similarity scores,
+
+475
+00:18:44,900 --> 00:18:48,340
+using that exact same FATT, that
+same linear projection that we
+
+476
+00:18:48,340 --> 00:18:51,740
+used at the first time step,
+compute these alignment scores,
+
+477
+00:18:51,740 --> 00:18:55,100
+again, cram them through softmax
+to get a new distribution
+
+478
+00:18:55,100 --> 00:18:58,120
+over the input sequence for
+the second decoder time step,
+
+479
+00:18:58,120 --> 00:19:00,260
+and now compute a new
+linear combination
+
+480
+00:19:00,260 --> 00:19:02,420
+of the encoder hidden
+states, now weighted
+
+481
+00:19:02,420 --> 00:19:05,700
+by this new distribution that
+we computed at the second time
+
+482
+00:19:05,700 --> 00:19:07,100
+step.
+
+483
+00:19:07,100 --> 00:19:12,620
+And this will basically give
+us a new context vector, c2,
+
+484
+00:19:12,620 --> 00:19:15,660
+that now is a different
+summarization of the input
+
+485
+00:19:15,660 --> 00:19:18,700
+sequence that's now computed
+as a new linear combination
+
+486
+00:19:18,700 --> 00:19:21,500
+of the input encoder
+hidden states.
+
+487
+00:19:21,500 --> 00:19:23,960
+And then the whole
+thing iterates.
+
+488
+00:19:23,960 --> 00:19:25,320
+We have a new context vector.
+
+489
+00:19:25,320 --> 00:19:29,340
+We use that to run another
+tick of our decoder RNN unit
+
+490
+00:19:29,340 --> 00:19:32,260
+that will now does include
+that mysterious missing
+
+491
+00:19:32,260 --> 00:19:34,620
+arrow that wasn't there
+on the previous time step.
+
+492
+00:19:34,620 --> 00:19:37,140
+So then given our
+new context vector,
+
+493
+00:19:37,140 --> 00:19:39,500
+given the next token
+of the output sequence,
+
+494
+00:19:39,500 --> 00:19:42,220
+and given the s1 hidden
+state of the decoder,
+
+495
+00:19:42,220 --> 00:19:45,580
+we compute a new decoder
+state, s2, and then from that,
+
+496
+00:19:45,580 --> 00:19:48,960
+compute another token
+of the output sequence.
+
+497
+00:19:48,960 --> 00:19:49,500
+And again.
+
+498
+00:19:49,500 --> 00:19:52,860
+Remember, in this case,
+it's producing il,
+
+499
+00:19:52,860 --> 00:19:55,260
+which maybe is "the"
+according to the slide.
+
+500
+00:19:55,260 --> 00:19:56,560
+I hope that's true.
+
+501
+00:19:56,560 --> 00:19:58,887
+And then in this
+case, there's maybe
+
+502
+00:19:58,887 --> 00:20:00,720
+a one-to-one correspondence
+between the word
+
+503
+00:20:00,720 --> 00:20:03,195
+the network is trying to produce
+for this sequence and one
+
+504
+00:20:03,195 --> 00:20:05,820
+of the words in the output-- and
+one of the words in the input.
+
+505
+00:20:05,820 --> 00:20:07,720
+So we might expect
+that the network should
+
+506
+00:20:07,720 --> 00:20:09,680
+put relatively high
+attention weight
+
+507
+00:20:09,680 --> 00:20:12,060
+on just one of the words
+in the input sequence
+
+508
+00:20:12,060 --> 00:20:14,580
+and relatively low attention
+weight on all the other words,
+
+509
+00:20:14,580 --> 00:20:15,620
+in the input sequence.
+
+510
+00:20:15,620 --> 00:20:16,900
+But again, we don't
+supervise this.
+
+511
+00:20:16,900 --> 00:20:18,320
+The network is
+deciding for itself
+
+512
+00:20:18,320 --> 00:20:20,200
+how to make use of
+this mechanism, all
+
+513
+00:20:20,200 --> 00:20:23,000
+driven by gradient descent
+on our training task.
+
+514
+00:20:23,000 --> 00:20:24,680
+And this whole
+thing is we're just
+
+515
+00:20:24,680 --> 00:20:27,040
+going to repeat that whole
+process for every tick
+
+516
+00:20:27,040 --> 00:20:29,600
+of the decoder RNN.
+
+517
+00:20:29,600 --> 00:20:32,480
+So now, this basically
+solved our problem.
+
+518
+00:20:32,480 --> 00:20:34,860
+We are no longer bottlenecking
+the input sequence
+
+519
+00:20:34,860 --> 00:20:36,520
+through a single
+fixed length vector.
+
+520
+00:20:36,520 --> 00:20:38,180
+Instead, we have
+this new mechanism,
+
+521
+00:20:38,180 --> 00:20:40,383
+where at every time
+step of the decoder,
+
+522
+00:20:40,383 --> 00:20:42,550
+the network looks back at
+the entire input sequence,
+
+523
+00:20:42,550 --> 00:20:47,060
+re-summarizes the input sequence
+to generate a new context
+
+524
+00:20:47,060 --> 00:20:49,920
+vector on the fly for this
+one time step of the decoder,
+
+525
+00:20:49,920 --> 00:20:51,900
+and then uses that to
+produce the outputs.
+
+526
+00:20:51,900 --> 00:20:53,980
+So this is a pretty
+cool mechanism.
+
+527
+00:20:53,980 --> 00:20:56,380
+And this is called attention
+because the network
+
+528
+00:20:56,380 --> 00:20:59,260
+is attending, or looking at
+different parts of the input
+
+529
+00:20:59,260 --> 00:21:03,108
+sequence at every
+moment in its output.
+
+530
+00:21:03,108 --> 00:21:04,900
+So we talked about
+these attention weights.
+
+531
+00:21:04,900 --> 00:21:06,680
+And we said that
+they were driven--
+
+532
+00:21:06,680 --> 00:21:08,500
+the network was
+learning for itself,
+
+533
+00:21:08,500 --> 00:21:10,980
+how to set these attention
+weights based on its training
+
+534
+00:21:10,980 --> 00:21:12,900
+data, based on
+its training task.
+
+535
+00:21:12,900 --> 00:21:14,820
+And another really cool
+thing about attention
+
+536
+00:21:14,820 --> 00:21:17,900
+is it also gives us a
+way to introspect and see
+
+537
+00:21:17,900 --> 00:21:19,580
+what the network is
+looking at, as it's
+
+538
+00:21:19,580 --> 00:21:21,020
+trying to solve this problem.
+
+539
+00:21:21,020 --> 00:21:25,100
+So we never told it
+what the alignment
+
+540
+00:21:25,100 --> 00:21:27,435
+was between the input sequence
+and the output sequence.
+
+541
+00:21:27,435 --> 00:21:29,060
+But by looking at
+the attention weights
+
+542
+00:21:29,060 --> 00:21:32,220
+that the network predicts when
+trying to solve this task,
+
+543
+00:21:32,220 --> 00:21:35,160
+we get a sense of what the
+network was looking at,
+
+544
+00:21:35,160 --> 00:21:36,840
+while trying to
+solve the problem.
+
+545
+00:21:36,840 --> 00:21:38,360
+So that gives us
+a way to interpret
+
+546
+00:21:38,360 --> 00:21:41,120
+the processing of the
+neural network in some way.
+
+547
+00:21:41,120 --> 00:21:44,640
+And so one thing that we can
+do is then go and look at,
+
+548
+00:21:44,640 --> 00:21:47,680
+in the process of producing
+a particular-- processing
+
+549
+00:21:47,680 --> 00:21:50,000
+a particular sequence,
+what were the attention
+
+550
+00:21:50,000 --> 00:21:51,920
+weights that the
+network predicted
+
+551
+00:21:51,920 --> 00:21:53,540
+when trying to do this task?
+
+552
+00:21:53,540 --> 00:21:56,240
+And we can visualize these
+in a two-dimensional grid.
+
+553
+00:21:56,240 --> 00:21:58,440
+So here, we're looking
+at an example of English
+
+554
+00:21:58,440 --> 00:22:01,400
+to French translation.
+
+555
+00:22:01,400 --> 00:22:05,780
+And across the top, we
+have our input sequence.
+
+556
+00:22:05,780 --> 00:22:07,720
+The agreement on the
+European Economic Area
+
+557
+00:22:07,720 --> 00:22:09,680
+was signed in August 1992.
+
+558
+00:22:09,680 --> 00:22:13,460
+And then running down the
+rows is the output sequence,
+
+559
+00:22:13,460 --> 00:22:16,748
+which is in French, which I
+will not attempt to pronounce.
+
+560
+00:22:16,748 --> 00:22:19,040
+But you can see that, basically,
+through this attention
+
+561
+00:22:19,040 --> 00:22:20,580
+mechanism, for every--
+
+562
+00:22:20,580 --> 00:22:22,760
+remember, the way this
+attention mechanism worked
+
+563
+00:22:22,760 --> 00:22:25,520
+is that each time the network
+produced one of these words
+
+564
+00:22:25,520 --> 00:22:28,040
+in the output sequence,
+it predicted a probability
+
+565
+00:22:28,040 --> 00:22:30,740
+distribution over the
+entire input sequence.
+
+566
+00:22:30,740 --> 00:22:33,540
+So we visualize that
+in that first row.
+
+567
+00:22:33,540 --> 00:22:35,640
+So if you look at the
+first row of this matrix,
+
+568
+00:22:35,640 --> 00:22:38,540
+we're visualizing that predicted
+probability distribution
+
+569
+00:22:38,540 --> 00:22:40,840
+over the entire input
+English sentence.
+
+570
+00:22:40,840 --> 00:22:44,580
+And we see that when trying to
+predict that first word, "le"
+
+571
+00:22:44,580 --> 00:22:48,100
+of the French sentence, then it
+puts a lot of probability mass
+
+572
+00:22:48,100 --> 00:22:51,580
+on the English word "the" and
+basically no probability mass
+
+573
+00:22:51,580 --> 00:22:52,938
+on any of the other words.
+
+574
+00:22:52,938 --> 00:22:55,480
+Then, when predicting the second
+word of the output sequence,
+
+575
+00:22:55,480 --> 00:22:57,730
+remember, it goes back and
+predicts a new distribution
+
+576
+00:22:57,730 --> 00:22:59,480
+over the entire input sequence.
+
+577
+00:22:59,480 --> 00:23:01,880
+And that's going to be the
+second row in this matrix.
+
+578
+00:23:01,880 --> 00:23:05,500
+So you can see that
+a chord, it puts
+
+579
+00:23:05,500 --> 00:23:07,620
+a lot of probability
+mass on agreement
+
+580
+00:23:07,620 --> 00:23:09,920
+and then no probability
+mass anywhere else.
+
+581
+00:23:09,920 --> 00:23:12,900
+So then that gives us some
+sense that the network actually
+
+582
+00:23:12,900 --> 00:23:15,220
+did figure out the
+alignment between the input
+
+583
+00:23:15,220 --> 00:23:18,620
+words and the output words when
+doing this translation task.
+
+584
+00:23:18,620 --> 00:23:21,660
+And there's some interesting
+patterns here that pop up.
+
+585
+00:23:21,660 --> 00:23:23,940
+When we look-- when we
+see diagonal structures
+
+586
+00:23:23,940 --> 00:23:25,820
+in this attention
+matrix, that means
+
+587
+00:23:25,820 --> 00:23:28,760
+that there was a one-to-one
+correspondence between words
+
+588
+00:23:28,760 --> 00:23:31,000
+in order between the input
+sequence and the output
+
+589
+00:23:31,000 --> 00:23:31,720
+sequence.
+
+590
+00:23:31,720 --> 00:23:33,960
+So in particular, we
+see that the agreement
+
+591
+00:23:33,960 --> 00:23:36,840
+on "the," the first four
+words of the input sequence,
+
+592
+00:23:36,840 --> 00:23:39,840
+correspond to this diagonal
+structure in the attention
+
+593
+00:23:39,840 --> 00:23:40,540
+matrix.
+
+594
+00:23:40,540 --> 00:23:43,080
+So that means that the
+network has decided for itself
+
+595
+00:23:43,080 --> 00:23:45,840
+that these first four
+words of the input sequence
+
+596
+00:23:45,840 --> 00:23:49,200
+align, or match up, or
+correspond to the first four
+
+597
+00:23:49,200 --> 00:23:51,280
+words of the input
+sequence, and the same thing
+
+598
+00:23:51,280 --> 00:23:53,053
+for the last several words.
+
+599
+00:23:53,053 --> 00:23:54,720
+So again, we see this
+diagonal structure
+
+600
+00:23:54,720 --> 00:23:58,000
+at the end of the sequence,
+which means that August 1992,
+
+601
+00:23:58,000 --> 00:24:02,160
+or in August 1992 corresponds
+to these last couple
+
+602
+00:24:02,160 --> 00:24:03,580
+words in the French sequence.
+
+603
+00:24:03,580 --> 00:24:05,622
+And again, there's this
+one-to-one correspondence
+
+604
+00:24:05,622 --> 00:24:08,472
+between words in the output
+and words in the input.
+
+605
+00:24:08,472 --> 00:24:10,680
+But we see some other
+interesting stuff in the middle
+
+606
+00:24:10,680 --> 00:24:11,260
+here.
+
+607
+00:24:11,260 --> 00:24:14,660
+So in the middle, we see
+European economic area.
+
+608
+00:24:14,660 --> 00:24:17,040
+But in the French,
+we see words that
+
+609
+00:24:17,040 --> 00:24:19,977
+look kind of like those in
+a slightly different order.
+
+610
+00:24:19,977 --> 00:24:22,060
+Good question, how does
+it figure out the grammar?
+
+611
+00:24:22,060 --> 00:24:24,172
+That's the mystery
+of deep learning.
+
+612
+00:24:24,172 --> 00:24:26,880
+But basically, we told that-- we
+didn't tell the network anything
+
+613
+00:24:26,880 --> 00:24:27,677
+about grammar.
+
+614
+00:24:27,677 --> 00:24:29,260
+We told the network--
+we supervised it
+
+615
+00:24:29,260 --> 00:24:30,840
+with a lot of
+input, output pairs.
+
+616
+00:24:30,840 --> 00:24:33,360
+We told it, here's an
+input sequence in English.
+
+617
+00:24:33,360 --> 00:24:34,960
+Here's an output
+sequence in French.
+
+618
+00:24:34,960 --> 00:24:37,060
+Here's a mechanism
+for processing this
+
+619
+00:24:37,060 --> 00:24:40,580
+and learn via gradient
+descent to set
+
+620
+00:24:40,580 --> 00:24:43,180
+the weights of this
+architecture in order
+
+621
+00:24:43,180 --> 00:24:45,460
+to produce this output
+from this input.
+
+622
+00:24:45,460 --> 00:24:47,700
+We'd never told it
+anything about grammar.
+
+623
+00:24:47,700 --> 00:24:50,420
+But it kind of-- because
+we, as human designers,
+
+624
+00:24:50,420 --> 00:24:52,540
+have this intuition that
+maybe it makes sense
+
+625
+00:24:52,540 --> 00:24:54,832
+that there ought to be some
+correspondence between some
+
+626
+00:24:54,832 --> 00:24:57,220
+of the words, so we bake in
+a mechanism that we think,
+
+627
+00:24:57,220 --> 00:24:59,740
+as human designers, might
+be helpful for solving
+
+628
+00:24:59,740 --> 00:25:00,475
+this problem.
+
+629
+00:25:00,475 --> 00:25:02,100
+And the network
+figures out for itself,
+
+630
+00:25:02,100 --> 00:25:04,380
+in the process of doing
+the end-to-end task, how
+
+631
+00:25:04,380 --> 00:25:08,380
+to make use of that mechanism to
+solve the problem we set for it.
+
+632
+00:25:08,380 --> 00:25:10,050
+And it's pretty
+amazing that it works.
+
+634
+00:25:12,700 --> 00:25:16,320
+But in this case, it figured out
+some of the grammar for itself.
+
+635
+00:25:16,320 --> 00:25:18,860
+So it sees that we see
+this non-diagonal, sort
+
+636
+00:25:18,860 --> 00:25:21,320
+of backward diagonal in
+the attention matrix here.
+
+637
+00:25:21,320 --> 00:25:23,112
+And that means that
+the network figured out
+
+638
+00:25:23,112 --> 00:25:26,960
+for itself, this different word
+order between words in English
+
+639
+00:25:26,960 --> 00:25:28,960
+and words in French.
+
+640
+00:25:28,960 --> 00:25:32,920
+Or in the middle, you see
+there's a little two by two grid
+
+641
+00:25:32,920 --> 00:25:33,500
+here.
+
+642
+00:25:33,500 --> 00:25:35,978
+And that corresponds to a
+situation, where there might not
+
+643
+00:25:35,978 --> 00:25:37,520
+have been a one-to-one
+correspondence
+
+644
+00:25:37,520 --> 00:25:39,420
+between the English words
+and the French words.
+
+645
+00:25:39,420 --> 00:25:41,400
+There might have been two
+French words that corresponded
+
+646
+00:25:41,400 --> 00:25:43,317
+to two English words and
+they didn't perfectly
+
+647
+00:25:43,317 --> 00:25:44,627
+disentangle perfectly.
+
+648
+00:25:44,627 --> 00:25:46,960
+I mean, the network just all
+figures out this for itself
+
+649
+00:25:46,960 --> 00:25:49,280
+over the process of
+training on a lot of data
+
+650
+00:25:49,280 --> 00:25:51,080
+and putting a lot of
+compute through this.
+
+651
+00:25:51,080 --> 00:25:53,360
+And that's pretty cool.
+
+652
+00:25:53,360 --> 00:25:56,240
+OK, so there's actually--
+
+653
+00:25:56,240 --> 00:25:58,760
+and this actually was the
+initial usage of attention
+
+654
+00:25:58,760 --> 00:25:59,920
+in machine learning.
+
+655
+00:25:59,920 --> 00:26:03,320
+It actually came from these
+machine translation problems.
+
+656
+00:26:03,320 --> 00:26:06,600
+So this was from a
+paper back in 2015,
+
+657
+00:26:06,600 --> 00:26:10,720
+'Neural Machine Translation'
+by jointly alerting to align
+
+658
+00:26:10,720 --> 00:26:11,840
+and translate.
+
+659
+00:26:11,840 --> 00:26:14,840
+And this paper actually just won
+the runner up test of Time Award
+
+660
+00:26:14,840 --> 00:26:16,720
+at ICLR 2025.
+
+661
+00:26:16,720 --> 00:26:19,400
+So that's pretty cool.
+
+662
+00:26:19,400 --> 00:26:22,440
+This has been a really
+impactful paper over time.
+
+663
+00:26:22,440 --> 00:26:24,160
+But it turns out
+that there's actually
+
+664
+00:26:24,160 --> 00:26:27,380
+a more general idea here and
+a more general operator hiding
+
+665
+00:26:27,380 --> 00:26:28,140
+here.
+
+666
+00:26:28,140 --> 00:26:30,300
+We approach this problem
+from the perspective
+
+667
+00:26:30,300 --> 00:26:33,040
+of trying to fix our
+recurrent neural networks.
+
+668
+00:26:33,040 --> 00:26:34,860
+But it turns out the
+mechanism that we
+
+669
+00:26:34,860 --> 00:26:37,380
+used to fix the recurrent
+neural networks actually
+
+670
+00:26:37,380 --> 00:26:39,180
+is something general
+and interesting
+
+671
+00:26:39,180 --> 00:26:41,300
+and really powerful
+in its own right.
+
+672
+00:26:41,300 --> 00:26:43,860
+So now, we want to try to
+pull that out, pull out
+
+673
+00:26:43,860 --> 00:26:47,300
+this idea of attention, and
+divorce the idea of attention
+
+674
+00:26:47,300 --> 00:26:49,280
+from the recurrent
+neural networks.
+
+675
+00:26:49,280 --> 00:26:51,100
+And it turns out
+that attention will
+
+676
+00:26:51,100 --> 00:26:53,580
+be a very useful and
+powerful computational
+
+677
+00:26:53,580 --> 00:26:56,520
+primitive for neural
+networks in its own right,
+
+678
+00:26:56,520 --> 00:26:59,820
+even if then we can cut away the
+recurrent neural network part
+
+679
+00:26:59,820 --> 00:27:01,780
+and just be left with
+attention as the core
+
+680
+00:27:01,780 --> 00:27:03,600
+primitive in our architecture.
+
+681
+00:27:03,600 --> 00:27:06,380
+And that's where
+we're going towards.
+
+682
+00:27:06,380 --> 00:27:09,400
+So now, what we want to do is
+take this idea of attention,
+
+683
+00:27:09,400 --> 00:27:11,240
+as we saw it, in
+recurrent neural networks,
+
+684
+00:27:11,240 --> 00:27:13,300
+and try to generalize
+it and try to carve out
+
+685
+00:27:13,300 --> 00:27:16,700
+this independent operator
+that can be used on its own.
+
+686
+00:27:16,700 --> 00:27:19,940
+So let's think about what this
+attention mechanism was doing.
+
+687
+00:27:19,940 --> 00:27:22,540
+Basically, what this
+attention mechanism did
+
+688
+00:27:22,540 --> 00:27:24,900
+is there were a bunch
+of query vectors.
+
+689
+00:27:24,900 --> 00:27:26,995
+These are-- well,
+maybe it makes sense
+
+690
+00:27:26,995 --> 00:27:28,620
+to talk about these
+in the other order.
+
+691
+00:27:28,620 --> 00:27:30,640
+So there's data vectors,
+which are like data
+
+692
+00:27:30,640 --> 00:27:32,100
+that we want to summarize.
+
+693
+00:27:32,100 --> 00:27:35,660
+These are the encoder
+states of the encoder RNN.
+
+694
+00:27:35,660 --> 00:27:37,180
+So we have this input sequence.
+
+695
+00:27:37,180 --> 00:27:39,640
+And we've summarized that
+into a sequence of vectors.
+
+696
+00:27:39,640 --> 00:27:41,372
+And the sequence
+of vectors is data
+
+697
+00:27:41,372 --> 00:27:43,080
+that we think is
+relevant for the problem
+
+698
+00:27:43,080 --> 00:27:44,680
+that we're trying to solve.
+
+699
+00:27:44,680 --> 00:27:48,060
+And now in the process of
+trying to make use of that data,
+
+700
+00:27:48,060 --> 00:27:50,060
+we want to produce
+a bunch of outputs.
+
+701
+00:27:50,060 --> 00:27:52,420
+And for each output,
+we have a query vector.
+
+702
+00:27:52,420 --> 00:27:54,240
+A query vector is
+a vector that we're
+
+703
+00:27:54,240 --> 00:27:56,000
+trying to use to solve an--
+
+704
+00:27:56,000 --> 00:27:57,760
+to produce some piece of output.
+
+705
+00:27:57,760 --> 00:27:59,640
+And in this case,
+the query vectors
+
+706
+00:27:59,640 --> 00:28:03,480
+are the hidden states
+of the decoder RNN.
+
+707
+00:28:03,480 --> 00:28:07,000
+And we have this property,
+that for each query vector,
+
+708
+00:28:07,000 --> 00:28:09,460
+we want to go back, look
+at the data vectors,
+
+709
+00:28:09,460 --> 00:28:12,360
+and summarize the information
+in the data vectors
+
+710
+00:28:12,360 --> 00:28:16,760
+into a context vector for each--
+
+711
+00:28:16,760 --> 00:28:19,452
+well, OK, from the
+purpose of attention,
+
+712
+00:28:19,452 --> 00:28:20,660
+this gets a little bit weird.
+
+713
+00:28:20,660 --> 00:28:23,100
+So the output of the
+attention operator
+
+714
+00:28:23,100 --> 00:28:25,900
+are the context vectors that we
+just talked about for the RNN.
+
+715
+00:28:25,900 --> 00:28:27,820
+So if we're thinking
+about just, what
+
+716
+00:28:27,820 --> 00:28:30,100
+does that attention
+operator do, the output
+
+717
+00:28:30,100 --> 00:28:33,060
+of the attention operator
+were the context vectors
+
+718
+00:28:33,060 --> 00:28:34,540
+that we feed into the RNN.
+
+719
+00:28:34,540 --> 00:28:36,800
+So then what is the
+attention operator doing?
+
+720
+00:28:36,800 --> 00:28:39,740
+The attention operator is
+taking a query vector going back
+
+721
+00:28:39,740 --> 00:28:42,340
+to the input data vectors,
+summarizing the data
+
+722
+00:28:42,340 --> 00:28:45,500
+vectors in some new way to
+produce an output vector.
+
+723
+00:28:45,500 --> 00:28:48,560
+And that's what the
+attention operator is doing.
+
+724
+00:28:48,560 --> 00:28:51,420
+Does that make sense as a
+generalization of this attention
+
+725
+00:28:51,420 --> 00:28:53,712
+mechanism that we just saw?
+
+726
+00:28:53,712 --> 00:28:55,442
+[INAUDIBLE]
+
+727
+00:28:55,442 --> 00:28:57,400
+Yeah, I'll repeat it
+again because it's tricky.
+
+728
+00:28:57,400 --> 00:28:59,240
+There's a lot of stuff flying
+around here, a lot of boxes.
+
+729
+00:28:59,240 --> 00:29:00,865
+And we're changing
+the words that we're
+
+730
+00:29:00,865 --> 00:29:02,240
+using to define the boxes.
+
+731
+00:29:02,240 --> 00:29:03,820
+So I get it, there's
+a lot happening.
+
+732
+00:29:03,820 --> 00:29:06,180
+So what the attention
+operator is doing
+
+733
+00:29:06,180 --> 00:29:07,980
+is there's a bunch of
+data vectors, which
+
+734
+00:29:07,980 --> 00:29:09,740
+are the encoder hidden states.
+
+735
+00:29:09,740 --> 00:29:11,740
+Then we have a bunch
+of query vectors,
+
+736
+00:29:11,740 --> 00:29:15,580
+which are the things we're
+trying to produce output for.
+
+737
+00:29:15,580 --> 00:29:18,083
+Now, in the process of
+processing a query vector,
+
+738
+00:29:18,083 --> 00:29:19,500
+we're going to go
+back to the data
+
+739
+00:29:19,500 --> 00:29:22,920
+vectors, summarize the data
+vectors in a new custom
+
+740
+00:29:22,920 --> 00:29:27,040
+way for each query vector, and
+that will produce an output
+
+741
+00:29:27,040 --> 00:29:29,520
+vector, which is the
+context to be fed
+
+742
+00:29:29,520 --> 00:29:31,800
+into the next tick of the RNN.
+
+743
+00:29:31,800 --> 00:29:34,140
+So our query vectors
+are these guys in green.
+
+744
+00:29:34,140 --> 00:29:36,540
+For each query vector, we
+go back to the data vectors,
+
+745
+00:29:36,540 --> 00:29:38,480
+summarize the data
+vectors, and then produce
+
+746
+00:29:38,480 --> 00:29:40,920
+a new output vector, which
+is one of the contexts
+
+747
+00:29:40,920 --> 00:29:43,640
+that we then feed into
+the rest of the network.
+
+748
+00:29:43,640 --> 00:29:45,920
+So this is tricky
+because we're trying
+
+749
+00:29:45,920 --> 00:29:49,640
+to go into this architecture and
+carefully cut out the attention
+
+750
+00:29:49,640 --> 00:29:52,640
+part and cut it
+out from the RNN.
+
+751
+00:29:52,640 --> 00:29:55,320
+So then we're going to try
+to walk through this again
+
+752
+00:29:55,320 --> 00:29:57,832
+from the perspective of
+just the attention operator.
+
+753
+00:29:57,832 --> 00:30:00,663
+So from the perspective of
+just the attention operator,
+
+754
+00:30:00,663 --> 00:30:02,080
+we're going to
+start with just one
+
+755
+00:30:02,080 --> 00:30:06,920
+query vector at first, which is
+one of the states in our RNN.
+
+756
+00:30:06,920 --> 00:30:08,700
+We also have a bunch
+of data vectors,
+
+757
+00:30:08,700 --> 00:30:12,160
+which are the encoder
+hidden states in the RNN.
+
+758
+00:30:12,160 --> 00:30:14,120
+Now, the computation
+that we want to perform
+
+759
+00:30:14,120 --> 00:30:17,520
+is, first, compute similarities
+between that query vector
+
+760
+00:30:17,520 --> 00:30:18,740
+and all of the data vectors.
+
+761
+00:30:18,740 --> 00:30:20,020
+This is the exact same
+thing that we just
+
+762
+00:30:20,020 --> 00:30:21,820
+saw, just written
+in a different way.
+
+763
+00:30:21,820 --> 00:30:26,660
+So we use this FATT function to
+compute the similarity scores
+
+764
+00:30:26,660 --> 00:30:30,820
+to compute similarities between
+each data vector and our one
+
+765
+00:30:30,820 --> 00:30:32,100
+query vector.
+
+766
+00:30:32,100 --> 00:30:33,760
+Then once we have
+those similarities,
+
+767
+00:30:33,760 --> 00:30:35,660
+we're going to squash
+them through a softmax
+
+768
+00:30:35,660 --> 00:30:37,080
+to get attention weights.
+
+769
+00:30:37,080 --> 00:30:39,300
+And this will be a distribution
+over the data vectors
+
+770
+00:30:39,300 --> 00:30:43,420
+that has been computed on the
+fly for this one query vector.
+
+771
+00:30:43,420 --> 00:30:46,520
+Then we want to do is
+produce an output vector.
+
+772
+00:30:46,520 --> 00:30:50,160
+This output vector is a linear
+combination of our data vectors,
+
+773
+00:30:50,160 --> 00:30:53,060
+where those linear combination
+weights are the attention scores
+
+774
+00:30:53,060 --> 00:30:54,200
+that we just computed.
+
+775
+00:30:54,200 --> 00:30:56,620
+So this is the output
+of the attention layer.
+
+776
+00:30:56,620 --> 00:30:59,340
+And then in the context of
+the larger RNN that we saw,
+
+777
+00:30:59,340 --> 00:31:02,300
+the output of the attention
+layer, or the attention operator
+
+778
+00:31:02,300 --> 00:31:05,940
+will become an input to the
+next tick of the decoder RNN.
+
+779
+00:31:05,940 --> 00:31:07,720
+But we're trying to
+deprecate the RNN,
+
+780
+00:31:07,720 --> 00:31:08,760
+so we don't want
+to talk about that.
+
+781
+00:31:08,760 --> 00:31:10,020
+We just want to talk
+about the attention
+
+782
+00:31:10,020 --> 00:31:12,500
+and focus on the computation
+happening inside the attention
+
+783
+00:31:12,500 --> 00:31:13,620
+layer.
+
+784
+00:31:13,620 --> 00:31:18,160
+So this is basically the
+operator that we saw in the RNN.
+
+785
+00:31:18,160 --> 00:31:20,000
+We have this one--
+
+786
+00:31:20,000 --> 00:31:21,440
+we did this process
+over and over
+
+787
+00:31:21,440 --> 00:31:23,320
+again of taking a
+query vector, using
+
+788
+00:31:23,320 --> 00:31:26,060
+it to compute similarity scores,
+getting attention weights,
+
+789
+00:31:26,060 --> 00:31:27,128
+getting an output vector.
+
+790
+00:31:27,128 --> 00:31:28,420
+Then we got a new query vector.
+
+791
+00:31:28,420 --> 00:31:30,003
+Where did that query
+vector come from?
+
+792
+00:31:30,003 --> 00:31:31,500
+Attention operator doesn't care.
+
+793
+00:31:31,500 --> 00:31:34,380
+Get a new query vector, go back,
+summarize the data vectors,
+
+794
+00:31:34,380 --> 00:31:35,680
+get a new output vector.
+
+795
+00:31:35,680 --> 00:31:38,120
+And that's the core of
+the attention operator.
+
+796
+00:31:38,120 --> 00:31:39,640
+So now, let's try
+to generalize this
+
+797
+00:31:39,640 --> 00:31:43,000
+and make it even more powerful
+computational primitive.
+
+798
+00:31:43,000 --> 00:31:46,117
+Yeah, so in principle,
+this FATT doesn't
+
+799
+00:31:46,117 --> 00:31:47,700
+have to be-- it could
+be any function.
+
+800
+00:31:47,700 --> 00:31:49,533
+It could be any function
+of two vectors that
+
+801
+00:31:49,533 --> 00:31:50,898
+outputs a scalar in principle.
+
+802
+00:31:50,898 --> 00:31:52,440
+But in practice,
+we're actually going
+
+803
+00:31:52,440 --> 00:31:55,022
+to make it simpler in
+a couple of slides.
+
+804
+00:31:55,022 --> 00:31:57,480
+But in principle, yeah, you
+could just slot in any function
+
+805
+00:31:57,480 --> 00:32:00,310
+that you wanted there.
+
+806
+00:32:00,310 --> 00:32:02,560
+OK, so the first generalization
+that we're going to do
+
+807
+00:32:02,560 --> 00:32:04,640
+is, actually, the
+opposite of what
+
+808
+00:32:04,640 --> 00:32:07,800
+you just suggested and make that
+similarity function simpler.
+
+809
+00:32:07,800 --> 00:32:09,520
+So we said in
+principle, it can be
+
+810
+00:32:09,520 --> 00:32:11,040
+any function that
+takes two vectors
+
+811
+00:32:11,040 --> 00:32:12,640
+and gives a similarity score.
+
+812
+00:32:12,640 --> 00:32:15,520
+What's the simplest possible
+function that inputs two vectors
+
+813
+00:32:15,520 --> 00:32:17,620
+and gives us a scalar
+similarity score?
+
+814
+00:32:17,620 --> 00:32:18,800
+It's a dot product.
+
+815
+00:32:18,800 --> 00:32:21,420
+So we want to try to
+make things simpler
+
+816
+00:32:21,420 --> 00:32:23,122
+and also generalize
+at the same time.
+
+817
+00:32:23,122 --> 00:32:24,580
+And it turns out
+that a dot product
+
+818
+00:32:24,580 --> 00:32:26,380
+is good enough of
+a similarity score
+
+819
+00:32:26,380 --> 00:32:27,960
+to be used for this purpose.
+
+820
+00:32:27,960 --> 00:32:29,460
+So the first thing
+we're going to do
+
+821
+00:32:29,460 --> 00:32:34,340
+is, actually, just only use dot
+products to compute similarity.
+
+822
+00:32:34,340 --> 00:32:36,180
+But it turns out,
+there's a slight problem
+
+823
+00:32:36,180 --> 00:32:37,460
+with dot products.
+
+824
+00:32:37,460 --> 00:32:39,700
+And this one's subtle
+because there's
+
+825
+00:32:39,700 --> 00:32:42,980
+a weird interaction between the
+dot product and the softmax.
+
+826
+00:32:42,980 --> 00:32:45,580
+And that has to do
+with what happens
+
+827
+00:32:45,580 --> 00:32:48,960
+when the dimension of those
+vectors scales up or down.
+
+828
+00:32:48,960 --> 00:32:50,900
+So if you have--
+
+829
+00:32:50,900 --> 00:32:52,820
+the motivating
+example is that if you
+
+830
+00:32:52,820 --> 00:32:55,100
+scale the dimension
+of that vector, say,
+
+831
+00:32:55,100 --> 00:32:57,020
+we had a constant
+vector of all 1's
+
+832
+00:32:57,020 --> 00:33:00,300
+of like dimension 10 versus
+a constant vector of all 1's
+
+833
+00:33:00,300 --> 00:33:03,660
+of dimension 100, then
+as we go to the higher
+
+834
+00:33:03,660 --> 00:33:05,860
+dimensional vector,
+then when we compute
+
+835
+00:33:05,860 --> 00:33:08,260
+the sum inside that
+softmax, then we're
+
+836
+00:33:08,260 --> 00:33:10,280
+going to be dividing
+by a larger number.
+
+837
+00:33:10,280 --> 00:33:13,180
+So we'll end up with more
+squashed probability scores,
+
+838
+00:33:13,180 --> 00:33:15,430
+as we go to higher
+dimensional vectors.
+
+839
+00:33:15,430 --> 00:33:17,010
+That can lead to
+vanishing gradients,
+
+840
+00:33:17,010 --> 00:33:18,593
+as we just saw in
+the previous lecture
+
+841
+00:33:18,593 --> 00:33:20,470
+and prevent learning
+of this whole thing.
+
+842
+00:33:20,470 --> 00:33:26,230
+So as a slight hack to prevent
+that and make this architecture
+
+843
+00:33:26,230 --> 00:33:28,390
+more generalizable
+scalable up and down
+
+844
+00:33:28,390 --> 00:33:30,990
+to different dimension
+vectors, what we're going to do
+
+845
+00:33:30,990 --> 00:33:33,370
+is actually not use
+the pure dot product
+
+846
+00:33:33,370 --> 00:33:35,990
+but scale the dot product
+down by the square root
+
+847
+00:33:35,990 --> 00:33:38,702
+of the dimension of those
+vectors that we're looking at.
+
+848
+00:33:38,702 --> 00:33:40,910
+And this is just a way to
+prevent vanishing gradients
+
+849
+00:33:40,910 --> 00:33:44,110
+and give nicer gradient flow
+through the softmax for a wider
+
+850
+00:33:44,110 --> 00:33:45,805
+range of dimensions of vectors.
+
+851
+00:33:45,805 --> 00:33:47,430
+And this turns out
+to be very important
+
+852
+00:33:47,430 --> 00:33:49,830
+because, as we make these
+networks bigger and bigger
+
+853
+00:33:49,830 --> 00:33:52,590
+and bigger over time, we want to
+get higher dimensional vectors
+
+854
+00:33:52,590 --> 00:33:54,692
+because that gives us more
+compute, more capacity.
+
+855
+00:33:54,692 --> 00:33:57,150
+So we always want to think
+about how our architectures will
+
+856
+00:33:57,150 --> 00:33:59,790
+scale, as we make the parts
+of those architectures
+
+857
+00:33:59,790 --> 00:34:01,870
+get bigger and
+bigger and bigger.
+
+858
+00:34:01,870 --> 00:34:04,390
+So this scaled dot
+product is actually
+
+859
+00:34:04,390 --> 00:34:07,065
+really important for preventing
+vanishing gradients here.
+
+860
+00:34:07,065 --> 00:34:09,190
+Yeah, question was, we're
+limited to data and query
+
+861
+00:34:09,190 --> 00:34:12,670
+vectors of the same size,
+but we'll actually fix that.
+
+862
+00:34:12,670 --> 00:34:15,010
+So our first generalization
+was to use, actually,
+
+863
+00:34:15,010 --> 00:34:19,210
+scaled dot product similarity
+as our similarity measure.
+
+864
+00:34:19,210 --> 00:34:21,830
+So now, if we go back and look
+at the shapes of these things,
+
+865
+00:34:21,830 --> 00:34:24,010
+we have one query
+vector of dimension Dq.
+
+866
+00:34:24,010 --> 00:34:25,730
+We have data
+vectors of dimension
+
+867
+00:34:25,730 --> 00:34:30,250
+Nx by Dq as well because it's a
+dot product they need to match.
+
+868
+00:34:30,250 --> 00:34:32,850
+But there's actually--
+a next generalization
+
+869
+00:34:32,850 --> 00:34:36,070
+that we're going to do is
+have multiple query vectors.
+
+870
+00:34:36,070 --> 00:34:39,590
+Maybe we don't want to process
+just one query vector at a time,
+
+871
+00:34:39,590 --> 00:34:41,770
+we want to have the ability
+to process a whole set
+
+872
+00:34:41,770 --> 00:34:43,850
+of query vectors all at once.
+
+873
+00:34:43,850 --> 00:34:45,570
+And this happens in the RNN.
+
+874
+00:34:45,570 --> 00:34:47,540
+We did end up with a
+bunch of query vectors.
+
+875
+00:34:47,540 --> 00:34:49,290
+And it's useful for
+the attention operator
+
+876
+00:34:49,290 --> 00:34:52,190
+to be able to process, not
+one query vector at a time,
+
+877
+00:34:52,190 --> 00:34:55,710
+but basically process a set of
+query vectors all in parallel,
+
+878
+00:34:55,710 --> 00:34:58,330
+and perform the exact same
+computation in parallel
+
+879
+00:34:58,330 --> 00:35:00,570
+for a whole set
+of query vectors.
+
+880
+00:35:00,570 --> 00:35:02,950
+So in this case, we've now
+generalized it to have N.
+
+881
+00:35:02,950 --> 00:35:06,290
+So Q is now a matrix
+of shape Nq by Dq.
+
+882
+00:35:06,290 --> 00:35:08,190
+So we have Nq query vectors.
+
+883
+00:35:08,190 --> 00:35:10,450
+Each of those query
+vectors has dimension Dq.
+
+884
+00:35:10,450 --> 00:35:14,670
+We have our data vectors is
+a matrix of size Nx by Dq.
+
+885
+00:35:14,670 --> 00:35:18,150
+And now, the computation
+changes a little bit
+
+886
+00:35:18,150 --> 00:35:21,550
+because now, when we compute
+these alignment scores, when
+
+887
+00:35:21,550 --> 00:35:23,390
+we compute these
+similarities, basically,
+
+888
+00:35:23,390 --> 00:35:27,350
+we want to compute all pairs
+of similarities between all
+
+889
+00:35:27,350 --> 00:35:31,410
+of the input data vectors and
+all of the input query vectors.
+
+890
+00:35:31,410 --> 00:35:33,510
+And each one of
+those similarities
+
+891
+00:35:33,510 --> 00:35:36,170
+is a dot product, or
+a scaled dot product.
+
+892
+00:35:36,170 --> 00:35:38,750
+So what's a very efficient
+and easy and natural
+
+893
+00:35:38,750 --> 00:35:41,430
+way for us to compute
+dot products between two
+
+894
+00:35:41,430 --> 00:35:43,050
+sets of input vectors?
+
+895
+00:35:43,050 --> 00:35:45,368
+That turns out to be
+a matrix multiply.
+
+896
+00:35:45,368 --> 00:35:47,410
+Because remember, when
+you do a matrix, multiply,
+
+897
+00:35:47,410 --> 00:35:50,390
+each entry in the output matrix
+is the inner product of one
+
+898
+00:35:50,390 --> 00:35:51,990
+of the columns of
+one of your matrices
+
+899
+00:35:51,990 --> 00:35:53,570
+and the rows of
+your other matrix.
+
+900
+00:35:53,570 --> 00:35:56,230
+And that's what-- so then each
+entry in the output of a matrix
+
+901
+00:35:56,230 --> 00:35:59,070
+multiply is exactly the dot
+product between the rows
+
+902
+00:35:59,070 --> 00:36:00,990
+and the columns in the output.
+
+903
+00:36:00,990 --> 00:36:03,470
+So by computing
+a matrix multiply
+
+904
+00:36:03,470 --> 00:36:07,283
+between our query vectors
+Q and our data vectors X
+
+905
+00:36:07,283 --> 00:36:08,950
+and you need to get
+a transpose in there
+
+906
+00:36:08,950 --> 00:36:11,650
+to make the rows and columns
+match up in the right way,
+
+907
+00:36:11,650 --> 00:36:12,970
+this basically gives us--
+
+908
+00:36:12,970 --> 00:36:15,850
+lets us compute all the
+similarities between all
+
+909
+00:36:15,850 --> 00:36:17,490
+the data vectors
+and all the query
+
+910
+00:36:17,490 --> 00:36:21,940
+vectors all in one
+simple matrix multiply.
+
+911
+00:36:21,940 --> 00:36:24,190
+Now, we still need to compute
+these attention weights.
+
+912
+00:36:24,190 --> 00:36:25,648
+Remember, the
+attention weights, we
+
+913
+00:36:25,648 --> 00:36:27,570
+want to compute for
+each query vector.
+
+914
+00:36:27,570 --> 00:36:29,530
+We want to compute a
+distribution over the data
+
+915
+00:36:29,530 --> 00:36:30,350
+vectors.
+
+916
+00:36:30,350 --> 00:36:31,585
+Well, we already have these--
+
+917
+00:36:31,585 --> 00:36:33,210
+now, our similarity
+scores are not just
+
+918
+00:36:33,210 --> 00:36:34,970
+a single vector
+of scores, they're
+
+919
+00:36:34,970 --> 00:36:37,470
+now a matrix of scores
+giving all the similarities.
+
+920
+00:36:37,470 --> 00:36:40,170
+But we still want to compute
+a distribution over the data
+
+921
+00:36:40,170 --> 00:36:42,907
+vectors for each query
+vector independently.
+
+922
+00:36:42,907 --> 00:36:44,490
+So now, we need to
+compute the softmax
+
+923
+00:36:44,490 --> 00:36:48,370
+over just one of the axes
+of that matrix of similarity
+
+924
+00:36:48,370 --> 00:36:49,070
+scores.
+
+925
+00:36:49,070 --> 00:36:50,610
+So this is basically the
+exact same computation
+
+926
+00:36:50,610 --> 00:36:51,430
+that we just saw.
+
+927
+00:36:51,430 --> 00:36:54,050
+We're just doing it in parallel
+for a set of query vectors
+
+928
+00:36:54,050 --> 00:36:55,610
+all at once.
+
+929
+00:36:55,610 --> 00:36:57,870
+Now, we need to compute
+the output vectors.
+
+930
+00:36:57,870 --> 00:36:59,930
+And remember, the
+output vectors were
+
+931
+00:36:59,930 --> 00:37:05,350
+going to be a weighted
+combination of the data vectors,
+
+932
+00:37:05,350 --> 00:37:08,890
+where those weights are
+the values in the softmax.
+
+933
+00:37:08,890 --> 00:37:10,990
+And it turns out that
+this is also something
+
+934
+00:37:10,990 --> 00:37:12,710
+that matrix multiply does.
+
+935
+00:37:12,710 --> 00:37:14,830
+Another way to think
+about matrix multiply
+
+936
+00:37:14,830 --> 00:37:17,930
+is that when you take a matrix
+multiply of two matrices,
+
+937
+00:37:17,930 --> 00:37:20,630
+a different way to view a
+matrix multiply is that it takes
+
+938
+00:37:20,630 --> 00:37:22,395
+a linear combination
+of, oh man, am
+
+939
+00:37:22,395 --> 00:37:24,770
+I going to get the rows and
+the columns in the right way?
+
+940
+00:37:24,770 --> 00:37:26,710
+But I think you get
+the linear combination
+
+941
+00:37:26,710 --> 00:37:29,390
+of the columns of one
+of your input matrices,
+
+942
+00:37:29,390 --> 00:37:33,010
+weighted by the values in
+the other input matrix.
+
+943
+00:37:33,010 --> 00:37:34,470
+So this is another
+interpretation
+
+944
+00:37:34,470 --> 00:37:36,010
+of matrix multiplication.
+
+945
+00:37:36,010 --> 00:37:38,000
+So then if you work
+through the indices
+
+946
+00:37:38,000 --> 00:37:39,750
+and draw some little
+pictures for yourself
+
+947
+00:37:39,750 --> 00:37:41,810
+to prove to yourself
+what's going on,
+
+948
+00:37:41,810 --> 00:37:45,950
+it also turns out that
+in order to compute--
+
+949
+00:37:45,950 --> 00:37:48,510
+now, what we want to do is
+compute many linear combinations
+
+950
+00:37:48,510 --> 00:37:51,150
+of the data vectors, where
+each linear combination will
+
+951
+00:37:51,150 --> 00:37:54,750
+be given by the probabilities in
+one of the rows of the attention
+
+952
+00:37:54,750 --> 00:37:55,790
+matrix.
+
+953
+00:37:55,790 --> 00:37:59,230
+So we can compute all at once
+with another matrix multiply
+
+954
+00:37:59,230 --> 00:38:03,130
+between the attention matrix
+A and for data vectors X.
+
+955
+00:38:03,130 --> 00:38:05,630
+And again, you need to get the
+transposes in the right order
+
+956
+00:38:05,630 --> 00:38:07,002
+to make this work out.
+
+957
+00:38:07,002 --> 00:38:09,710
+But basically, this is the exact
+same operation that we just saw,
+
+958
+00:38:09,710 --> 00:38:12,590
+but we're now doing it for a set
+of query vectors all at once.
+
+959
+00:38:12,590 --> 00:38:15,330
+And it turns out that we can
+do it all at once with just
+
+960
+00:38:15,330 --> 00:38:17,730
+a couple of matrix multiplies.
+
+961
+00:38:17,730 --> 00:38:19,850
+A next way that
+we'll generalize this
+
+962
+00:38:19,850 --> 00:38:23,650
+is notice that in this
+equation, the data
+
+963
+00:38:23,650 --> 00:38:26,610
+vectors X are actually entering
+in two different places
+
+964
+00:38:26,610 --> 00:38:28,222
+in this computation.
+
+965
+00:38:28,222 --> 00:38:29,930
+The first place that
+we're using the data
+
+966
+00:38:29,930 --> 00:38:32,170
+vectors X is to
+compute similarities
+
+967
+00:38:32,170 --> 00:38:35,710
+with the query vectors in
+this similarities computation.
+
+968
+00:38:35,710 --> 00:38:38,250
+So in that notion,
+what we're trying to do
+
+969
+00:38:38,250 --> 00:38:40,428
+is say, oh, for a
+data vector, how much
+
+970
+00:38:40,428 --> 00:38:41,970
+do you line up with
+each query vector
+
+971
+00:38:41,970 --> 00:38:43,610
+as measured by an inner product?
+
+972
+00:38:43,610 --> 00:38:46,090
+But then we're also using
+the data vectors, again,
+
+973
+00:38:46,090 --> 00:38:47,750
+to compute the output vectors.
+
+974
+00:38:47,750 --> 00:38:51,010
+So the output vectors are
+now a linear combination
+
+975
+00:38:51,010 --> 00:38:54,370
+of the data vectors weighted
+by our attention weights.
+
+976
+00:38:54,370 --> 00:38:57,330
+And it maybe seems a little
+bit weird to reuse the data
+
+977
+00:38:57,330 --> 00:38:59,650
+vectors in those two
+different contexts.
+
+978
+00:38:59,650 --> 00:39:03,330
+So now, what we want to do
+is separate those two usages
+
+979
+00:39:03,330 --> 00:39:07,390
+of the data vectors and
+let the network figure out
+
+980
+00:39:07,390 --> 00:39:09,990
+for itself, two different
+ways to use the data
+
+981
+00:39:09,990 --> 00:39:12,830
+vectors in those two contexts.
+
+982
+00:39:12,830 --> 00:39:16,773
+So to do that, we'll introduce
+this idea of keys and queries.
+
+983
+00:39:16,773 --> 00:39:18,190
+So now, what we're
+going to do is,
+
+984
+00:39:18,190 --> 00:39:21,710
+we had a set of data vectors,
+but what we're going to do is,
+
+985
+00:39:21,710 --> 00:39:24,430
+for each data vector, we're
+going to project each data
+
+986
+00:39:24,430 --> 00:39:26,250
+vector into two vectors.
+
+987
+00:39:26,250 --> 00:39:27,530
+One is a key vector.
+
+988
+00:39:27,530 --> 00:39:29,390
+One is a value vector.
+
+989
+00:39:29,390 --> 00:39:32,630
+And the idea of the key
+vectors are the key vectors
+
+990
+00:39:32,630 --> 00:39:34,830
+are going to be compared
+with the query vectors
+
+991
+00:39:34,830 --> 00:39:36,410
+to compute the alignment scores.
+
+992
+00:39:36,410 --> 00:39:38,190
+And the value vectors
+are what we're
+
+993
+00:39:38,190 --> 00:39:40,870
+going to compute linear
+combinations of in order
+
+994
+00:39:40,870 --> 00:39:43,510
+to compute the output
+from the layer.
+
+995
+00:39:43,510 --> 00:39:46,430
+And this also-- so then the
+way that we implement this
+
+996
+00:39:46,430 --> 00:39:49,470
+is we add two learnable weight
+matrices, the key matrix
+
+997
+00:39:49,470 --> 00:39:51,070
+and the value matrix,
+which are going
+
+998
+00:39:51,070 --> 00:39:54,510
+to be linear projections
+that project the input--
+
+999
+00:39:54,510 --> 00:39:57,310
+or that project the data vectors
+into key vectors and value
+
+1000
+00:39:57,310 --> 00:39:58,170
+vectors.
+
+1001
+00:39:58,170 --> 00:40:00,430
+So now, the data
+vectors, remember,
+
+1002
+00:40:00,430 --> 00:40:02,990
+we have N data vectors,
+each of dimension Dx.
+
+1003
+00:40:02,990 --> 00:40:06,570
+So now, the key matrix is
+a linear transformation
+
+1004
+00:40:06,570 --> 00:40:10,090
+that projects from
+Dx into Dq because we
+
+1005
+00:40:10,090 --> 00:40:12,090
+know that we're going to
+compare the key vectors
+
+1006
+00:40:12,090 --> 00:40:13,148
+with the query vectors.
+
+1007
+00:40:13,148 --> 00:40:15,690
+So they need to have the same
+dimension as the query vectors.
+
+1008
+00:40:15,690 --> 00:40:17,090
+So that will project each--
+
+1009
+00:40:17,090 --> 00:40:19,850
+so then applying
+matrix multiply of K
+
+1010
+00:40:19,850 --> 00:40:24,170
+equals XWk will project each
+data vector into a key vector
+
+1011
+00:40:24,170 --> 00:40:25,690
+of dimension Dq.
+
+1012
+00:40:25,690 --> 00:40:28,370
+Then we'll separately
+have another weight matrix
+
+1013
+00:40:28,370 --> 00:40:31,210
+that projects from
+Dx to Dv, which
+
+1014
+00:40:31,210 --> 00:40:33,490
+is the dimension of the
+value vectors, which
+
+1015
+00:40:33,490 --> 00:40:36,970
+in principle could be different
+than the query vector dimension.
+
+1016
+00:40:36,970 --> 00:40:40,130
+And then we'll separately
+project each data vector
+
+1017
+00:40:40,130 --> 00:40:44,690
+into a value vector, again, with
+a matrix multiply operator here.
+
+1018
+00:40:44,690 --> 00:40:48,210
+And the intuition here is that
+it's like in a search engine,
+
+1019
+00:40:48,210 --> 00:40:51,210
+you want to separate what you're
+looking for from the answer you
+
+1020
+00:40:51,210 --> 00:40:52,970
+want in response to that query.
+
+1021
+00:40:52,970 --> 00:40:56,410
+So you go to Google, or
+these days, ChatGPT and you
+
+1022
+00:40:56,410 --> 00:40:58,790
+type in like, what is the
+best school in the world?
+
+1023
+00:40:58,790 --> 00:40:59,790
+That's your query.
+
+1024
+00:40:59,790 --> 00:41:01,380
+And then the value
+you get-- well,
+
+1025
+00:41:01,380 --> 00:41:03,130
+that's the query that
+needs to be combined
+
+1026
+00:41:03,130 --> 00:41:04,390
+with the keys in the back end.
+
+1027
+00:41:04,390 --> 00:41:06,070
+But then the value,
+the data you want
+
+1028
+00:41:06,070 --> 00:41:07,750
+to get back from that
+query, is actually
+
+1029
+00:41:07,750 --> 00:41:09,870
+different from the
+query you typed in.
+
+1030
+00:41:09,870 --> 00:41:13,350
+So we want to separate this idea
+of you put your query in, what
+
+1031
+00:41:13,350 --> 00:41:14,770
+is the best school in the world?
+
+1032
+00:41:14,770 --> 00:41:17,270
+That query needs to go match
+on all the different strings
+
+1033
+00:41:17,270 --> 00:41:18,445
+on the internet.
+
+1034
+00:41:18,445 --> 00:41:20,070
+And then the value
+you want to get back
+
+1035
+00:41:20,070 --> 00:41:23,098
+from that query
+is Stanford, which
+
+1036
+00:41:23,098 --> 00:41:25,390
+is a different value, which
+is different from the query
+
+1037
+00:41:25,390 --> 00:41:26,330
+that you put in.
+
+1038
+00:41:26,330 --> 00:41:27,530
+So that's the intuition.
+
+1039
+00:41:27,530 --> 00:41:29,310
+Another intuition
+between separating
+
+1040
+00:41:29,310 --> 00:41:32,470
+the keys and the queries and the
+values in this way, the query
+
+1041
+00:41:32,470 --> 00:41:33,870
+is what I'm looking for.
+
+1042
+00:41:33,870 --> 00:41:37,670
+The key is-- in the back end, we
+have some record of all the data
+
+1043
+00:41:37,670 --> 00:41:39,570
+back there in the data vectors.
+
+1044
+00:41:39,570 --> 00:41:42,357
+But when we query,
+we want to match up
+
+1045
+00:41:42,357 --> 00:41:44,190
+against part of the--
+potentially, just part
+
+1046
+00:41:44,190 --> 00:41:45,172
+of the data vector.
+
+1047
+00:41:45,172 --> 00:41:47,630
+And then the thing we want to
+get back from the data vector
+
+1048
+00:41:47,630 --> 00:41:48,870
+is the value.
+
+1049
+00:41:48,870 --> 00:41:51,230
+So we're separating the
+usage of the data vectors
+
+1050
+00:41:51,230 --> 00:41:55,070
+into those two different
+notions of keys and values.
+
+1051
+00:41:55,070 --> 00:41:57,470
+Then we can visualize
+this in a different way.
+
+1052
+00:41:57,470 --> 00:42:00,250
+So now, we're finally
+throwing away the RNN
+
+1053
+00:42:00,250 --> 00:42:03,070
+and we're looking at attention
+just as an operator on its own.
+
+1054
+00:42:03,070 --> 00:42:05,087
+So we can step through
+this operation again.
+
+1055
+00:42:05,087 --> 00:42:06,670
+We've got our query
+vectors coming in.
+
+1056
+00:42:06,670 --> 00:42:08,650
+We've got our data
+vectors coming in.
+
+1057
+00:42:08,650 --> 00:42:11,030
+Now, what we're going to do
+is from the data vectors,
+
+1058
+00:42:11,030 --> 00:42:15,250
+we're going to project each data
+vector into a key and a value.
+
+1059
+00:42:15,250 --> 00:42:18,490
+Then we're going to compare
+each key with each query
+
+1060
+00:42:18,490 --> 00:42:21,388
+to get our similarity scores.
+
+1061
+00:42:21,388 --> 00:42:23,930
+So this is a similarity-- this
+is a matrix of scalars, giving
+
+1062
+00:42:23,930 --> 00:42:27,290
+the similarities between
+each key and each query.
+
+1063
+00:42:27,290 --> 00:42:30,050
+Then once we have this
+matrix of similarity scores,
+
+1064
+00:42:30,050 --> 00:42:33,490
+we want to compute a
+distribution over each--
+
+1065
+00:42:33,490 --> 00:42:36,450
+a distribution over the
+data vectors for each query.
+
+1066
+00:42:36,450 --> 00:42:38,570
+So that means we
+need to run softmax
+
+1067
+00:42:38,570 --> 00:42:41,690
+over this matrix of
+alignment scores,
+
+1068
+00:42:41,690 --> 00:42:44,610
+where we compute the
+softmax over each row.
+
+1069
+00:42:44,610 --> 00:42:49,370
+Then what we do is, we want
+to reweight the value vectors
+
+1070
+00:42:49,370 --> 00:42:52,625
+by the attention
+scores in the softmax.
+
+1071
+00:42:52,625 --> 00:42:54,250
+Oh, actually, no,
+sorry, we want each--
+
+1072
+00:42:54,250 --> 00:42:56,930
+we want each column to be--
+we want each column to be
+
+1073
+00:42:56,930 --> 00:42:57,730
+a distribution.
+
+1074
+00:42:57,730 --> 00:43:02,677
+Because we want, for each query,
+a distribution over the keys.
+
+1075
+00:43:02,677 --> 00:43:04,510
+Which means we want
+softmax over the columns
+
+1076
+00:43:04,510 --> 00:43:07,190
+because we want it to be
+aligned to the columns.
+
+1077
+00:43:07,190 --> 00:43:10,130
+So then what we do is
+we've got this query one.
+
+1078
+00:43:10,130 --> 00:43:12,230
+We've predicted
+this distribution
+
+1079
+00:43:12,230 --> 00:43:15,692
+over all of the keys
+from this computation.
+
+1080
+00:43:15,692 --> 00:43:18,150
+Then we're going to take a
+linear combination of the values
+
+1081
+00:43:18,150 --> 00:43:19,822
+weighted by these
+attention weights
+
+1082
+00:43:19,822 --> 00:43:22,030
+and compute a linear
+combination of the value vectors
+
+1083
+00:43:22,030 --> 00:43:24,670
+to produce our first
+output vector, Y1.
+
+1084
+00:43:24,670 --> 00:43:26,490
+And then the same thing
+happens over here.
+
+1085
+00:43:26,490 --> 00:43:28,650
+Our second query got
+compared with all the keys.
+
+1086
+00:43:28,650 --> 00:43:31,030
+We computed a distribution
+over those alignment scores
+
+1087
+00:43:31,030 --> 00:43:32,910
+to get a distribution
+over the keys
+
+1088
+00:43:32,910 --> 00:43:35,890
+for the second query, which
+then get linearly combined--
+
+1089
+00:43:35,890 --> 00:43:39,910
+then we use those to linearly
+combine the values to produce
+
+1090
+00:43:39,910 --> 00:43:40,950
+our output vector.
+
+1091
+00:43:40,950 --> 00:43:43,710
+So now, this is now the
+attention operator standing
+
+1092
+00:43:43,710 --> 00:43:46,467
+on its own, divorced from
+the recurrent neural network.
+
+1093
+00:43:46,467 --> 00:43:48,550
+The question is, how do
+you divide the data vector
+
+1094
+00:43:48,550 --> 00:43:49,610
+into keys and values?
+
+1095
+00:43:49,610 --> 00:43:53,470
+The beautiful part is we
+don't have to say how.
+
+1096
+00:43:53,470 --> 00:43:56,830
+We just give the neural
+network the capacity
+
+1097
+00:43:56,830 --> 00:43:59,470
+to split it by
+itself by giving it
+
+1098
+00:43:59,470 --> 00:44:02,910
+this mechanism to project
+separately into keys and values.
+
+1099
+00:44:02,910 --> 00:44:05,238
+But we're not going to
+tell it how to do it.
+
+1100
+00:44:05,238 --> 00:44:07,030
+These are just going
+to be-- the key matrix
+
+1101
+00:44:07,030 --> 00:44:08,210
+and the value matrix
+are just going
+
+1102
+00:44:08,210 --> 00:44:09,930
+to be learnable parameters
+of the model that
+
+1103
+00:44:09,930 --> 00:44:12,347
+will be learned via gradient
+descent along with everything
+
+1104
+00:44:12,347 --> 00:44:12,870
+else.
+
+1105
+00:44:12,870 --> 00:44:14,850
+So just as we did
+not tell it how
+
+1106
+00:44:14,850 --> 00:44:17,330
+to align the English and the
+French sentences, all of that
+
+1107
+00:44:17,330 --> 00:44:19,110
+was learned via
+gradient descent,
+
+1108
+00:44:19,110 --> 00:44:22,130
+the model will learn for itself,
+how to separately project
+
+1109
+00:44:22,130 --> 00:44:24,170
+into keys and values
+in a way that's
+
+1110
+00:44:24,170 --> 00:44:25,370
+sensible for the problem--
+
+1111
+00:44:25,370 --> 00:44:27,575
+that's helpful for the
+problem it's trying to solve.
+
+1112
+00:44:27,575 --> 00:44:29,450
+So the keys and values,
+you might think of it
+
+1113
+00:44:29,450 --> 00:44:30,470
+as some kind of filter.
+
+1114
+00:44:30,470 --> 00:44:32,873
+So the data vector might
+have a lot of stuff in there.
+
+1115
+00:44:32,873 --> 00:44:34,290
+But for the task
+at hand, we might
+
+1116
+00:44:34,290 --> 00:44:36,250
+want to filter the data
+vector in various ways
+
+1117
+00:44:36,250 --> 00:44:38,670
+and only try to match our
+queries against part of it.
+
+1118
+00:44:38,670 --> 00:44:40,290
+And we only care about
+retrieving information
+
+1119
+00:44:40,290 --> 00:44:41,390
+of a different part of it.
+
+1120
+00:44:41,390 --> 00:44:42,932
+So you could think
+of those as, yeah,
+
+1121
+00:44:42,932 --> 00:44:44,570
+filtering the
+information in the data
+
+1122
+00:44:44,570 --> 00:44:47,770
+vector in two different ways.
+
+1123
+00:44:47,770 --> 00:44:50,710
+OK, so this is basically
+our attention operator.
+
+1124
+00:44:50,710 --> 00:44:52,632
+And now, there's no RNN here.
+
+1125
+00:44:52,632 --> 00:44:54,090
+This is just a
+neural network layer
+
+1126
+00:44:54,090 --> 00:44:56,030
+that you could have
+standing on its own.
+
+1127
+00:44:56,030 --> 00:44:58,690
+It receives two inputs,
+the query vectors
+
+1128
+00:44:58,690 --> 00:44:59,850
+in the data vectors.
+
+1129
+00:44:59,850 --> 00:45:01,690
+It has two weights of
+learnable parameters,
+
+1130
+00:45:01,690 --> 00:45:03,830
+which are the key matrix
+and the value matrix.
+
+1131
+00:45:03,830 --> 00:45:06,710
+It inputs two
+sequences of vectors,
+
+1132
+00:45:06,710 --> 00:45:08,250
+outputs a sequence of vectors.
+
+1133
+00:45:08,250 --> 00:45:10,342
+So this is a neural network
+layer in its own right
+
+1134
+00:45:10,342 --> 00:45:12,550
+that you could start to plug
+into your neural network
+
+1135
+00:45:12,550 --> 00:45:14,830
+architectures in various places.
+
+1136
+00:45:14,830 --> 00:45:17,230
+This is sometimes called
+a cross-attention layer
+
+1137
+00:45:17,230 --> 00:45:20,010
+because it has two sets
+of inputs coming in.
+
+1138
+00:45:20,010 --> 00:45:23,450
+The idea is, we have both data
+vectors and query vectors.
+
+1139
+00:45:23,450 --> 00:45:25,870
+They're potentially coming
+from two different sources.
+
+1140
+00:45:25,870 --> 00:45:27,510
+And this is sometimes useful.
+
+1141
+00:45:27,510 --> 00:45:29,470
+So that I have a set of queries.
+
+1142
+00:45:29,470 --> 00:45:31,870
+For each query, I want to
+go and summarize information
+
+1143
+00:45:31,870 --> 00:45:34,038
+from my data, which is
+potentially different,
+
+1144
+00:45:34,038 --> 00:45:35,830
+or a different number,
+or totally different
+
+1145
+00:45:35,830 --> 00:45:37,270
+from my query vectors.
+
+1146
+00:45:37,270 --> 00:45:39,950
+So this is sometimes called
+a cross-attention layer
+
+1147
+00:45:39,950 --> 00:45:41,910
+because we're
+cross-attending between two
+
+1148
+00:45:41,910 --> 00:45:44,732
+different sets of things.
+
+1149
+00:45:44,732 --> 00:45:46,190
+But there's another
+version of this
+
+1150
+00:45:46,190 --> 00:45:48,790
+that happens maybe
+even more commonly is
+
+1151
+00:45:48,790 --> 00:45:50,350
+a self-attention layer.
+
+1152
+00:45:50,350 --> 00:45:52,430
+So here, what we're
+going to do is,
+
+1153
+00:45:52,430 --> 00:45:53,970
+we only have one set of things.
+
+1154
+00:45:53,970 --> 00:45:55,890
+We only have one
+sequence of inputs.
+
+1155
+00:45:55,890 --> 00:45:58,650
+We have one set of vectors,
+one sequence of vectors
+
+1156
+00:45:58,650 --> 00:45:59,970
+that we're processing.
+
+1157
+00:45:59,970 --> 00:46:02,290
+And then so now, we no
+longer have this separation
+
+1158
+00:46:02,290 --> 00:46:04,310
+between data vectors
+and query vectors.
+
+1159
+00:46:04,310 --> 00:46:06,690
+We just have one
+set of input vectors
+
+1160
+00:46:06,690 --> 00:46:08,170
+that we would like to process.
+
+1161
+00:46:08,170 --> 00:46:10,450
+So in a self-attention
+layer, we're
+
+1162
+00:46:10,450 --> 00:46:13,110
+going to have one-- we're going
+to have a set of input vectors,
+
+1163
+00:46:13,110 --> 00:46:15,470
+and we're going to produce
+a set of output vectors.
+
+1164
+00:46:15,470 --> 00:46:18,290
+So we want to input a set
+of vectors x, output a set
+
+1165
+00:46:18,290 --> 00:46:21,670
+of vectors y that are the same
+number as the input vectors.
+
+1166
+00:46:21,670 --> 00:46:23,650
+But now, the mechanism
+of this is, basically,
+
+1167
+00:46:23,650 --> 00:46:26,050
+the same attention
+mechanism that we just saw.
+
+1168
+00:46:26,050 --> 00:46:28,147
+But now, rather than
+projecting-- but then
+
+1169
+00:46:28,147 --> 00:46:30,230
+we're still going to use
+this notion of filtering.
+
+1170
+00:46:30,230 --> 00:46:32,370
+But now, rather than
+projecting our data vectors
+
+1171
+00:46:32,370 --> 00:46:35,050
+into keys and queries, as
+we previously did, now,
+
+1172
+00:46:35,050 --> 00:46:37,810
+what we're going to do is take
+each one of our input vectors
+
+1173
+00:46:37,810 --> 00:46:40,730
+and project it to
+three different things.
+
+1174
+00:46:40,730 --> 00:46:42,410
+From each of our
+input vectors, we're
+
+1175
+00:46:42,410 --> 00:46:46,370
+going to project it to a query,
+to a key, and to a value.
+
+1176
+00:46:46,370 --> 00:46:49,730
+And so the equations
+change just a little bit,
+
+1177
+00:46:49,730 --> 00:46:51,530
+but the picture over
+here doesn't actually
+
+1178
+00:46:51,530 --> 00:46:52,690
+change very much.
+
+1179
+00:46:52,690 --> 00:46:54,770
+For each of our input
+vectors, we separately
+
+1180
+00:46:54,770 --> 00:46:58,390
+project it to a query,
+to a key, and to a value.
+
+1181
+00:46:58,390 --> 00:47:01,530
+And now, we have the
+exact same computation.
+
+1182
+00:47:01,530 --> 00:47:03,910
+Now, we've got queries, we've
+got keys, we've got values.
+
+1183
+00:47:03,910 --> 00:47:06,250
+From the perspective of
+everything happening up here,
+
+1184
+00:47:06,250 --> 00:47:07,090
+it's all the same.
+
+1185
+00:47:07,090 --> 00:47:09,790
+It just so happened
+that we computed
+
+1186
+00:47:09,790 --> 00:47:12,030
+the keys and the queries
+and the values all
+
+1187
+00:47:12,030 --> 00:47:14,950
+from different linear
+projections of those same input
+
+1188
+00:47:14,950 --> 00:47:15,730
+vectors.
+
+1189
+00:47:15,730 --> 00:47:18,430
+But all the computation
+is otherwise shared.
+
+1190
+00:47:18,430 --> 00:47:21,250
+Yeah, question is, what
+are D in and D out?
+
+1191
+00:47:21,250 --> 00:47:22,060
+How are they sized?
+
+1192
+00:47:22,060 --> 00:47:24,310
+So these are going to be
+architectural hyperparameters
+
+1193
+00:47:24,310 --> 00:47:25,490
+of the layer.
+
+1194
+00:47:25,490 --> 00:47:28,390
+Just when we have a learnable
+linear layer in a model,
+
+1195
+00:47:28,390 --> 00:47:30,865
+a linear layer basically
+projects from D in to a D out,
+
+1196
+00:47:30,865 --> 00:47:32,990
+those are going to be
+architectural hyperparameters
+
+1197
+00:47:32,990 --> 00:47:33,913
+of the layer.
+
+1198
+00:47:33,913 --> 00:47:36,330
+Same thing with a self-attention
+layer, the D in and the D
+
+1199
+00:47:36,330 --> 00:47:38,372
+out are going to be
+architectural hyperparameters
+
+1200
+00:47:38,372 --> 00:47:39,350
+of the layer.
+
+1201
+00:47:39,350 --> 00:47:41,830
+And in principle, they
+could be different.
+
+1202
+00:47:41,830 --> 00:47:44,530
+There's enough there's enough
+flexibility in this architecture
+
+1203
+00:47:44,530 --> 00:47:48,370
+so that, in principle, D in
+and D out could be different.
+
+1204
+00:47:48,370 --> 00:47:50,550
+Although I don't think
+I've almost ever seen that.
+
+1205
+00:47:50,550 --> 00:47:52,750
+In practice, they're
+almost always the same.
+
+1206
+00:47:52,750 --> 00:47:55,250
+So I've been like a little bit
+extra general in the notation
+
+1207
+00:47:55,250 --> 00:47:57,890
+here.
+
+1208
+00:47:57,890 --> 00:47:59,650
+OK, so I don't know
+that we necessarily
+
+1209
+00:47:59,650 --> 00:48:00,750
+need to walk through this.
+
+1210
+00:48:00,750 --> 00:48:02,500
+Oh actually, there is
+one important thing.
+
+1211
+00:48:02,500 --> 00:48:05,530
+So I said that we are
+separately projecting the inputs
+
+1212
+00:48:05,530 --> 00:48:07,530
+into queries, keys, and values.
+
+1213
+00:48:07,530 --> 00:48:10,450
+So that happens via three
+matrix multiplies with our three
+
+1214
+00:48:10,450 --> 00:48:11,870
+learnable weight matrices.
+
+1215
+00:48:11,870 --> 00:48:14,390
+Now, we have three learnable
+weight matrices, one for keys,
+
+1216
+00:48:14,390 --> 00:48:16,210
+one for values, one for queries.
+
+1217
+00:48:16,210 --> 00:48:19,370
+And we separately project
+the input vectors X
+
+1218
+00:48:19,370 --> 00:48:21,450
+into keys, queries, and values.
+
+1219
+00:48:21,450 --> 00:48:23,850
+But in practice, we
+can, actually, typically
+
+1220
+00:48:23,850 --> 00:48:26,428
+compute just one matrix
+multiply all at once for those
+
+1221
+00:48:26,428 --> 00:48:28,470
+because it's typically
+more efficient on hardware
+
+1222
+00:48:28,470 --> 00:48:32,250
+to do fewer large matrix
+multiplies than it is to do more
+
+1223
+00:48:32,250 --> 00:48:33,790
+smaller matrix multiplies.
+
+1224
+00:48:33,790 --> 00:48:36,130
+So a pretty common trick
+in practice is to fuse--
+
+1225
+00:48:36,130 --> 00:48:40,170
+is to concatenate these three
+matrices along the dimensions
+
+1226
+00:48:40,170 --> 00:48:42,388
+and compute all of these
+keys, queries, and values
+
+1227
+00:48:42,388 --> 00:48:43,930
+for all the input
+vectors all at once
+
+1228
+00:48:43,930 --> 00:48:46,130
+with one big matrix multiply.
+
+1229
+00:48:46,130 --> 00:48:47,870
+If you've read
+transformers before,
+
+1230
+00:48:47,870 --> 00:48:50,610
+they sometimes separate
+between encoder and decoder
+
+1231
+00:48:50,610 --> 00:48:53,270
+transformers, or encoder
+decoder attention.
+
+1232
+00:48:53,270 --> 00:48:56,870
+So in that case, this would
+be the decoder only attention
+
+1233
+00:48:56,870 --> 00:48:59,150
+if you've read
+transformer papers before.
+
+1234
+00:48:59,150 --> 00:49:01,390
+And which corresponds
+to the way that it's
+
+1235
+00:49:01,390 --> 00:49:03,670
+used in the decoder of the
+RNN in the initial example
+
+1236
+00:49:03,670 --> 00:49:05,430
+at the beginning of class.
+
+1237
+00:49:05,430 --> 00:49:08,360
+But this mechanism is
+actually just the most--
+
+1238
+00:49:08,360 --> 00:49:10,110
+the most commonly used
+flavor of attention
+
+1239
+00:49:10,110 --> 00:49:12,030
+nowadays is this sort
+of so-called decoder
+
+1240
+00:49:12,030 --> 00:49:13,590
+only attention.
+
+1241
+00:49:13,590 --> 00:49:16,730
+So we are quite divorcing
+ourselves away from the RNN now.
+
+1242
+00:49:16,730 --> 00:49:18,670
+So this flavor of
+it doesn't really
+
+1243
+00:49:18,670 --> 00:49:20,630
+make sense to be used
+in the RNN that we
+
+1244
+00:49:20,630 --> 00:49:22,088
+saw at the beginning of class.
+
+1245
+00:49:22,088 --> 00:49:24,630
+So we've basically been doing
+a little bit of sleight of hand
+
+1246
+00:49:24,630 --> 00:49:26,910
+here, where we introduced
+this architecture
+
+1247
+00:49:26,910 --> 00:49:29,830
+for the purpose of RNN in this
+very concrete case of machine
+
+1248
+00:49:29,830 --> 00:49:31,610
+translation,
+sequence to sequence.
+
+1249
+00:49:31,610 --> 00:49:33,670
+But we've now
+generalized it to become
+
+1250
+00:49:33,670 --> 00:49:36,370
+a totally different operator
+that can be used all on its own.
+
+1251
+00:49:36,370 --> 00:49:38,030
+And in this particular
+generalization
+
+1252
+00:49:38,030 --> 00:49:40,030
+into self-attention, it
+actually no longer can
+
+1253
+00:49:40,030 --> 00:49:42,350
+be used in that decoder in RNN.
+
+1254
+00:49:42,350 --> 00:49:44,110
+But it's a very
+useful primitive that
+
+1255
+00:49:44,110 --> 00:49:46,462
+gets used in a lot of
+other places, it turns out.
+
+1256
+00:49:46,462 --> 00:49:48,670
+OK, the question is, what's
+the benefit or difference
+
+1257
+00:49:48,670 --> 00:49:50,950
+between the self-attention
+versus the cross-attention?
+
+1258
+00:49:50,950 --> 00:49:52,730
+They would get used
+in different contexts.
+
+1259
+00:49:52,730 --> 00:49:55,330
+So in some situations,
+you naturally
+
+1260
+00:49:55,330 --> 00:49:58,427
+have two different kinds of
+data that you want to compare,
+
+1261
+00:49:58,427 --> 00:50:01,010
+which we saw, for example, in
+the machine translation setting.
+
+1262
+00:50:01,010 --> 00:50:02,225
+We have an input sentence.
+
+1263
+00:50:02,225 --> 00:50:03,350
+We have an output sentence.
+
+1264
+00:50:03,350 --> 00:50:05,250
+We believe that there's
+some natural structure
+
+1265
+00:50:05,250 --> 00:50:07,625
+in the problem, that there's
+two different sets of things
+
+1266
+00:50:07,625 --> 00:50:08,890
+that we want to compare.
+
+1267
+00:50:08,890 --> 00:50:11,230
+That also might happen
+in, say, image captioning.
+
+1268
+00:50:11,230 --> 00:50:13,027
+Say, we have an
+input image, we want
+
+1269
+00:50:13,027 --> 00:50:14,610
+to produce an output
+sentence, there's
+
+1270
+00:50:14,610 --> 00:50:16,693
+two different kinds of
+things we want to compare--
+
+1271
+00:50:16,693 --> 00:50:18,730
+pieces of the image
+and tokens in the words
+
+1272
+00:50:18,730 --> 00:50:19,790
+that we're generating.
+
+1273
+00:50:19,790 --> 00:50:22,210
+So for some problems, there's
+just this natural structure,
+
+1274
+00:50:22,210 --> 00:50:25,250
+where you have two different
+kinds of things floating around.
+
+1275
+00:50:25,250 --> 00:50:27,790
+But for other problems, there
+aren't two kinds of things.
+
+1276
+00:50:27,790 --> 00:50:29,090
+There's just one thing.
+
+1277
+00:50:29,090 --> 00:50:30,905
+So say, you're doing
+image classification,
+
+1278
+00:50:30,905 --> 00:50:32,030
+then there's only an image.
+
+1279
+00:50:32,030 --> 00:50:33,430
+We just want to
+process the image.
+
+1280
+00:50:33,430 --> 00:50:35,847
+So in that case, we just want
+to compare parts of an image
+
+1281
+00:50:35,847 --> 00:50:36,350
+with itself.
+
+1282
+00:50:36,350 --> 00:50:38,600
+And that's where you would
+use a self-attention layer.
+
+1283
+00:50:38,600 --> 00:50:41,913
+So they just get used for
+different kinds of problems.
+
+1284
+00:50:41,913 --> 00:50:43,330
+But we want to--
+but crucially, we
+
+1285
+00:50:43,330 --> 00:50:45,530
+want to reuse, basically,
+the same machinery
+
+1286
+00:50:45,530 --> 00:50:48,110
+and the same
+computational primitives
+
+1287
+00:50:48,110 --> 00:50:50,110
+to be used in those
+different kinds of problems.
+
+1288
+00:50:50,110 --> 00:50:52,310
+And that's really beneficial.
+
+1289
+00:50:52,310 --> 00:50:54,750
+There's a couple interesting
+things about attention
+
+1290
+00:50:54,750 --> 00:50:55,950
+that I want to get through.
+
+1291
+00:50:55,950 --> 00:50:57,990
+So one is like, let's
+consider what happens
+
+1292
+00:50:57,990 --> 00:50:59,810
+if you permute the inputs.
+
+1293
+00:50:59,810 --> 00:51:01,268
+We had a set of
+input vectors, what
+
+1294
+00:51:01,268 --> 00:51:03,102
+happens if you shuffle
+them and process them
+
+1295
+00:51:03,102 --> 00:51:03,990
+in a different order?
+
+1296
+00:51:03,990 --> 00:51:06,770
+Now actually, a lot of
+interesting stuff happens.
+
+1297
+00:51:06,770 --> 00:51:08,630
+So the keys, the
+queries, and the values
+
+1298
+00:51:08,630 --> 00:51:10,630
+will all end up the
+same because they
+
+1299
+00:51:10,630 --> 00:51:12,970
+are computed as linear
+projections of the input.
+
+1300
+00:51:12,970 --> 00:51:15,650
+So we'll end up getting the
+same keys, queries, and values.
+
+1301
+00:51:15,650 --> 00:51:18,233
+They'll just be in a different
+order, shuffled in the same way
+
+1302
+00:51:18,233 --> 00:51:19,230
+that the inputs were.
+
+1303
+00:51:19,230 --> 00:51:21,230
+And now, because our
+similarity scores were just
+
+1304
+00:51:21,230 --> 00:51:23,950
+dot products, we'll also end up
+with the same similarity scores,
+
+1305
+00:51:23,950 --> 00:51:25,550
+just, again, shuffled
+in accordance
+
+1306
+00:51:25,550 --> 00:51:27,390
+with the way we
+shuffle the input.
+
+1307
+00:51:27,390 --> 00:51:28,730
+Same thing with the softmax.
+
+1308
+00:51:28,730 --> 00:51:31,650
+Softmax doesn't actually care
+about the order of its inputs.
+
+1309
+00:51:31,650 --> 00:51:34,810
+So the softmax is now operating
+on the same vector but shuffled.
+
+1310
+00:51:34,810 --> 00:51:37,030
+So each column of
+our attention weights
+
+1311
+00:51:37,030 --> 00:51:39,110
+will end up the same as
+they did before, just
+
+1312
+00:51:39,110 --> 00:51:41,890
+shuffled, and then same thing
+with linear combinations.
+
+1313
+00:51:41,890 --> 00:51:45,430
+So our outputs Y will actually
+still be the same outputs
+
+1314
+00:51:45,430 --> 00:51:46,530
+as we had before.
+
+1315
+00:51:46,530 --> 00:51:47,835
+They'll just all be shuffled.
+
+1316
+00:51:47,835 --> 00:51:50,210
+So that means that there's a
+really interesting structure
+
+1317
+00:51:50,210 --> 00:51:53,390
+here called permutation
+equivariance.
+
+1318
+00:51:53,390 --> 00:51:57,615
+Remember, we saw this a couple
+lectures ago with convolution.
+
+1319
+00:51:57,615 --> 00:51:59,490
+Now, we see a different
+equivariance property
+
+1320
+00:51:59,490 --> 00:52:01,630
+of these self-attention layers.
+
+1321
+00:52:01,630 --> 00:52:03,772
+Which is that if we
+shuffle the inputs,
+
+1322
+00:52:03,772 --> 00:52:05,730
+then the output-- then
+we get the same outputs,
+
+1323
+00:52:05,730 --> 00:52:09,170
+just shuffled in the same way
+that the inputs were shuffled.
+
+1324
+00:52:09,170 --> 00:52:11,270
+And this kind of
+means, in this case,
+
+1325
+00:52:11,270 --> 00:52:13,530
+that self-attention
+doesn't actually
+
+1326
+00:52:13,530 --> 00:52:15,568
+care about the
+order of the inputs.
+
+1327
+00:52:15,568 --> 00:52:17,110
+If we change the
+order of the inputs,
+
+1328
+00:52:17,110 --> 00:52:19,650
+we'll get the same outputs
+just shuffled in the same way.
+
+1329
+00:52:19,650 --> 00:52:21,330
+The computation of
+the layer does not
+
+1330
+00:52:21,330 --> 00:52:24,010
+depend on the order in
+which we present the inputs.
+
+1331
+00:52:24,010 --> 00:52:27,090
+So that means that we can think
+of self-attention actually not
+
+1332
+00:52:27,090 --> 00:52:29,590
+as operating on
+sequences of vectors.
+
+1333
+00:52:29,590 --> 00:52:32,632
+They happen to be packed into
+an ordered sequence of a matrix.
+
+1334
+00:52:32,632 --> 00:52:34,090
+But we really think
+of it, instead,
+
+1335
+00:52:34,090 --> 00:52:36,750
+as operating on an
+unordered set of vectors
+
+1336
+00:52:36,750 --> 00:52:40,050
+because the outputs that
+we get don't actually
+
+1337
+00:52:40,050 --> 00:52:43,010
+depend on what order we packed
+those vectors into our input
+
+1338
+00:52:43,010 --> 00:52:43,850
+matrix.
+
+1339
+00:52:43,850 --> 00:52:45,677
+So we really think
+about this as a kind
+
+1340
+00:52:45,677 --> 00:52:48,010
+of different neural network
+primitive that fundamentally
+
+1341
+00:52:48,010 --> 00:52:50,430
+operates on sets of vectors,
+rather than sequences
+
+1342
+00:52:50,430 --> 00:52:51,553
+of vectors.
+
+1343
+00:52:51,553 --> 00:52:52,970
+But this is,
+sometimes, a problem.
+
+1344
+00:52:52,970 --> 00:52:55,150
+Sometimes, it is useful to
+tell the neural network what
+
+1345
+00:52:55,150 --> 00:52:57,590
+the order of the seq-- what
+the order of the entries is.
+
+1346
+00:52:57,590 --> 00:52:59,350
+So as a quick fix to
+that, we'll sometimes
+
+1347
+00:52:59,350 --> 00:53:01,550
+concatenate an
+additional piece of data
+
+1348
+00:53:01,550 --> 00:53:04,650
+onto each of the input vectors,
+called a positional embedding,
+
+1349
+00:53:04,650 --> 00:53:06,758
+that is basically
+some piece of data
+
+1350
+00:53:06,758 --> 00:53:09,050
+that tells the neural network,
+this one's at index one,
+
+1351
+00:53:09,050 --> 00:53:11,030
+this one's at index two,
+this one's index three, blah,
+
+1352
+00:53:11,030 --> 00:53:11,988
+blah, blah, blah, blah.
+
+1353
+00:53:11,988 --> 00:53:14,230
+And there's a bunch of
+different mechanisms for that.
+
+1354
+00:53:14,230 --> 00:53:18,652
+The question is, is it going
+to train to the same result?
+
+1355
+00:53:18,652 --> 00:53:20,610
+I'm not really talking
+about the training here.
+
+1356
+00:53:20,610 --> 00:53:23,030
+I'm talking about if you fix
+the weight matrices and just
+
+1357
+00:53:23,030 --> 00:53:25,070
+consider the computation
+of the layer,
+
+1358
+00:53:25,070 --> 00:53:27,050
+then if I were to
+shuffle the inputs,
+
+1359
+00:53:27,050 --> 00:53:29,670
+then I receive the same
+outputs but they'll
+
+1360
+00:53:29,670 --> 00:53:32,130
+be shuffled in the same way
+that the inputs were shuffled.
+
+1361
+00:53:32,130 --> 00:53:36,070
+So the question of what vectors
+do I compute at the output
+
+1362
+00:53:36,070 --> 00:53:40,787
+does not depend on the order
+of the vectors in the input.
+
+1363
+00:53:40,787 --> 00:53:42,870
+But the order of the vectors
+I get from the output
+
+1364
+00:53:42,870 --> 00:53:44,287
+does depend on the
+order that they
+
+1365
+00:53:44,287 --> 00:53:45,652
+were presented in the input.
+
+1366
+00:53:45,652 --> 00:53:47,110
+So there's another
+couple of tricks
+
+1367
+00:53:47,110 --> 00:53:48,735
+we can do with
+self-attention, but I'll
+
+1368
+00:53:48,735 --> 00:53:50,810
+go through these a
+little bit faster.
+
+1369
+00:53:50,810 --> 00:53:53,950
+So sometimes, in a full
+self-attention layer,
+
+1370
+00:53:53,950 --> 00:53:55,730
+we allowed every
+piece of the input
+
+1371
+00:53:55,730 --> 00:53:57,790
+to look at every other
+piece of the input.
+
+1372
+00:53:57,790 --> 00:53:59,490
+But for some problems,
+we might want
+
+1373
+00:53:59,490 --> 00:54:02,050
+to impose some structure
+on this computation
+
+1374
+00:54:02,050 --> 00:54:03,717
+and say that certain
+pieces of the input
+
+1375
+00:54:03,717 --> 00:54:05,717
+are only allowed to look
+at certain other pieces
+
+1376
+00:54:05,717 --> 00:54:07,330
+of the input, rather
+than looking at--
+
+1377
+00:54:07,330 --> 00:54:09,550
+rather than everything being
+allowed to look at everything.
+
+1378
+00:54:09,550 --> 00:54:11,210
+And we can implement
+this via notion
+
+1379
+00:54:11,210 --> 00:54:13,010
+called masked self-attention.
+
+1380
+00:54:13,010 --> 00:54:15,090
+So what we're going to
+do is after we compute
+
+1381
+00:54:15,090 --> 00:54:17,370
+these alignment
+scores E, we're going
+
+1382
+00:54:17,370 --> 00:54:19,330
+to go in and override
+the alignment scores
+
+1383
+00:54:19,330 --> 00:54:20,930
+with negative
+infinities in places
+
+1384
+00:54:20,930 --> 00:54:22,663
+where we want to
+block the attention.
+
+1385
+00:54:22,663 --> 00:54:24,330
+And now, if you have
+a negative infinity
+
+1386
+00:54:24,330 --> 00:54:26,832
+in your alignment scores,
+then after you do a softmax,
+
+1387
+00:54:26,832 --> 00:54:29,290
+it's going to end up as a 0 if
+you walk through the softmax
+
+1388
+00:54:29,290 --> 00:54:30,370
+computation.
+
+1389
+00:54:30,370 --> 00:54:32,090
+So that means that
+if there's a 0--
+
+1390
+00:54:32,090 --> 00:54:33,590
+whenever there's a
+negative infinity
+
+1391
+00:54:33,590 --> 00:54:35,810
+in the alignment scores,
+we end up with a 0
+
+1392
+00:54:35,810 --> 00:54:38,350
+in the softmax score-- in
+the scores after the softmax.
+
+1393
+00:54:38,350 --> 00:54:40,170
+Which means that
+output Y will not
+
+1394
+00:54:40,170 --> 00:54:43,170
+depend on the value vector
+computed at that index.
+
+1395
+00:54:43,170 --> 00:54:46,630
+So this is a mechanism to let us
+control which inputs are allowed
+
+1396
+00:54:46,630 --> 00:54:50,340
+to interact with each other in
+the process of the computation.
+
+1397
+00:54:50,340 --> 00:54:52,590
+And we might want to do this
+now for language modeling
+
+1398
+00:54:52,590 --> 00:54:54,990
+because now, we've
+generalized this operator
+
+1399
+00:54:54,990 --> 00:54:57,210
+to the point, where we
+don't need an RNN at all.
+
+1400
+00:54:57,210 --> 00:54:59,390
+We can just use this
+for the same problem
+
+1401
+00:54:59,390 --> 00:55:01,270
+that we used to use in RNN for.
+
+1402
+00:55:01,270 --> 00:55:03,950
+So now, we can use it to
+process sequence of words,
+
+1403
+00:55:03,950 --> 00:55:07,950
+like attention is very and
+then output is very cool.
+
+1404
+00:55:07,950 --> 00:55:10,630
+So then in this case, we're
+doing the same language modeling
+
+1405
+00:55:10,630 --> 00:55:12,770
+task that we saw last
+lecture with RNNs.
+
+1406
+00:55:12,770 --> 00:55:14,310
+But we can now
+just do it natively
+
+1407
+00:55:14,310 --> 00:55:15,790
+with this self-attention block.
+
+1408
+00:55:15,790 --> 00:55:19,230
+But in this case, we want to
+make the first output "is"
+
+1409
+00:55:19,230 --> 00:55:20,770
+only depend on the first word.
+
+1410
+00:55:20,770 --> 00:55:23,510
+The second output "very" only
+allowed to depend on the first
+
+1411
+00:55:23,510 --> 00:55:24,050
+two words.
+
+1412
+00:55:24,050 --> 00:55:26,550
+We don't want to let the network
+look ahead in the sequence
+
+1413
+00:55:26,550 --> 00:55:27,330
+and cheat.
+
+1414
+00:55:27,330 --> 00:55:30,535
+So here is where we
+would use masking.
+
+1415
+00:55:30,535 --> 00:55:32,910
+Another thing that we'll
+sometimes do with self-attention
+
+1416
+00:55:32,910 --> 00:55:34,930
+is called multi-headed
+self-attention,
+
+1417
+00:55:34,930 --> 00:55:38,550
+where you run n copies each
+separate independent copies
+
+1418
+00:55:38,550 --> 00:55:40,325
+of self-attention in parallel.
+
+1419
+00:55:40,325 --> 00:55:41,450
+Why do you want to do this?
+
+1420
+00:55:41,450 --> 00:55:43,330
+Because it's more
+computation, it's more flops,
+
+1421
+00:55:43,330 --> 00:55:44,205
+it's more parameters.
+
+1422
+00:55:44,205 --> 00:55:46,250
+Deep learning, we always
+want more and bigger.
+
+1423
+00:55:46,250 --> 00:55:49,930
+And this is another way that
+you can make this layer more
+
+1424
+00:55:49,930 --> 00:55:51,550
+and bigger and more powerful.
+
+1425
+00:55:51,550 --> 00:55:53,850
+So what we're going to
+do is take our inputs X,
+
+1426
+00:55:53,850 --> 00:55:56,170
+route them to H
+independent copies
+
+1427
+00:55:56,170 --> 00:55:58,102
+of separate
+self-attention layers.
+
+1428
+00:55:58,102 --> 00:55:59,810
+Those will each produce
+their own outputs
+
+1429
+00:55:59,810 --> 00:56:04,450
+Y, which will then stack up
+along the output and then fuse--
+
+1430
+00:56:04,450 --> 00:56:06,410
+and then have another
+linear projection
+
+1431
+00:56:06,410 --> 00:56:08,890
+at the output to fuse
+the output data from each
+
+1432
+00:56:08,890 --> 00:56:11,810
+of the independent
+self-attention layers.
+
+1433
+00:56:11,810 --> 00:56:14,410
+And now in this
+case, this is called
+
+1434
+00:56:14,410 --> 00:56:16,250
+multi-headed self-attention.
+
+1435
+00:56:16,250 --> 00:56:19,510
+And this is basically the format
+that we always see in practice.
+
+1436
+00:56:19,510 --> 00:56:22,870
+So this is-- whenever you see
+self-attention used these days,
+
+1437
+00:56:22,870 --> 00:56:25,290
+it's almost always this
+multi-headed self-attention
+
+1438
+00:56:25,290 --> 00:56:27,770
+version.
+
+1439
+00:56:27,770 --> 00:56:30,250
+And in practice, it
+turns out that you
+
+1440
+00:56:30,250 --> 00:56:32,790
+can compute this all with
+matrix multiplies as well.
+
+1441
+00:56:32,790 --> 00:56:34,810
+So you don't have
+to run a for loop.
+
+1442
+00:56:34,810 --> 00:56:37,930
+You can compute each of these
+H copies of self-attention
+
+1443
+00:56:37,930 --> 00:56:41,050
+all in parallel if you're clever
+and use batch matrix multiplies
+
+1444
+00:56:41,050 --> 00:56:42,850
+all in the right places.
+
+1445
+00:56:42,850 --> 00:56:45,990
+So in fact, this whole
+self-attention operator
+
+1446
+00:56:45,990 --> 00:56:47,570
+seems like a lot
+of stuff going on,
+
+1447
+00:56:47,570 --> 00:56:50,390
+but it's really, basically,
+just four matrix multiplies.
+
+1448
+00:56:50,390 --> 00:56:52,990
+We have one matrix multiply,
+where we take our inputs
+
+1449
+00:56:52,990 --> 00:56:56,150
+and project them to
+queries, keys, and values.
+
+1450
+00:56:56,150 --> 00:56:59,610
+We have another matrix multiply,
+where we compute Qk similarity.
+
+1451
+00:56:59,610 --> 00:57:03,070
+For each Q, we compute the
+similarity against all the K's.
+
+1452
+00:57:03,070 --> 00:57:05,270
+And that's one big batched
+matrix multiply now
+
+1453
+00:57:05,270 --> 00:57:07,170
+in the multi-headed case.
+
+1454
+00:57:07,170 --> 00:57:09,150
+We have another one
+called V weighting, where
+
+1455
+00:57:09,150 --> 00:57:10,900
+we want to take linear
+combinations of all
+
+1456
+00:57:10,900 --> 00:57:13,770
+the values weighted by
+the softmax entries.
+
+1457
+00:57:13,770 --> 00:57:16,790
+And that can be done in another
+big batched matrix multiply.
+
+1458
+00:57:16,790 --> 00:57:18,750
+And then finally, we
+have an output projection
+
+1459
+00:57:18,750 --> 00:57:21,910
+to mix information across
+our different heads
+
+1460
+00:57:21,910 --> 00:57:22,827
+of our self-attention.
+
+1461
+00:57:22,827 --> 00:57:24,577
+So even though there's
+a lot of equations,
+
+1462
+00:57:24,577 --> 00:57:26,210
+there's a lot of
+vectors flying around,
+
+1463
+00:57:26,210 --> 00:57:27,627
+this whole
+self-attention operator
+
+1464
+00:57:27,627 --> 00:57:30,870
+is basically just four big
+batch matrix multiplies.
+
+1465
+00:57:30,870 --> 00:57:33,150
+And that's great because
+matrix multiplies are
+
+1466
+00:57:33,150 --> 00:57:35,510
+a really scalable,
+powerful primitive
+
+1467
+00:57:35,510 --> 00:57:38,110
+that we can distribute,
+we can optimize,
+
+1468
+00:57:38,110 --> 00:57:40,950
+and we can make this thing
+highly parallel, highly
+
+1469
+00:57:40,950 --> 00:57:43,810
+scalable, highly efficient.
+
+1470
+00:57:43,810 --> 00:57:45,410
+Yeah, question is
+that the x1, x2, x3,
+
+1471
+00:57:45,410 --> 00:57:48,566
+they're exactly the same.
+
+1472
+00:57:48,566 --> 00:57:51,490
+Yeah, but we're
+just going to have,
+
+1473
+00:57:51,490 --> 00:57:54,470
+basically, separate copies
+of the self-attention layer.
+
+1474
+00:57:54,470 --> 00:57:55,652
+They will all be random.
+
+1475
+00:57:55,652 --> 00:57:57,610
+They'll all have different
+weights, critically.
+
+1476
+00:57:57,610 --> 00:58:00,270
+And those weights will
+be initialized randomly,
+
+1477
+00:58:00,270 --> 00:58:01,503
+different at initialization.
+
+1478
+00:58:01,503 --> 00:58:03,170
+So it'll end up
+learning to process them
+
+1479
+00:58:03,170 --> 00:58:04,350
+in slightly different ways.
+
+1480
+00:58:04,350 --> 00:58:07,460
+So this is just a way to give
+extra capacity to the layer.
+
+1481
+00:58:07,460 --> 00:58:09,210
+Oh, yeah, the only
+thing different between
+
+1482
+00:58:09,210 --> 00:58:10,310
+different heads is the weights.
+
+1483
+00:58:10,310 --> 00:58:12,227
+So while the architecture
+is exactly the same,
+
+1484
+00:58:12,227 --> 00:58:13,770
+the computation is
+exactly the same,
+
+1485
+00:58:13,770 --> 00:58:14,830
+but they'll have
+different weights.
+
+1486
+00:58:14,830 --> 00:58:17,370
+And those weights will be
+initialized to different things
+
+1487
+00:58:17,370 --> 00:58:18,570
+at initialization.
+
+1488
+00:58:18,570 --> 00:58:21,110
+But other than that, it's
+all exactly the same.
+
+1489
+00:58:21,110 --> 00:58:23,590
+OK, there's some stuff
+there that we can skip.
+
+1490
+00:58:23,590 --> 00:58:26,490
+But now, basically, we've gotten
+to one really interesting place,
+
+1491
+00:58:26,490 --> 00:58:28,970
+where we have, basically,
+three different ways to process
+
+1492
+00:58:28,970 --> 00:58:30,890
+sequences that we've
+seen in this class.
+
+1493
+00:58:30,890 --> 00:58:32,710
+The first is recurrent
+neural networks.
+
+1494
+00:58:32,710 --> 00:58:35,570
+We saw that recurrent neural
+networks basically operate on 1D
+
+1495
+00:58:35,570 --> 00:58:37,130
+ordered sequences.
+
+1496
+00:58:37,130 --> 00:58:38,350
+And they're really cool.
+
+1497
+00:58:38,350 --> 00:58:39,350
+They're really powerful.
+
+1498
+00:58:39,350 --> 00:58:40,850
+People like them
+for a long time.
+
+1499
+00:58:40,850 --> 00:58:43,130
+But they're fundamentally
+not very parallelizable.
+
+1500
+00:58:43,130 --> 00:58:44,970
+Because of this
+concurrent structure,
+
+1501
+00:58:44,970 --> 00:58:47,877
+where each hidden state depends
+on the previous hidden state,
+
+1502
+00:58:47,877 --> 00:58:49,710
+then they're just a
+fundamentally sequential
+
+1503
+00:58:49,710 --> 00:58:50,450
+algorithm.
+
+1504
+00:58:50,450 --> 00:58:53,270
+There's no way to parallelize
+this across the sequence.
+
+1505
+00:58:53,270 --> 00:58:55,130
+And that makes them
+very difficult to scale,
+
+1506
+00:58:55,130 --> 00:58:57,310
+very difficult to make very big.
+
+1507
+00:58:57,310 --> 00:58:59,810
+Another primitive that
+we've seen is convolution.
+
+1508
+00:58:59,810 --> 00:59:01,470
+And convolution
+basically operates
+
+1509
+00:59:01,470 --> 00:59:03,190
+on multidimensional grids.
+
+1510
+00:59:03,190 --> 00:59:05,790
+We've seen it in two-dimensional
+grids in the case of images.
+
+1511
+00:59:05,790 --> 00:59:08,930
+You can also run them on 1D
+grids, 3D grids, 4D grids.
+
+1512
+00:59:08,930 --> 00:59:10,630
+And convolution,
+basically, is something
+
+1513
+00:59:10,630 --> 00:59:14,670
+that mixes information locally
+in N dimensional grids.
+
+1514
+00:59:14,670 --> 00:59:15,410
+This is great.
+
+1515
+00:59:15,410 --> 00:59:16,830
+It's very parallelizable.
+
+1516
+00:59:16,830 --> 00:59:20,170
+Because by this notion of
+sliding a kernel around a grid,
+
+1517
+00:59:20,170 --> 00:59:22,470
+each position that we might
+want to place the kernel
+
+1518
+00:59:22,470 --> 00:59:24,690
+can, in principle, be
+computed in parallel.
+
+1519
+00:59:24,690 --> 00:59:26,990
+So this is a very
+parallelizable primitive.
+
+1520
+00:59:26,990 --> 00:59:30,630
+But it has a hard time building
+up large receptive fields.
+
+1521
+00:59:30,630 --> 00:59:33,990
+If we want to summarize
+an entire very long input
+
+1522
+00:59:33,990 --> 00:59:37,170
+sequence, or an entire very
+large image with convolution,
+
+1523
+00:59:37,170 --> 00:59:39,530
+we either need to have very
+large convolutional kernels,
+
+1524
+00:59:39,530 --> 00:59:42,190
+or stack up many, many,
+many convolutional layers.
+
+1525
+00:59:42,190 --> 00:59:45,010
+So that still introduces some
+fundamental sequentiality
+
+1526
+00:59:45,010 --> 00:59:48,410
+in the way that we need to
+process large pieces of data.
+
+1527
+00:59:48,410 --> 00:59:50,050
+And now, self-attention,
+basically,
+
+1528
+00:59:50,050 --> 00:59:51,810
+is a separate kind
+of primitive that
+
+1529
+00:59:51,810 --> 00:59:54,290
+operates on sets of vectors.
+
+1530
+00:59:54,290 --> 00:59:56,647
+It naturally generalizes
+to long sequences.
+
+1531
+00:59:56,647 --> 00:59:58,730
+There are no bottlenecks
+in the way that there are
+
+1532
+00:59:58,730 --> 01:00:00,710
+in recurrent neural networks.
+
+1533
+01:00:00,710 --> 01:00:02,570
+There's also no
+necessity of stacking up
+
+1534
+01:00:02,570 --> 01:00:05,570
+many, many layers of them
+to let all the vectors look
+
+1535
+01:00:05,570 --> 01:00:06,570
+at each other.
+
+1536
+01:00:06,570 --> 01:00:08,650
+In one layer of
+self-attention, every vector
+
+1537
+01:00:08,650 --> 01:00:10,030
+looks at every other vector.
+
+1538
+01:00:10,030 --> 01:00:12,290
+So with just one layer,
+you can summarize-- you
+
+1539
+01:00:12,290 --> 01:00:14,290
+can do a lot of computation.
+
+1540
+01:00:14,290 --> 01:00:15,910
+And it's also highly
+parallelizable.
+
+1541
+01:00:15,910 --> 01:00:18,170
+As we saw, the whole operation
+is just four big matrix
+
+1542
+01:00:18,170 --> 01:00:19,058
+multiplies.
+
+1543
+01:00:19,058 --> 01:00:20,850
+And matrix multiplies
+are a great primitive
+
+1544
+01:00:20,850 --> 01:00:21,950
+that we can distribute.
+
+1545
+01:00:21,950 --> 01:00:23,070
+We can run on GPUs.
+
+1546
+01:00:23,070 --> 01:00:26,170
+We can run in very
+scalable, distributed ways.
+
+1547
+01:00:26,170 --> 01:00:29,390
+The only downside of attention
+is that it's expensive.
+
+1548
+01:00:29,390 --> 01:00:31,050
+It ends up having
+n squared compute
+
+1549
+01:00:31,050 --> 01:00:33,830
+for a sequence of
+length n and n squared,
+
+1550
+01:00:33,830 --> 01:00:36,970
+or later n, or n memory
+for a sequence of length n.
+
+1551
+01:00:36,970 --> 01:00:40,950
+And if your n ends up being like
+100,000, 1 million, 10 million,
+
+1552
+01:00:40,950 --> 01:00:42,690
+n squared becomes
+very expensive.
+
+1553
+01:00:42,690 --> 01:00:45,670
+But you can solve that
+by buying more GPUs.
+
+1554
+01:00:45,670 --> 01:00:47,510
+So that's basically the
+solution that people
+
+1555
+01:00:47,510 --> 01:00:48,970
+have come up with here.
+
+1556
+01:00:48,970 --> 01:00:50,790
+So basically,
+attention has become
+
+1557
+01:00:50,790 --> 01:00:52,910
+this super awesome
+primitive that
+
+1558
+01:00:52,910 --> 01:00:56,990
+is super powerful for processing
+very arbitrary pieces of data.
+
+1559
+01:00:56,990 --> 01:01:00,550
+And you might be wondering,
+which of these you should use?
+
+1560
+01:01:00,550 --> 01:01:01,770
+Attention is all you need.
+
+1561
+01:01:01,770 --> 01:01:03,590
+It turns out that
+of the three, you
+
+1562
+01:01:03,590 --> 01:01:06,390
+can get a long way
+using only attention.
+
+1563
+01:01:06,390 --> 01:01:08,130
+Now, the question is,
+is parallelizable,
+
+1564
+01:01:08,130 --> 01:01:09,470
+what's the advantage of that?
+
+1565
+01:01:09,470 --> 01:01:13,730
+The advantage of that is that
+in the history of computing,
+
+1566
+01:01:13,730 --> 01:01:15,930
+it gets hard to make
+processors faster.
+
+1567
+01:01:15,930 --> 01:01:18,630
+We've run up against this
+limit as a fundamental limit
+
+1568
+01:01:18,630 --> 01:01:19,490
+in hardware.
+
+1569
+01:01:19,490 --> 01:01:22,150
+That it's become very difficult
+to make individual processes
+
+1570
+01:01:22,150 --> 01:01:22,930
+faster.
+
+1571
+01:01:22,930 --> 01:01:26,050
+But what we can do very easily
+is get a lot of processors.
+
+1572
+01:01:26,050 --> 01:01:30,870
+So the way that we are able
+to marshal more computation
+
+1573
+01:01:30,870 --> 01:01:32,870
+over the last two
+decades is finding
+
+1574
+01:01:32,870 --> 01:01:35,390
+algorithms that do
+not require running
+
+1575
+01:01:35,390 --> 01:01:37,073
+on one really fast processor.
+
+1576
+01:01:37,073 --> 01:01:39,490
+But instead, if we can have
+an algorithm that can make use
+
+1577
+01:01:39,490 --> 01:01:43,090
+of 10 processors, or 100
+processors, or 1,000 processors,
+
+1578
+01:01:43,090 --> 01:01:46,190
+or a million processors, I want
+to blanket the entire Stanford
+
+1579
+01:01:46,190 --> 01:01:48,690
+campus with processors and have
+all of them working together
+
+1580
+01:01:48,690 --> 01:01:50,790
+in concert to process
+this big thing.
+
+1581
+01:01:50,790 --> 01:01:52,630
+If we can find
+algorithms that do that,
+
+1582
+01:01:52,630 --> 01:01:54,922
+that's how we can scale up
+and get really big, powerful
+
+1583
+01:01:54,922 --> 01:01:55,890
+computations.
+
+1584
+01:01:55,890 --> 01:01:57,690
+So the benefit of
+parallelizability
+
+1585
+01:01:57,690 --> 01:02:00,250
+is that if you have
+algorithms that can trivially
+
+1586
+01:02:00,250 --> 01:02:02,570
+make use of more and
+more and more processors
+
+1587
+01:02:02,570 --> 01:02:04,763
+in parallel, then we can
+scale up those algorithms
+
+1588
+01:02:04,763 --> 01:02:06,930
+without having to wait for
+our individual processors
+
+1589
+01:02:06,930 --> 01:02:09,513
+to become faster, which
+they may never will.
+
+1590
+01:02:09,513 --> 01:02:11,430
+Yeah, is there a trade-off
+with the n squared?
+
+1591
+01:02:11,430 --> 01:02:13,610
+I think the n squared is
+actually a good thing.
+
+1592
+01:02:13,610 --> 01:02:14,995
+So it seems bad.
+
+1593
+01:02:14,995 --> 01:02:16,370
+You're taught in
+computer science
+
+1594
+01:02:16,370 --> 01:02:20,390
+that parameters
+inside that n is bad.
+
+1595
+01:02:20,390 --> 01:02:22,630
+But in the case of neural
+networks, for compute,
+
+1596
+01:02:22,630 --> 01:02:25,370
+it could actually be a good
+thing because more compute means
+
+1597
+01:02:25,370 --> 01:02:27,150
+the network is doing
+more computation,
+
+1598
+01:02:27,150 --> 01:02:30,230
+it has more ability to think,
+more ability to process.
+
+1599
+01:02:30,230 --> 01:02:32,010
+So actually, the more
+compute the network
+
+1600
+01:02:32,010 --> 01:02:34,260
+does on the input sequence,
+actually, maybe the better
+
+1601
+01:02:34,260 --> 01:02:36,050
+answer it could arrive to.
+
+1602
+01:02:36,050 --> 01:02:38,090
+So it means that
+it's more expensive,
+
+1603
+01:02:38,090 --> 01:02:40,330
+but that's not
+necessarily a bad thing.
+
+1604
+01:02:40,330 --> 01:02:41,830
+So basically, the
+transformer is now
+
+1605
+01:02:41,830 --> 01:02:44,710
+a neural network architecture
+that puts self-attention
+
+1606
+01:02:44,710 --> 01:02:46,110
+at the core of everything.
+
+1607
+01:02:46,110 --> 01:02:49,430
+So our input is going to be a
+set of vectors X. Then we're
+
+1608
+01:02:49,430 --> 01:02:51,975
+going to run all those vectors
+through self-attention, which
+
+1609
+01:02:51,975 --> 01:02:54,350
+is, as we just said, this
+amazing primitive that lets all
+
+1610
+01:02:54,350 --> 01:02:56,230
+the vectors talk to each other.
+
+1611
+01:02:56,230 --> 01:02:58,230
+After that, we'll wrap
+that self-attention
+
+1612
+01:02:58,230 --> 01:03:00,550
+in a residual connection
+for all the same reasons
+
+1613
+01:03:00,550 --> 01:03:03,070
+that we wanted to use residual
+connections in ResNets just
+
+1614
+01:03:03,070 --> 01:03:05,030
+a couple of lectures ago.
+
+1615
+01:03:05,030 --> 01:03:08,107
+Then we will take the output
+of that residual connection,
+
+1616
+01:03:08,107 --> 01:03:09,690
+pass it through a
+layer normalization.
+
+1617
+01:03:09,690 --> 01:03:12,130
+Because as we saw in
+ResNets and in CNNs,
+
+1618
+01:03:12,130 --> 01:03:14,110
+adding normalization
+inside your architectures
+
+1619
+01:03:14,110 --> 01:03:16,470
+makes them train more stably.
+
+1620
+01:03:16,470 --> 01:03:18,905
+But then now, there's
+something interesting.
+
+1621
+01:03:18,905 --> 01:03:21,030
+Because the self-attention,
+basically, what it does
+
+1622
+01:03:21,030 --> 01:03:23,472
+is compares all the
+vectors with each other.
+
+1623
+01:03:23,472 --> 01:03:24,930
+And that's a very
+useful primitive.
+
+1624
+01:03:24,930 --> 01:03:26,570
+That's a very
+powerful thing to do.
+
+1625
+01:03:26,570 --> 01:03:28,790
+But we also want to give
+this network the ability
+
+1626
+01:03:28,790 --> 01:03:32,990
+to perform processing on vectors
+independently one-by-one.
+
+1627
+01:03:32,990 --> 01:03:34,410
+So then there's a
+second primitive
+
+1628
+01:03:34,410 --> 01:03:37,910
+inside the transformer, which is
+the multi-layer perceptron, MLP,
+
+1629
+01:03:37,910 --> 01:03:39,077
+also called FFN.
+
+1630
+01:03:39,077 --> 01:03:41,410
+But basically, this is a
+little two layer neural network
+
+1631
+01:03:41,410 --> 01:03:43,810
+that operates independent--
+that is run independently
+
+1632
+01:03:43,810 --> 01:03:45,930
+on each one of our
+vectors inside.
+
+1633
+01:03:45,930 --> 01:03:48,750
+So then this works in concert
+with the self-attention,
+
+1634
+01:03:48,750 --> 01:03:51,250
+where self-attention lets all
+the vectors talk to each other
+
+1635
+01:03:51,250 --> 01:03:53,210
+and compare with each
+other and the FFN
+
+1636
+01:03:53,210 --> 01:03:56,370
+or MLP lets us perform
+computation on each vector
+
+1637
+01:03:56,370 --> 01:03:58,490
+independently.
+
+1638
+01:03:58,490 --> 01:04:01,130
+We'll also wrap the MLP
+in a residual connection,
+
+1639
+01:04:01,130 --> 01:04:03,850
+put a layer normalization, and
+put a box around the whole thing
+
+1640
+01:04:03,850 --> 01:04:05,610
+and call it a neural
+network block.
+
+1641
+01:04:05,610 --> 01:04:08,230
+So this is our
+transformer block.
+
+1642
+01:04:08,230 --> 01:04:11,730
+And a transformer is just a
+sequence of transformer blocks.
+
+1643
+01:04:11,730 --> 01:04:14,650
+And these things have gotten
+much, much bigger over time.
+
+1644
+01:04:14,650 --> 01:04:17,530
+The architectures haven't
+changed too much since 2017
+
+1645
+01:04:17,530 --> 01:04:19,010
+when this was introduced.
+
+1646
+01:04:19,010 --> 01:04:21,870
+The original transformer was
+something like 12 blocks,
+
+1647
+01:04:21,870 --> 01:04:23,770
+200 million parameters
+and now, where
+
+1648
+01:04:23,770 --> 01:04:27,290
+people are training transformers
+with hundreds of blocks
+
+1649
+01:04:27,290 --> 01:04:29,150
+and trillions of parameters.
+
+1650
+01:04:29,150 --> 01:04:30,730
+So this same
+architecture has scaled
+
+1651
+01:04:30,730 --> 01:04:33,190
+across many orders of
+magnitude in compute and size
+
+1652
+01:04:33,190 --> 01:04:36,238
+and parameters over
+the past eight years.
+
+1653
+01:04:36,238 --> 01:04:38,030
+They can be used both
+for language modeling
+
+1654
+01:04:38,030 --> 01:04:39,750
+as we already seen.
+
+1655
+01:04:39,750 --> 01:04:43,050
+They also can be
+used for images.
+
+1656
+01:04:43,050 --> 01:04:45,275
+And here, the application
+is fairly straightforward.
+
+1657
+01:04:45,275 --> 01:04:47,150
+Given an image, we
+basically divide the image
+
+1658
+01:04:47,150 --> 01:04:49,750
+up into patches, project
+each of those patches
+
+1659
+01:04:49,750 --> 01:04:51,830
+separately into a vector.
+
+1660
+01:04:51,830 --> 01:04:55,430
+Those vectors then get passed
+as inputs to our transformer.
+
+1661
+01:04:55,430 --> 01:04:59,070
+And then the output gives us
+one output from the transformer
+
+1662
+01:04:59,070 --> 01:05:00,888
+for every patch in the input.
+
+1663
+01:05:00,888 --> 01:05:03,430
+Now, if you want to do something
+like a classification score,
+
+1664
+01:05:03,430 --> 01:05:05,190
+or do a classification
+problem, then you
+
+1665
+01:05:05,190 --> 01:05:07,432
+do a pooling operation on
+all the vectors coming out
+
+1666
+01:05:07,432 --> 01:05:09,390
+of the transformer and
+have a linear layer that
+
+1667
+01:05:09,390 --> 01:05:11,390
+predicts your class scores.
+
+1668
+01:05:11,390 --> 01:05:14,670
+So then this same
+architecture of a transformer
+
+1669
+01:05:14,670 --> 01:05:17,190
+can be applied
+both to a language
+
+1670
+01:05:17,190 --> 01:05:20,627
+and to images and to a lot
+of other things as well.
+
+1671
+01:05:20,627 --> 01:05:22,710
+I mentioned, there have
+been a couple minor tweaks
+
+1672
+01:05:22,710 --> 01:05:25,000
+to transformers since they
+were first introduced.
+
+1673
+01:05:25,000 --> 01:05:26,750
+But we're running out
+of time so I'll just
+
+1674
+01:05:26,750 --> 01:05:28,390
+leave those as extra reading.
+
+1675
+01:05:28,390 --> 01:05:31,450
+So the summary of where we get
+to at the end of this lecture
+
+1676
+01:05:31,450 --> 01:05:34,410
+is, basically, two things that
+I promised at the beginning.
+
+1677
+01:05:34,410 --> 01:05:36,830
+One is that we
+introduced attention,
+
+1678
+01:05:36,830 --> 01:05:38,650
+which is this new
+primitive that lets
+
+1679
+01:05:38,650 --> 01:05:40,550
+us operate on sets of vectors.
+
+1680
+01:05:40,550 --> 01:05:41,910
+It's highly parallelizable.
+
+1681
+01:05:41,910 --> 01:05:44,150
+It's basically just a
+couple of matrix multiplies.
+
+1682
+01:05:44,150 --> 01:05:47,230
+So it's highly scalable, highly
+parallelizable, highly flexible.
+
+1683
+01:05:47,230 --> 01:05:49,490
+It can be applied in a lot
+of different situations.
+
+1684
+01:05:49,490 --> 01:05:51,690
+And the transformer, which
+is now a neural network
+
+1685
+01:05:51,690 --> 01:05:53,890
+architecture that
+uses self-attention
+
+1686
+01:05:53,890 --> 01:05:56,570
+as its main
+computational primitive.
+
+1687
+01:05:56,570 --> 01:05:59,370
+And the transformer is basically
+the neural network architecture
+
+1688
+01:05:59,370 --> 01:06:02,990
+that every application in deep
+learning is using these days.
+
+1689
+01:06:02,990 --> 01:06:07,058
+So that's super powerful, super
+interesting, super exciting.
+
+1690
+01:06:07,058 --> 01:06:09,350
+The transformers have been
+with us for eight years now.
+
+1691
+01:06:09,350 --> 01:06:12,090
+And I don't see them
+really dying anytime soon.
+
+1692
+01:06:12,090 --> 01:06:14,690
+So that's pretty exciting.
+
+1693
+01:06:14,690 --> 01:06:16,970
+So that's basically it
+for today's lecture.
+
+1694
+01:06:16,970 --> 01:06:18,490
+And then next time,
+we'll come back
+
+1695
+01:06:18,490 --> 01:06:20,330
+and talk about some new tasks--
+
+1696
+01:06:20,330 --> 01:06:22,090
+detection, segmentation,
+visualization,
+
+1697
+01:06:22,090 --> 01:06:24,370
+and see how we can use
+these architectures to do
+
+1698
+01:06:24,370 --> 01:06:26,400
+new cool things.
