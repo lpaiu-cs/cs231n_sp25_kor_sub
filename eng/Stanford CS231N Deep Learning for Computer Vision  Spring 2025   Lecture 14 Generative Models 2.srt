@@ -1,0 +1,8775 @@
+2
+00:00:05,480 --> 00:00:08,392
+So last time we were talking
+about generative models.
+
+3
+00:00:08,392 --> 00:00:10,600
+And we started off with some
+discussion of generative
+
+4
+00:00:10,600 --> 00:00:13,308
+versus discriminative models and
+recall that these were basically
+
+5
+00:00:13,308 --> 00:00:15,822
+both different flavors
+of probabilistic models,
+
+6
+00:00:15,822 --> 00:00:17,780
+but it depends on what
+we're trying to predict,
+
+7
+00:00:17,780 --> 00:00:19,600
+what we're conditioning on,
+and really critically what
+
+8
+00:00:19,600 --> 00:00:20,733
+we're normalizing over.
+
+9
+00:00:20,733 --> 00:00:22,400
+So we talked about
+discriminative models
+
+10
+00:00:22,400 --> 00:00:24,920
+where you're trying to predict
+the label y conditioned
+
+11
+00:00:24,920 --> 00:00:27,280
+on your data x, generative
+models where you're trying
+
+12
+00:00:27,280 --> 00:00:30,040
+to just learn a probability
+distribution over your data x,
+
+13
+00:00:30,040 --> 00:00:32,040
+and conditional generative
+models where you want
+
+14
+00:00:32,040 --> 00:00:37,080
+to model the data x conditioned
+on some user input y or label y.
+
+15
+00:00:37,080 --> 00:00:39,200
+And recall that
+these differ in that
+
+16
+00:00:39,200 --> 00:00:42,320
+what you're trying to normalize
+over because probabilities
+
+17
+00:00:42,320 --> 00:00:46,777
+distributions introduce this
+normalizing effect where
+
+18
+00:00:46,777 --> 00:00:49,360
+different kinds of things need
+to compete for probability mass
+
+19
+00:00:49,360 --> 00:00:51,840
+due to this normalization
+constraint of probability
+
+20
+00:00:51,840 --> 00:00:54,080
+distributions.
+
+21
+00:00:54,080 --> 00:00:56,480
+And last time we also
+went through this taxonomy
+
+22
+00:00:56,480 --> 00:00:58,480
+of different categories
+of generative models
+
+23
+00:00:58,480 --> 00:01:00,740
+because it turns out this
+area of generative modeling
+
+24
+00:01:00,740 --> 00:01:02,340
+has been something
+people have studied
+
+25
+00:01:02,340 --> 00:01:03,820
+for a very long time,
+come up with a lot
+
+26
+00:01:03,820 --> 00:01:05,237
+of different
+categories of methods
+
+27
+00:01:05,237 --> 00:01:07,240
+to try to solve variants
+of these problems.
+
+28
+00:01:07,240 --> 00:01:09,980
+So we went through this family
+tree of generative models
+
+29
+00:01:09,980 --> 00:01:14,020
+where last time we talked about
+these explicit density models
+
+30
+00:01:14,020 --> 00:01:18,620
+where the model
+outputs some quantity
+
+31
+00:01:18,620 --> 00:01:22,140
+p of x, either the
+exact predicted p of x
+
+32
+00:01:22,140 --> 00:01:24,780
+in the case of tractable
+density models,
+
+33
+00:01:24,780 --> 00:01:27,060
+or some approximate
+version of p of x
+
+34
+00:01:27,060 --> 00:01:29,440
+in the case of these
+approximate density models.
+
+35
+00:01:29,440 --> 00:01:31,680
+And then in the case
+of tractable density,
+
+36
+00:01:31,680 --> 00:01:34,600
+we saw autoregressive
+as a category of model
+
+37
+00:01:34,600 --> 00:01:36,072
+and we saw variational
+autoencoders
+
+38
+00:01:36,072 --> 00:01:37,780
+as an example of
+something that gives you
+
+39
+00:01:37,780 --> 00:01:40,180
+some approximate density.
+
+40
+00:01:40,180 --> 00:01:42,420
+So recall that autoregressive
+models, what we did
+
+41
+00:01:42,420 --> 00:01:45,540
+is we took our image or more
+generally whatever kind of data
+
+42
+00:01:45,540 --> 00:01:48,260
+we're working with and we
+break it up into a sequence.
+
+43
+00:01:48,260 --> 00:01:50,040
+And then for the
+case of image data,
+
+44
+00:01:50,040 --> 00:01:52,980
+we typically treat this as a
+sequence of pixel values or even
+
+45
+00:01:52,980 --> 00:01:54,540
+subpixel values.
+
+46
+00:01:54,540 --> 00:01:56,440
+And we usually want
+these to be discrete.
+
+47
+00:01:56,440 --> 00:02:00,000
+So you treat those pixel values
+as 8-bit integers that can each
+
+48
+00:02:00,000 --> 00:02:01,780
+take a value of 0 to 255.
+
+49
+00:02:01,780 --> 00:02:05,620
+You string this out into a
+long sequence of integers
+
+50
+00:02:05,620 --> 00:02:08,680
+and then model this using some
+discrete autoregressive sequence
+
+51
+00:02:08,680 --> 00:02:12,120
+model, typically an
+RNN or a transformer.
+
+52
+00:02:12,120 --> 00:02:14,940
+Then we also saw the
+variational autoencoders,
+
+53
+00:02:14,940 --> 00:02:17,580
+which were another
+explicit density model,
+
+54
+00:02:17,580 --> 00:02:19,400
+but now they compute
+not the exact density
+
+55
+00:02:19,400 --> 00:02:21,180
+but some approximation
+to the density,
+
+56
+00:02:21,180 --> 00:02:24,800
+in particular a lower
+bound to the density.
+
+57
+00:02:24,800 --> 00:02:27,480
+So to do this, we
+jointly trained
+
+58
+00:02:27,480 --> 00:02:29,720
+some encoder network
+which is going
+
+59
+00:02:29,720 --> 00:02:33,880
+to input the data x and output a
+distribution over latent codes z
+
+60
+00:02:33,880 --> 00:02:36,560
+and a decoder network, which is
+going to input a latent code z
+
+61
+00:02:36,560 --> 00:02:39,360
+and output a predicted
+piece of data x.
+
+62
+00:02:39,360 --> 00:02:41,160
+And we were able
+to jointly train
+
+63
+00:02:41,160 --> 00:02:46,040
+these two networks, the
+encoder and the decoder,
+
+64
+00:02:46,040 --> 00:02:48,120
+to maximize this
+variational lower bound
+
+65
+00:02:48,120 --> 00:02:49,960
+to our likelihood function.
+
+66
+00:02:49,960 --> 00:02:52,160
+Recall that maximum
+likelihood is
+
+67
+00:02:52,160 --> 00:02:54,480
+one of the key insights
+behind all generative modeling
+
+68
+00:02:54,480 --> 00:02:57,700
+that often our objective
+function for training generative
+
+69
+00:02:57,700 --> 00:03:00,820
+models is somehow to maximize
+the likelihood of the data
+
+70
+00:03:00,820 --> 00:03:04,982
+that we observe that comes from
+our true data distribution.
+
+71
+00:03:04,982 --> 00:03:06,940
+So today we're going to
+continue our discussion
+
+72
+00:03:06,940 --> 00:03:09,780
+of generative models and explore
+this other half of the family
+
+73
+00:03:09,780 --> 00:03:12,380
+tree, these implicit
+density models.
+
+74
+00:03:12,380 --> 00:03:14,820
+So in implicit density
+models we are no longer
+
+75
+00:03:14,820 --> 00:03:18,100
+going to get access to some
+actual density value p of x,
+
+76
+00:03:18,100 --> 00:03:21,300
+but these models will
+implicitly model the probability
+
+77
+00:03:21,300 --> 00:03:22,160
+distribution.
+
+78
+00:03:22,160 --> 00:03:24,220
+And even though we can't
+compute a density value
+
+79
+00:03:24,220 --> 00:03:27,180
+p of x for any piece of data
+x, we will be able to sample
+
+80
+00:03:27,180 --> 00:03:29,757
+from the underlying distribution
+that these models learn.
+
+81
+00:03:29,757 --> 00:03:32,340
+So we'll be able to draw samples
+from the learned distribution
+
+82
+00:03:32,340 --> 00:03:35,940
+even if we can't output
+an actual density value.
+
+83
+00:03:35,940 --> 00:03:38,100
+So the first such model
+that we'll explore
+
+84
+00:03:38,100 --> 00:03:42,820
+are generative adversarial
+networks or usually called GANs.
+
+85
+00:03:42,820 --> 00:03:45,860
+And it's useful to contrast GANs
+with variational autoencoders
+
+86
+00:03:45,860 --> 00:03:48,220
+and autoregressive models
+that we've seen so far.
+
+87
+00:03:48,220 --> 00:03:50,500
+So like we just said,
+autoregressive models
+
+88
+00:03:50,500 --> 00:03:52,700
+are a likelihood based method.
+
+89
+00:03:52,700 --> 00:03:54,980
+Their training objective
+is maximum likelihood.
+
+90
+00:03:54,980 --> 00:03:56,960
+So you write down this
+parameterized function
+
+91
+00:03:56,960 --> 00:04:00,060
+that is your P of x,
+where x is a piece of data
+
+92
+00:04:00,060 --> 00:04:02,360
+and then you maximize
+this over the data
+
+93
+00:04:02,360 --> 00:04:04,820
+that you observe trying
+to do maximum likelihood.
+
+94
+00:04:04,820 --> 00:04:07,840
+And variational autoencoders
+follow this similar idea
+
+95
+00:04:07,840 --> 00:04:11,920
+where we write down this
+approximation to p of x and then
+
+96
+00:04:11,920 --> 00:04:14,720
+maximize that
+approximation to p of x.
+
+97
+00:04:14,720 --> 00:04:16,560
+And now very generative
+adversarial networks
+
+98
+00:04:16,560 --> 00:04:18,268
+will do something a
+little bit different.
+
+99
+00:04:18,268 --> 00:04:20,880
+They will give up on directly
+modeling that p of x as we just
+
+100
+00:04:20,880 --> 00:04:23,280
+said, but even though
+they don't explicitly
+
+101
+00:04:23,280 --> 00:04:26,100
+model the p of x or let us
+get out those density values,
+
+102
+00:04:26,100 --> 00:04:27,600
+they will give us
+some way to sample
+
+103
+00:04:27,600 --> 00:04:32,520
+from the underlying distribution
+that the model is fitting.
+
+104
+00:04:32,520 --> 00:04:34,960
+So the setup here
+is that we'll start
+
+105
+00:04:34,960 --> 00:04:38,240
+by having some finite
+samples of data, Xi,
+
+106
+00:04:38,240 --> 00:04:41,120
+which are assumed to be drawn
+from some true data distribution
+
+107
+00:04:41,120 --> 00:04:42,240
+pdata.
+
+108
+00:04:42,240 --> 00:04:45,800
+And our goal is we want to be
+able to draw samples from pdata
+
+109
+00:04:45,800 --> 00:04:48,600
+and recall pdata is something
+like the true distribution
+
+110
+00:04:48,600 --> 00:04:49,580
+of the universe.
+
+111
+00:04:49,580 --> 00:04:52,400
+This is the distribution that
+the universe uses to give you
+
+112
+00:04:52,400 --> 00:04:53,640
+samples of your data.
+
+113
+00:04:53,640 --> 00:04:55,920
+And this is likely a very
+complicated distribution.
+
+114
+00:04:55,920 --> 00:04:56,880
+It involves physics.
+
+115
+00:04:56,880 --> 00:04:58,080
+It involves history.
+
+116
+00:04:58,080 --> 00:05:00,803
+It involves sociopolitical
+constraints maybe.
+
+117
+00:05:00,803 --> 00:05:02,220
+There's a lot of
+complication that
+
+118
+00:05:02,220 --> 00:05:03,595
+goes into all the
+stuff happening
+
+119
+00:05:03,595 --> 00:05:06,660
+in the universe that gives
+rise to the data that you see.
+
+120
+00:05:06,660 --> 00:05:10,300
+And somehow we want to
+fit some approximate model
+
+121
+00:05:10,300 --> 00:05:12,740
+that tries to match that true
+data distribution as well
+
+122
+00:05:12,740 --> 00:05:14,380
+as possible and that
+allows us to draw
+
+123
+00:05:14,380 --> 00:05:16,820
+new samples from our
+fitted distribution that
+
+124
+00:05:16,820 --> 00:05:20,005
+look like the original data
+samples that we observed.
+
+125
+00:05:20,005 --> 00:05:21,380
+So the way that
+we're going to do
+
+126
+00:05:21,380 --> 00:05:24,385
+this is by introducing
+a latent variable z.
+
+127
+00:05:24,385 --> 00:05:26,260
+This looks kind of like
+the latent variable z
+
+128
+00:05:26,260 --> 00:05:28,880
+that we saw in
+variational autoencoders,
+
+129
+00:05:28,880 --> 00:05:31,900
+where it's going to give where
+this latent variable z is going
+
+130
+00:05:31,900 --> 00:05:34,740
+to be distributed according to
+some known prior distribution
+
+131
+00:05:34,740 --> 00:05:37,517
+p of z that we will write
+down and control ourselves.
+
+132
+00:05:37,517 --> 00:05:39,100
+And usually this is
+going to be a unit
+
+133
+00:05:39,100 --> 00:05:41,893
+Gaussian or a
+uniform distribution,
+
+134
+00:05:41,893 --> 00:05:44,060
+but typically a unit Gaussian,
+something very simple
+
+135
+00:05:44,060 --> 00:05:45,518
+that we know how
+to sample from, we
+
+136
+00:05:45,518 --> 00:05:47,820
+know the analytical
+properties of.
+
+137
+00:05:47,820 --> 00:05:49,460
+And now the setup
+is that we're going
+
+138
+00:05:49,460 --> 00:05:53,320
+to imagine some data generating
+process that our network is
+
+139
+00:05:53,320 --> 00:05:54,200
+going to model.
+
+140
+00:05:54,200 --> 00:05:58,520
+So here we're going to imagine
+that we sample a z according
+
+141
+00:05:58,520 --> 00:06:01,840
+to our known distribution
+p of z to get a sample z,
+
+142
+00:06:01,840 --> 00:06:05,920
+pass that sample z through
+a generator network, g of z.
+
+143
+00:06:05,920 --> 00:06:09,480
+And then that x is going to be
+a sample from some generator
+
+144
+00:06:09,480 --> 00:06:11,280
+distribution PG.
+
+145
+00:06:11,280 --> 00:06:13,880
+And as we vary the parameters
+or the architecture
+
+146
+00:06:13,880 --> 00:06:16,580
+or the training of
+our generator network,
+
+147
+00:06:16,580 --> 00:06:18,920
+that is going to induce
+different kinds of distributions
+
+148
+00:06:18,920 --> 00:06:21,600
+that we sample from in
+this PG distribution.
+
+149
+00:06:21,600 --> 00:06:23,400
+So the whole goal
+in GAN training
+
+150
+00:06:23,400 --> 00:06:26,480
+is to try to force this PG
+distribution, which is induced
+
+151
+00:06:26,480 --> 00:06:27,820
+by our generator network.
+
+152
+00:06:27,820 --> 00:06:30,520
+We want that PG distribution
+to match the true P data
+
+153
+00:06:30,520 --> 00:06:32,540
+distribution as
+close as possible.
+
+154
+00:06:32,540 --> 00:06:35,840
+And because if they match,
+then we could sample a z,
+
+155
+00:06:35,840 --> 00:06:38,160
+pass it through our
+generator and now we
+
+156
+00:06:38,160 --> 00:06:40,200
+have a sample of sampled
+piece of data that
+
+157
+00:06:40,200 --> 00:06:43,127
+looks a lot like our P data.
+
+158
+00:06:43,127 --> 00:06:45,460
+So the picture for this is
+something like the following.
+
+159
+00:06:45,460 --> 00:06:48,040
+And we'll imagine
+sampling z from our pz
+
+160
+00:06:48,040 --> 00:06:51,220
+to get a concrete latent z,
+pass it through our generator G
+
+161
+00:06:51,220 --> 00:06:53,260
+and that will give
+us a generated image.
+
+162
+00:06:53,260 --> 00:06:55,100
+So the generator
+network basically
+
+163
+00:06:55,100 --> 00:06:58,660
+is trained to convert a sample
+from a known distribution, z,
+
+164
+00:06:58,660 --> 00:07:01,620
+into a sample of our
+data distribution.
+
+165
+00:07:01,620 --> 00:07:04,720
+But now the question is, how
+can we force these outputs?
+
+166
+00:07:04,720 --> 00:07:07,620
+How can we force the induced
+generator distribution PG?
+
+167
+00:07:07,620 --> 00:07:11,180
+How can we force this to match
+the data distribution pdata?
+
+168
+00:07:11,180 --> 00:07:13,540
+And the trick in generative
+adversarial networks
+
+169
+00:07:13,540 --> 00:07:16,100
+is that we're going to
+introduce another neural network
+
+170
+00:07:16,100 --> 00:07:17,580
+to do that task for us.
+
+171
+00:07:17,580 --> 00:07:21,802
+In the previous versions of
+generative modeling, VAEs
+
+172
+00:07:21,802 --> 00:07:23,260
+and autoregressive
+models, we tried
+
+173
+00:07:23,260 --> 00:07:24,802
+to write down some
+objective function
+
+174
+00:07:24,802 --> 00:07:27,580
+that we could minimize that
+would force our fit distribution
+
+175
+00:07:27,580 --> 00:07:29,120
+to match the data distribution.
+
+176
+00:07:29,120 --> 00:07:30,980
+Here we're going to
+relinquish that control
+
+177
+00:07:30,980 --> 00:07:33,180
+and basically ask
+another neural network
+
+178
+00:07:33,180 --> 00:07:35,260
+to solve that task for us.
+
+179
+00:07:35,260 --> 00:07:38,100
+So in particular, we're going
+to train another neural network
+
+180
+00:07:38,100 --> 00:07:40,740
+called the discriminator,
+D. And this discriminator
+
+181
+00:07:40,740 --> 00:07:44,860
+is going to be tasked with
+inputting an image, sometimes
+
+182
+00:07:44,860 --> 00:07:46,800
+a real image,
+sometimes a fake image.
+
+183
+00:07:46,800 --> 00:07:49,840
+And it's going to classify
+whether that image was
+
+184
+00:07:49,840 --> 00:07:51,280
+fake or real.
+
+185
+00:07:51,280 --> 00:07:55,303
+And then the idea is that these
+two networks are going to fight.
+
+186
+00:07:55,303 --> 00:07:56,720
+We're going to
+train the generator
+
+187
+00:07:56,720 --> 00:07:58,095
+to try to fool
+the discriminator,
+
+188
+00:07:58,095 --> 00:07:59,845
+and we're going to
+train the discriminator
+
+189
+00:07:59,845 --> 00:08:02,480
+as a classification model to
+try to correctly discriminate
+
+190
+00:08:02,480 --> 00:08:05,300
+or classify between
+real data and fake data.
+
+191
+00:08:05,300 --> 00:08:08,520
+And the intuition is that as
+these two networks fight, then
+
+192
+00:08:08,520 --> 00:08:10,580
+ideally the discriminator
+will get better.
+
+193
+00:08:10,580 --> 00:08:11,580
+It will get really good.
+
+194
+00:08:11,580 --> 00:08:13,163
+The discriminator
+will get really good
+
+195
+00:08:13,163 --> 00:08:16,318
+at determining features of
+real data from fake data.
+
+196
+00:08:16,318 --> 00:08:18,360
+And once the discriminator
+gets really good, then
+
+197
+00:08:18,360 --> 00:08:20,480
+in order to fool the
+discriminator into thinking
+
+198
+00:08:20,480 --> 00:08:23,220
+that the generated samples
+are classified as real,
+
+199
+00:08:23,220 --> 00:08:25,480
+the generator data will need
+to get closer and closer
+
+200
+00:08:25,480 --> 00:08:28,257
+to producing samples
+that look like true data.
+
+201
+00:08:28,257 --> 00:08:30,840
+So that's the kind of intuition
+between generative adversarial
+
+202
+00:08:30,840 --> 00:08:32,159
+networks.
+
+203
+00:08:32,159 --> 00:08:34,497
+So a question is does the
+generator network get feedback
+
+204
+00:08:34,497 --> 00:08:36,080
+from the discriminator
+on whether it's
+
+205
+00:08:36,080 --> 00:08:37,440
+classifying correctly?
+
+206
+00:08:37,440 --> 00:08:39,880
+Yes and that's crucial for
+this whole process working.
+
+207
+00:08:39,880 --> 00:08:42,870
+And the type of feedback
+it gets is gradients.
+
+208
+00:08:42,870 --> 00:08:45,080
+This whole thing,
+this composite system
+
+209
+00:08:45,080 --> 00:08:47,140
+of the generator and
+the discriminator
+
+210
+00:08:47,140 --> 00:08:48,240
+are just neural networks.
+
+211
+00:08:48,240 --> 00:08:50,157
+We know how to compute
+gradients through those
+
+212
+00:08:50,157 --> 00:08:52,440
+and those communicate
+through that generated image.
+
+213
+00:08:52,440 --> 00:08:54,898
+So we're going to back propagate
+from the discriminator all
+
+214
+00:08:54,898 --> 00:08:57,480
+the way through the generated
+image into the generator.
+
+215
+00:08:57,480 --> 00:08:59,355
+So that's how the
+generator is going to learn
+
+216
+00:08:59,355 --> 00:09:01,420
+from the discriminator.
+
+217
+00:09:01,420 --> 00:09:03,380
+And then more concretely
+we need to write down
+
+218
+00:09:03,380 --> 00:09:05,860
+some actual equations,
+some actual math that we're
+
+219
+00:09:05,860 --> 00:09:08,580
+going to use to
+concretize this intuition.
+
+220
+00:09:08,580 --> 00:09:10,660
+So in particular, we're
+going to jointly train
+
+221
+00:09:10,660 --> 00:09:13,100
+the generator G and
+the discriminator
+
+222
+00:09:13,100 --> 00:09:15,820
+D with this minimax game.
+
+223
+00:09:15,820 --> 00:09:17,880
+This equation looks maybe
+a little bit daunting
+
+224
+00:09:17,880 --> 00:09:20,780
+so we'll walk through each
+of the terms one by one.
+
+225
+00:09:20,780 --> 00:09:22,500
+So here we're going
+to color code this
+
+226
+00:09:22,500 --> 00:09:25,200
+and say that the generator
+is going to be in blue,
+
+227
+00:09:25,200 --> 00:09:27,260
+the discriminator is
+going to be in red.
+
+228
+00:09:27,260 --> 00:09:29,980
+And the discriminator is
+going to be a function that
+
+229
+00:09:29,980 --> 00:09:32,260
+inputs a piece of
+data x and outputs
+
+230
+00:09:32,260 --> 00:09:34,340
+the probability
+that data is real.
+
+231
+00:09:34,340 --> 00:09:36,397
+So in particular,
+D of x equals 0
+
+232
+00:09:36,397 --> 00:09:38,980
+means that the discriminator has
+classified that piece of data
+
+233
+00:09:38,980 --> 00:09:40,340
+x as fake.
+
+234
+00:09:40,340 --> 00:09:43,300
+D of x equals 1 means that the
+discriminator has classified
+
+235
+00:09:43,300 --> 00:09:44,835
+that piece of data as real.
+
+236
+00:09:44,835 --> 00:09:46,460
+Of course, those are
+the extreme cases.
+
+237
+00:09:46,460 --> 00:09:49,000
+The discriminator in practice
+will output some probability
+
+238
+00:09:49,000 --> 00:09:53,960
+that gives you a soft version
+in between those two decisions.
+
+239
+00:09:53,960 --> 00:09:56,357
+Now imagine what happens
+if we fix the generator G.
+
+240
+00:09:56,357 --> 00:09:58,440
+And just imagine this
+problem from the perspective
+
+241
+00:09:58,440 --> 00:09:59,560
+of the discriminator.
+
+242
+00:09:59,560 --> 00:10:01,720
+So then from the perspective
+of the discriminator
+
+243
+00:10:01,720 --> 00:10:03,040
+there's two terms here.
+
+244
+00:10:03,040 --> 00:10:06,880
+One, this first term says
+the discriminator wants
+
+245
+00:10:06,880 --> 00:10:09,140
+D of x equals 1 for real data.
+
+246
+00:10:09,140 --> 00:10:11,920
+Remember D of x equals 1
+means that the discriminator
+
+247
+00:10:11,920 --> 00:10:13,280
+says that it's real.
+
+248
+00:10:13,280 --> 00:10:15,880
+And this expectation
+basically says
+
+249
+00:10:15,880 --> 00:10:19,440
+we're going to draw data
+samples x from the true pdata
+
+250
+00:10:19,440 --> 00:10:20,300
+distribution.
+
+251
+00:10:20,300 --> 00:10:22,500
+We're going to pass those
+through the discriminator
+
+252
+00:10:22,500 --> 00:10:25,240
+and then take a log because we
+almost always work in log space
+
+253
+00:10:25,240 --> 00:10:26,700
+when working with probabilities.
+
+254
+00:10:26,700 --> 00:10:29,140
+And remember log is
+a monotonic function.
+
+255
+00:10:29,140 --> 00:10:34,000
+So maximizing log of x is
+the same as maximizing x.
+
+256
+00:10:34,000 --> 00:10:37,720
+So in this case, this
+is saying that we
+
+257
+00:10:37,720 --> 00:10:40,920
+want to maximize log of D
+of x for real data, which
+
+258
+00:10:40,920 --> 00:10:44,180
+is equivalent to saying D
+of x equals 1 for real data.
+
+259
+00:10:44,180 --> 00:10:46,100
+Now on the other
+side this is saying
+
+260
+00:10:46,100 --> 00:10:49,540
+that we're going to take an
+expectation by sampling priors
+
+261
+00:10:49,540 --> 00:10:50,740
+z--
+
+262
+00:10:50,740 --> 00:10:52,980
+sorry, sampling latents
+z according to our known
+
+263
+00:10:52,980 --> 00:10:54,180
+prior p of z.
+
+264
+00:10:54,180 --> 00:10:55,900
+We're going to take
+those z's pass them
+
+265
+00:10:55,900 --> 00:10:58,660
+through the generator, which
+should give us a generated data
+
+266
+00:10:58,660 --> 00:11:01,100
+sample, and then pass
+that generated data sample
+
+267
+00:11:01,100 --> 00:11:02,740
+through the discriminator.
+
+268
+00:11:02,740 --> 00:11:04,860
+And now the discriminator
+wants to classify
+
+269
+00:11:04,860 --> 00:11:06,267
+as these are fake samples.
+
+270
+00:11:06,267 --> 00:11:08,100
+So the discriminator
+wants to classify these
+
+271
+00:11:08,100 --> 00:11:10,180
+as fake so we need
+to somehow invert
+
+272
+00:11:10,180 --> 00:11:12,380
+that expression on the left.
+
+273
+00:11:12,380 --> 00:11:15,880
+So here we want D of
+x equals 0 to be fake.
+
+274
+00:11:15,880 --> 00:11:19,820
+So one way to say that
+is maximize log of 1
+
+275
+00:11:19,820 --> 00:11:21,330
+minus D of G of z.
+
+276
+00:11:21,330 --> 00:11:23,580
+So this term on the right
+says the discriminator wants
+
+277
+00:11:23,580 --> 00:11:25,778
+D of x equals 0 for fake data.
+
+278
+00:11:25,778 --> 00:11:27,820
+And the term on the left
+says discriminator wants
+
+279
+00:11:27,820 --> 00:11:30,192
+D of x equals 1 for real data.
+
+280
+00:11:30,192 --> 00:11:32,400
+OK, so that's what the
+discriminator is trying to do.
+
+281
+00:11:32,400 --> 00:11:34,420
+The discriminator is
+trying to correctly just do
+
+282
+00:11:34,420 --> 00:11:38,740
+this classification task
+between generated samples
+
+283
+00:11:38,740 --> 00:11:40,360
+and real samples
+from our data set
+
+284
+00:11:40,360 --> 00:11:43,560
+and try to classify them
+correctly as real or fake.
+
+285
+00:11:43,560 --> 00:11:47,280
+Now look at this from the
+perspective of the generator.
+
+286
+00:11:47,280 --> 00:11:48,915
+So imagine fixing
+the discriminator
+
+287
+00:11:48,915 --> 00:11:51,040
+and looking at this setup
+only from the perspective
+
+288
+00:11:51,040 --> 00:11:53,640
+of a generator with a
+fixed discriminator.
+
+289
+00:11:53,640 --> 00:11:55,360
+Now in this case,
+this first term
+
+290
+00:11:55,360 --> 00:11:57,220
+doesn't depend on
+the generator at all
+
+291
+00:11:57,220 --> 00:12:00,040
+because this first term was just
+about getting the discriminator
+
+292
+00:12:00,040 --> 00:12:02,760
+to correctly classify
+the real data samples.
+
+293
+00:12:02,760 --> 00:12:06,320
+So the generator only cares
+about this term on the right.
+
+294
+00:12:06,320 --> 00:12:08,360
+And intuitively, we
+want the generator
+
+295
+00:12:08,360 --> 00:12:10,040
+to fool the discriminator
+into thinking
+
+296
+00:12:10,040 --> 00:12:11,560
+that its samples are real.
+
+297
+00:12:11,560 --> 00:12:14,200
+So that means that
+the generator wants
+
+298
+00:12:14,200 --> 00:12:16,600
+D of x equals 1 for fake data.
+
+299
+00:12:16,600 --> 00:12:17,880
+So the term is the same.
+
+300
+00:12:17,880 --> 00:12:20,560
+We draw a sample z
+according to p of z,
+
+301
+00:12:20,560 --> 00:12:22,945
+pass it through the generator
+to get a generated sample,
+
+302
+00:12:22,945 --> 00:12:24,320
+pass it through
+the discriminator
+
+303
+00:12:24,320 --> 00:12:26,920
+to get the discriminator's
+predicted probability
+
+304
+00:12:26,920 --> 00:12:27,630
+on that sample.
+
+306
+00:12:30,180 --> 00:12:33,200
+And now recall the generator
+wants D of x equals 1.
+
+307
+00:12:33,200 --> 00:12:36,840
+So rather than maximizing this
+like the discriminator wanted
+
+308
+00:12:36,840 --> 00:12:39,360
+to, instead we're going
+to try to minimize this
+
+309
+00:12:39,360 --> 00:12:42,980
+from the perspective
+of the generator.
+
+310
+00:12:42,980 --> 00:12:45,500
+And that gives us
+this minimax game.
+
+311
+00:12:45,500 --> 00:12:47,860
+So in particular, we can
+abstract away all this math
+
+312
+00:12:47,860 --> 00:12:50,980
+by writing it as some
+scalar function v
+
+313
+00:12:50,980 --> 00:12:53,540
+as a function of
+G and D. And then
+
+314
+00:12:53,540 --> 00:12:56,540
+we say that the discriminator
+wants to maximize v,
+
+315
+00:12:56,540 --> 00:12:59,060
+the generator
+wants to minimize v
+
+316
+00:12:59,060 --> 00:13:01,660
+and they're going to fight
+against each other in that way.
+
+317
+00:13:01,660 --> 00:13:04,780
+And then to optimize this
+we're going to basically run
+
+318
+00:13:04,780 --> 00:13:07,620
+some gradient descent loop
+taking alternating steps trying
+
+319
+00:13:07,620 --> 00:13:09,500
+to minimize and maximize
+this with respect
+
+320
+00:13:09,500 --> 00:13:11,740
+to the parameters of the
+generator and discriminator.
+
+321
+00:13:11,740 --> 00:13:14,460
+So loop while true
+forever, then update
+
+322
+00:13:14,460 --> 00:13:18,700
+D according to take a gradient
+descent step, derivative of v
+
+323
+00:13:18,700 --> 00:13:21,800
+with respect to D and then
+step plus that gradient
+
+324
+00:13:21,800 --> 00:13:24,400
+because remember, discriminator
+is trying to maximize this,
+
+325
+00:13:24,400 --> 00:13:29,180
+so we want to do gradient ascent
+to try to maximize this term.
+
+326
+00:13:29,180 --> 00:13:32,137
+And then after we make an update
+on the discriminator weights,
+
+327
+00:13:32,137 --> 00:13:34,220
+then we'll make an update
+on the generator weights
+
+328
+00:13:34,220 --> 00:13:38,700
+by taking derivative of that V
+with respect to the generator
+
+329
+00:13:38,700 --> 00:13:42,200
+weights G, and now take a
+gradient descent step on V
+
+330
+00:13:42,200 --> 00:13:46,320
+because the generator wants
+to minimize that objective.
+
+331
+00:13:46,320 --> 00:13:47,900
+So that's basically
+our training.
+
+332
+00:13:47,900 --> 00:13:49,483
+That's basically the
+way that we train
+
+333
+00:13:49,483 --> 00:13:50,840
+generative adversarial networks.
+
+334
+00:13:50,840 --> 00:13:53,120
+We've got this
+thing, V, which is
+
+335
+00:13:53,120 --> 00:13:54,755
+the value of our minimax game.
+
+336
+00:13:54,755 --> 00:13:56,880
+And we're going to take
+alternating gradient ascent
+
+337
+00:13:56,880 --> 00:14:03,040
+and gradient descent weights on
+that objective V alternatingly
+
+338
+00:14:03,040 --> 00:14:05,498
+update the generator
+and discriminator.
+
+339
+00:14:05,498 --> 00:14:07,040
+And one thing that's
+really important
+
+340
+00:14:07,040 --> 00:14:09,840
+to realize when we're training
+generative adversarial networks
+
+341
+00:14:09,840 --> 00:14:12,640
+is that this V is
+not a loss function.
+
+342
+00:14:12,640 --> 00:14:16,240
+That means there is no-- the
+absolute value of V basically
+
+343
+00:14:16,240 --> 00:14:18,840
+does not tell us anything
+about how well the generator
+
+344
+00:14:18,840 --> 00:14:22,080
+and discriminator are solving
+this problem or how well--
+
+345
+00:14:22,080 --> 00:14:23,840
+or really, the
+thing we care about
+
+346
+00:14:23,840 --> 00:14:27,160
+is how well is that induced PG
+distribution matching the data
+
+347
+00:14:27,160 --> 00:14:28,020
+distribution.
+
+348
+00:14:28,020 --> 00:14:29,520
+And just looking
+at the value of V
+
+349
+00:14:29,520 --> 00:14:31,840
+doesn't really tell
+us anything about that
+
+350
+00:14:31,840 --> 00:14:34,840
+because the value
+of V depends on how
+
+351
+00:14:34,840 --> 00:14:36,560
+good the discriminator is.
+
+352
+00:14:36,560 --> 00:14:38,195
+If the discriminator
+is really bad,
+
+353
+00:14:38,195 --> 00:14:39,820
+then it's really easy
+for the generator
+
+354
+00:14:39,820 --> 00:14:42,200
+to fool this and
+get good numbers
+
+355
+00:14:42,200 --> 00:14:43,920
+or if the discriminator
+is really good,
+
+356
+00:14:43,920 --> 00:14:45,640
+then the generator
+has to be really good.
+
+357
+00:14:45,640 --> 00:14:49,140
+So there can be different
+settings of D and G
+
+358
+00:14:49,140 --> 00:14:51,380
+that will lead to the
+exact same value for V.
+
+359
+00:14:51,380 --> 00:14:54,100
+And that means that generative
+adversarial networks are often
+
+360
+00:14:54,100 --> 00:14:57,220
+really hard to train and even
+hard to tell when they are
+
+361
+00:14:57,220 --> 00:14:58,985
+doing a good job at training.
+
+362
+00:14:58,985 --> 00:15:01,360
+Normally when you train neural
+networks, you have a loss.
+
+363
+00:15:01,360 --> 00:15:02,860
+You try to minimize
+the loss with respect
+
+364
+00:15:02,860 --> 00:15:04,278
+to the parameters
+of your network
+
+365
+00:15:04,278 --> 00:15:05,820
+and you want to see
+that loss go down
+
+366
+00:15:05,820 --> 00:15:07,380
+over the course of
+training, but you
+
+367
+00:15:07,380 --> 00:15:09,680
+don't have that with generative
+adversarial networks.
+
+368
+00:15:09,680 --> 00:15:10,720
+You have the generator loss.
+
+369
+00:15:10,720 --> 00:15:12,053
+You have the discriminator loss.
+
+370
+00:15:12,053 --> 00:15:14,660
+You can try to plot them,
+but in general, they're
+
+371
+00:15:14,660 --> 00:15:15,813
+pretty meaningless.
+
+372
+00:15:15,813 --> 00:15:17,480
+So with generative
+adversarial networks,
+
+373
+00:15:17,480 --> 00:15:19,540
+they're really hard to train.
+
+374
+00:15:19,540 --> 00:15:23,640
+I think, one, this objective
+is fundamentally unstable.
+
+375
+00:15:23,640 --> 00:15:26,340
+You're trying to do jointly
+maximize and minimize
+
+376
+00:15:26,340 --> 00:15:29,408
+the same quantity with respect
+to different sets of parameters
+
+377
+00:15:29,408 --> 00:15:31,700
+of the network so that's kind
+of inherently a difficult
+
+378
+00:15:31,700 --> 00:15:33,080
+optimization problem.
+
+379
+00:15:33,080 --> 00:15:35,420
+And then even worse,
+you don't have any value
+
+380
+00:15:35,420 --> 00:15:38,080
+to look at to tell whether
+or not you're making progress
+
+381
+00:15:38,080 --> 00:15:39,560
+towards a good solution.
+
+382
+00:15:39,560 --> 00:15:41,400
+So generative
+adversarial networks,
+
+383
+00:15:41,400 --> 00:15:44,000
+they're pretty effective, but
+they're really hard to train
+
+384
+00:15:44,000 --> 00:15:48,200
+and really hard to tune and
+really hard to make progress on.
+
+385
+00:15:48,200 --> 00:15:52,340
+So that's the main takeaway for
+generative adversarial networks.
+
+386
+00:15:52,340 --> 00:15:55,120
+There is one little trick that
+is kind of useful to think
+
+387
+00:15:55,120 --> 00:15:57,800
+about for when training
+GANs is that just
+
+388
+00:15:57,800 --> 00:16:00,560
+to imagine the training
+dynamics of these things.
+
+389
+00:16:00,560 --> 00:16:03,040
+So at the very start,
+imagine at the very beginning
+
+390
+00:16:03,040 --> 00:16:05,300
+of training your generators
+randomly initialize,
+
+391
+00:16:05,300 --> 00:16:07,180
+your discriminator is
+randomly initialized.
+
+392
+00:16:07,180 --> 00:16:08,200
+What's going to happen?
+
+393
+00:16:08,200 --> 00:16:10,680
+Well, at the very start of
+training then your generator
+
+394
+00:16:10,680 --> 00:16:12,658
+is producing completely
+random noise.
+
+395
+00:16:12,658 --> 00:16:14,200
+That completely
+random noise is going
+
+396
+00:16:14,200 --> 00:16:16,303
+to look very different
+from real images.
+
+397
+00:16:16,303 --> 00:16:18,720
+So at the very beginning of
+training when the generator is
+
+398
+00:16:18,720 --> 00:16:21,720
+terrible, then the discriminator
+has a very easy problem.
+
+399
+00:16:21,720 --> 00:16:23,920
+So typically within
+a couple iterations
+
+400
+00:16:23,920 --> 00:16:25,720
+the discriminator can
+really immediately
+
+401
+00:16:25,720 --> 00:16:28,240
+pick up between real images
+and these totally garbage
+
+402
+00:16:28,240 --> 00:16:32,320
+random fake images that the
+random generator is giving you.
+
+403
+00:16:32,320 --> 00:16:35,603
+So that means that at the
+very start of training
+
+404
+00:16:35,603 --> 00:16:37,020
+the discriminator
+is quickly going
+
+405
+00:16:37,020 --> 00:16:41,180
+to learn to classify these
+real and fake pretty quickly
+
+406
+00:16:41,180 --> 00:16:43,060
+with pretty high probability.
+
+407
+00:16:43,060 --> 00:16:47,340
+So then it's interesting to
+plot what is D of G of z?
+
+408
+00:16:47,340 --> 00:16:52,740
+Sorry, what is this term as
+a function of D of G of z
+
+409
+00:16:52,740 --> 00:16:55,220
+because that's
+basically the loss
+
+410
+00:16:55,220 --> 00:16:57,400
+function from the
+perspective of the generator.
+
+411
+00:16:57,400 --> 00:17:00,060
+So then from the perspective
+of the generator,
+
+412
+00:17:00,060 --> 00:17:02,420
+we're at the
+beginning of training
+
+413
+00:17:02,420 --> 00:17:04,220
+somewhere all the way over here.
+
+414
+00:17:04,220 --> 00:17:06,500
+So the discriminator is
+doing a really good job
+
+415
+00:17:06,500 --> 00:17:09,609
+at treating generated samples
+as fake, classifying them
+
+416
+00:17:09,609 --> 00:17:11,859
+as fake at the beginning of
+training, which means that
+
+417
+00:17:11,859 --> 00:17:13,506
+from the discriminator's
+perspective,
+
+418
+00:17:13,506 --> 00:17:15,339
+it's trying to optimize
+a loss function that
+
+419
+00:17:15,339 --> 00:17:16,817
+looks something like this.
+
+420
+00:17:16,817 --> 00:17:18,900
+And if you'll notice
+something, this loss function
+
+421
+00:17:18,900 --> 00:17:21,819
+is flat or very close
+to flat at the place
+
+422
+00:17:21,819 --> 00:17:24,720
+where the generator is trying
+to optimize its parameters.
+
+423
+00:17:24,720 --> 00:17:27,660
+So this means that in practice
+when you use this naive
+
+424
+00:17:27,660 --> 00:17:29,905
+objective for
+training GANs, then
+
+425
+00:17:29,905 --> 00:17:31,780
+the generator has a
+really hard time learning
+
+426
+00:17:31,780 --> 00:17:33,800
+at the beginning of training.
+
+427
+00:17:33,800 --> 00:17:36,340
+Oh, good question is how do
+you assemble the data set?
+
+428
+00:17:36,340 --> 00:17:40,080
+How do we generate a photo of
+a unicorn if no unicorn exists?
+
+429
+00:17:40,080 --> 00:17:43,737
+So this pdata, that's
+your choice of pdata.
+
+430
+00:17:43,737 --> 00:17:46,320
+So whatever data set you happen
+to assemble from your training
+
+431
+00:17:46,320 --> 00:17:48,480
+set, that's choosing
+what is the pdata
+
+432
+00:17:48,480 --> 00:17:49,740
+that you're trying to model.
+
+433
+00:17:49,740 --> 00:17:51,960
+So in general, if
+you want to generate
+
+434
+00:17:51,960 --> 00:17:53,760
+a sample of a thing
+that looks nothing
+
+435
+00:17:53,760 --> 00:17:56,460
+like anything that you've ever
+seen before, you're out of luck.
+
+436
+00:17:56,460 --> 00:17:57,680
+It's not going to happen.
+
+437
+00:17:57,680 --> 00:18:00,200
+So the only way that you're
+generally going to draw samples
+
+438
+00:18:00,200 --> 00:18:02,320
+is if you have something
+in your training data set
+
+439
+00:18:02,320 --> 00:18:04,080
+that looks kind of like that.
+
+440
+00:18:04,080 --> 00:18:07,360
+So all generative models
+and all neural networks
+
+441
+00:18:07,360 --> 00:18:09,380
+really do generalize
+a little bit.
+
+442
+00:18:09,380 --> 00:18:11,800
+So then the hope is
+that maybe you've
+
+443
+00:18:11,800 --> 00:18:14,800
+never seen a photorealistic
+image of a unicorn wearing
+
+444
+00:18:14,800 --> 00:18:17,920
+a Santa Claus hat, but you've
+seen photorealistic images
+
+445
+00:18:17,920 --> 00:18:20,280
+of horses, you've seen
+photorealistic images of Santa
+
+446
+00:18:20,280 --> 00:18:22,300
+Claus hats, you've seen
+drawings of unicorns,
+
+447
+00:18:22,300 --> 00:18:24,600
+you've seen drawings of
+horses and somehow you've
+
+448
+00:18:24,600 --> 00:18:26,240
+got enough stuff,
+even if you've never
+
+449
+00:18:26,240 --> 00:18:28,400
+seen the exact
+composition of attributes
+
+450
+00:18:28,400 --> 00:18:30,200
+that you want to
+generate, you've
+
+451
+00:18:30,200 --> 00:18:32,180
+seen enough stuff that's
+close enough to it
+
+452
+00:18:32,180 --> 00:18:34,640
+that the model can generalize
+and give you something new.
+
+453
+00:18:34,640 --> 00:18:36,377
+And that's always the hope here.
+
+454
+00:18:36,377 --> 00:18:38,960
+What does this look like from
+the discriminator's perspective?
+
+455
+00:18:38,960 --> 00:18:41,180
+So then, well,
+then if I generated
+
+456
+00:18:41,180 --> 00:18:43,740
+this image of a photorealistic
+unicorn wearing a Santa Claus
+
+457
+00:18:43,740 --> 00:18:46,118
+hat, then maybe all the
+textures are really perfect,
+
+458
+00:18:46,118 --> 00:18:48,160
+the lighting is perfect,
+the shadows are perfect,
+
+459
+00:18:48,160 --> 00:18:49,580
+the leaves are
+perfect, so there's
+
+460
+00:18:49,580 --> 00:18:53,020
+no real evidence in that
+sample itself to say
+
+461
+00:18:53,020 --> 00:18:54,553
+that this is obviously wrong.
+
+462
+00:18:54,553 --> 00:18:56,720
+Maybe if the discriminator
+was really, really smart,
+
+463
+00:18:56,720 --> 00:18:58,220
+then the discriminator
+could somehow
+
+464
+00:18:58,220 --> 00:18:59,975
+know that unicorns
+don't really exist,
+
+465
+00:18:59,975 --> 00:19:02,100
+and having a perfectly
+photorealistic image of them
+
+466
+00:19:02,100 --> 00:19:05,460
+isn't likely to happen, but
+that's a pretty hard semantic
+
+467
+00:19:05,460 --> 00:19:06,740
+problem to solve.
+
+468
+00:19:06,740 --> 00:19:08,660
+So in practice,
+discriminators tend
+
+469
+00:19:08,660 --> 00:19:10,660
+not to really be that smart.
+
+470
+00:19:10,660 --> 00:19:11,660
+Yeah, good question.
+
+471
+00:19:11,660 --> 00:19:13,758
+The idea is why don't
+we look at two curves?
+
+472
+00:19:13,758 --> 00:19:15,300
+Why don't we look
+at one curve saying
+
+473
+00:19:15,300 --> 00:19:16,560
+how good the discriminator is?
+
+474
+00:19:16,560 --> 00:19:18,102
+Why don't we look
+at one curve saying
+
+475
+00:19:18,102 --> 00:19:19,280
+how good the generator is?
+
+476
+00:19:19,280 --> 00:19:20,280
+Feel free to plot them.
+
+477
+00:19:20,280 --> 00:19:22,140
+They tend to look
+really useless.
+
+478
+00:19:22,140 --> 00:19:24,045
+And there's probably
+literally hundreds
+
+479
+00:19:24,045 --> 00:19:26,420
+of research papers of people
+trying to solve this problem
+
+480
+00:19:26,420 --> 00:19:28,800
+and figure out how do we
+tweak the GAN objective?
+
+481
+00:19:28,800 --> 00:19:30,000
+How do we not use a log?
+
+482
+00:19:30,000 --> 00:19:33,000
+How do we use a Wasserstein
+something, Something-something?
+
+483
+00:19:33,000 --> 00:19:35,120
+Put all kinds of
+crazy stuff into this
+
+484
+00:19:35,120 --> 00:19:37,000
+to make those curves
+more interpretable.
+
+485
+00:19:37,000 --> 00:19:40,200
+Hundreds of papers written about
+it, five years of thousands
+
+486
+00:19:40,200 --> 00:19:42,040
+of people's time, I
+don't think anybody
+
+487
+00:19:42,040 --> 00:19:43,760
+came up with a good solution.
+
+488
+00:19:43,760 --> 00:19:47,120
+So still, even after hundreds,
+thousands of papers training
+
+489
+00:19:47,120 --> 00:19:49,920
+GANs, a lot of
+people still end up
+
+490
+00:19:49,920 --> 00:19:51,520
+using this vanilla
+formulation, which
+
+491
+00:19:51,520 --> 00:19:53,687
+tends not to give you very
+interpretable curves even
+
+492
+00:19:53,687 --> 00:19:55,280
+when you split it up that way.
+
+493
+00:19:55,280 --> 00:19:58,000
+The question is what happens
+to the discriminator early
+
+494
+00:19:58,000 --> 00:19:59,540
+in training really important?
+
+495
+00:19:59,540 --> 00:20:00,960
+And the answer is
+no because this
+
+496
+00:20:00,960 --> 00:20:02,520
+is unlike any other
+classification
+
+497
+00:20:02,520 --> 00:20:04,520
+problem we've ever seen
+before because this is
+
+498
+00:20:04,520 --> 00:20:06,360
+a non-stationary distribution.
+
+499
+00:20:06,360 --> 00:20:08,720
+When you train an image
+classifier on ImageNet or CIFAR
+
+500
+00:20:08,720 --> 00:20:10,840
+or something like that,
+the data set is fixed
+
+501
+00:20:10,840 --> 00:20:12,640
+and the model is just
+trying to classify
+
+502
+00:20:12,640 --> 00:20:14,240
+that static data set well.
+
+503
+00:20:14,240 --> 00:20:16,200
+But in the case of
+GAN training, the data
+
+504
+00:20:16,200 --> 00:20:18,560
+set that it's trying to
+fit is changing under it
+
+505
+00:20:18,560 --> 00:20:20,960
+during the course of
+training because even
+
+506
+00:20:20,960 --> 00:20:23,520
+at the beginning of training,
+maybe the generated images look
+
+507
+00:20:23,520 --> 00:20:25,522
+really bad, it's easy
+to solve the problem,
+
+508
+00:20:25,522 --> 00:20:26,980
+but then the
+generator gets better.
+
+509
+00:20:26,980 --> 00:20:29,100
+And now the data set
+that the discriminator
+
+510
+00:20:29,100 --> 00:20:31,300
+is trying to discriminate
+changes under it
+
+511
+00:20:31,300 --> 00:20:32,580
+during the course of training.
+
+512
+00:20:32,580 --> 00:20:34,580
+So that means that it's
+a non-stationary problem
+
+513
+00:20:34,580 --> 00:20:38,100
+and with very complicated
+learning dynamics.
+
+514
+00:20:38,100 --> 00:20:40,140
+Yeah, good question.
+
+515
+00:20:40,140 --> 00:20:41,640
+Do these get caught
+in local minima?
+
+516
+00:20:41,640 --> 00:20:43,598
+Are there way to kick
+them out of local minima,
+
+517
+00:20:43,598 --> 00:20:45,060
+train for a while,
+kick them out?
+
+518
+00:20:45,060 --> 00:20:47,720
+I think again, hundreds of
+papers, thousands of papers,
+
+519
+00:20:47,720 --> 00:20:50,980
+lots of heuristics,
+nothing really stuck.
+
+520
+00:20:50,980 --> 00:20:53,722
+Correct, so you have to
+train this end to end.
+
+521
+00:20:53,722 --> 00:20:55,180
+So gradients from
+the discriminator
+
+522
+00:20:55,180 --> 00:20:58,540
+always propagate into the
+generator so in particular
+
+523
+00:20:58,540 --> 00:21:00,000
+through this term on the right.
+
+524
+00:21:00,000 --> 00:21:02,220
+So the only way that you're
+ever getting gradients
+
+525
+00:21:02,220 --> 00:21:04,100
+onto the generator's
+parameters is actually
+
+526
+00:21:04,100 --> 00:21:05,400
+through the discriminator.
+
+527
+00:21:05,400 --> 00:21:07,680
+I mean, unless you have
+some regularizer in here,
+
+528
+00:21:07,680 --> 00:21:09,237
+but there's no
+auxiliary term that's
+
+529
+00:21:09,237 --> 00:21:11,820
+telling the generator what to
+do other than the gradients that
+
+530
+00:21:11,820 --> 00:21:13,112
+gets through the discriminator.
+
+531
+00:21:13,112 --> 00:21:15,500
+And that's again leading to
+part of the unstable learning
+
+532
+00:21:15,500 --> 00:21:16,860
+problem.
+
+533
+00:21:16,860 --> 00:21:18,860
+Correct, so that
+pdata distribution,
+
+534
+00:21:18,860 --> 00:21:21,660
+that's going to stay fixed
+over the course of training.
+
+535
+00:21:21,660 --> 00:21:22,500
+All right.
+
+536
+00:21:22,500 --> 00:21:24,933
+So we said there's this
+problem that the generator gets
+
+537
+00:21:24,933 --> 00:21:26,600
+low gradients at the
+course of training.
+
+538
+00:21:26,600 --> 00:21:30,560
+There's a little hack
+here where rather
+
+539
+00:21:30,560 --> 00:21:33,460
+than trying to maximize
+log of 1 minus D of G of z,
+
+540
+00:21:33,460 --> 00:21:36,667
+you can instead minimize minus
+log of D of G of z instead.
+
+541
+00:21:36,667 --> 00:21:39,000
+You can convince yourself
+offline that those are roughly
+
+542
+00:21:39,000 --> 00:21:41,910
+equivalent, but the TL;DR is
+then it gives you a better curve
+
+543
+00:21:41,910 --> 00:21:44,160
+for the generator to get
+better gradients at the start
+
+544
+00:21:44,160 --> 00:21:45,015
+of training.
+
+545
+00:21:45,015 --> 00:21:46,140
+So that's really important.
+
+546
+00:21:46,140 --> 00:21:47,515
+And whenever you're
+training GANs
+
+547
+00:21:47,515 --> 00:21:50,100
+from scratch using
+this log objective,
+
+548
+00:21:50,100 --> 00:21:53,880
+then this trick to use the
+modified loss for the generator
+
+549
+00:21:53,880 --> 00:21:55,500
+is really important in practice.
+
+550
+00:21:55,500 --> 00:21:56,875
+So that means that
+there actually
+
+551
+00:21:56,875 --> 00:22:00,080
+is a one V that you're computing
+for the generator, a different V
+
+552
+00:22:00,080 --> 00:22:02,240
+that you're computing
+for the discriminator
+
+553
+00:22:02,240 --> 00:22:04,880
+and they aren't quite the same.
+
+554
+00:22:04,880 --> 00:22:06,480
+OK, there's another
+question of why
+
+555
+00:22:06,480 --> 00:22:08,360
+might this be a good objective.
+
+556
+00:22:08,360 --> 00:22:11,600
+And I used to have slides that
+walked through this proof step
+
+557
+00:22:11,600 --> 00:22:14,340
+by step, but I don't think
+we have time for that today.
+
+558
+00:22:14,340 --> 00:22:16,720
+So I'll just give you the
+TL;DR and we can refer you
+
+559
+00:22:16,720 --> 00:22:21,320
+to something offline to check,
+but the TL;DR is that this
+
+560
+00:22:21,320 --> 00:22:24,940
+objective is good because you
+can write down this optimal
+
+561
+00:22:24,940 --> 00:22:25,720
+discriminator.
+
+562
+00:22:25,720 --> 00:22:28,980
+So this is a nested
+optimization problem
+
+563
+00:22:28,980 --> 00:22:30,860
+where there's an inner
+maximization over D,
+
+564
+00:22:30,860 --> 00:22:34,320
+an outer minimization over G. So
+if you do a little bit of math,
+
+565
+00:22:34,320 --> 00:22:38,620
+you can actually solve this in
+this inner maximization problem
+
+566
+00:22:38,620 --> 00:22:43,323
+and write down what is
+the optimal discriminator.
+
+567
+00:22:43,323 --> 00:22:44,740
+This should actually
+be the-- this
+
+568
+00:22:44,740 --> 00:22:46,448
+is the optimal
+discriminator with respect
+
+569
+00:22:46,448 --> 00:22:49,447
+to a particular generator G. And
+you can just write this down.
+
+570
+00:22:49,447 --> 00:22:51,280
+Of course even though
+you can write it down,
+
+571
+00:22:51,280 --> 00:22:54,383
+you can never compute it
+because it depends on pdata.
+
+572
+00:22:54,383 --> 00:22:56,300
+And you can never compute
+pdata because if you
+
+573
+00:22:56,300 --> 00:22:58,600
+had access to the pdata
+density, you'd be done.
+
+574
+00:22:58,600 --> 00:23:00,940
+So you can write this down
+as an equation on a slide
+
+575
+00:23:00,940 --> 00:23:04,220
+or on a piece of paper, but
+you can never compute it.
+
+576
+00:23:04,220 --> 00:23:07,520
+And then once you have
+this inner objective,
+
+577
+00:23:07,520 --> 00:23:10,620
+once you have maximized this
+inner objective by writing down
+
+578
+00:23:10,620 --> 00:23:12,300
+the optimal
+discriminator, then you
+
+579
+00:23:12,300 --> 00:23:14,660
+can show that the outer
+objective is minimized if
+
+580
+00:23:14,660 --> 00:23:17,900
+and only if PG of x
+is equal to pdata.
+
+581
+00:23:17,900 --> 00:23:21,500
+So at least theoretically
+the optimum state
+
+582
+00:23:21,500 --> 00:23:23,420
+of both the discriminator
+and the generator
+
+583
+00:23:23,420 --> 00:23:27,640
+actually occurs uniquely
+when PG is equal to pdata.
+
+584
+00:23:27,640 --> 00:23:29,880
+So that makes us feel
+good, but there's
+
+585
+00:23:29,880 --> 00:23:32,360
+a lot of caveats to
+that theoretical result.
+
+586
+00:23:32,360 --> 00:23:35,600
+The one is that they both assume
+infinite potential capacity
+
+587
+00:23:35,600 --> 00:23:39,240
+for G and D, that those both
+assume that your generator
+
+588
+00:23:39,240 --> 00:23:41,120
+and discriminator can
+in principle represent
+
+589
+00:23:41,120 --> 00:23:43,370
+any function, which of course,
+they can't because they
+
+590
+00:23:43,370 --> 00:23:46,120
+are neural networks of a
+fixed size and capacity.
+
+591
+00:23:46,120 --> 00:23:48,240
+This also tells us
+absolutely nothing about
+
+592
+00:23:48,240 --> 00:23:51,060
+whether or not we will
+converge to this solution.
+
+593
+00:23:51,060 --> 00:23:53,000
+So even though there
+is this optimum point
+
+594
+00:23:53,000 --> 00:23:55,840
+in this objective
+landscape, this
+
+595
+00:23:55,840 --> 00:23:57,240
+tells us absolutely
+nothing about
+
+596
+00:23:57,240 --> 00:24:00,740
+whether we can ever reach there
+via this gradient descent,
+
+597
+00:24:00,740 --> 00:24:04,400
+gradient ascent, especially with
+a finite number of data samples.
+
+598
+00:24:04,400 --> 00:24:08,040
+So there's some sort of
+comforting theoretical result
+
+599
+00:24:08,040 --> 00:24:10,580
+that there is some theoretical
+justification to GANs,
+
+600
+00:24:10,580 --> 00:24:12,560
+but in practice,
+this doesn't really
+
+601
+00:24:12,560 --> 00:24:16,040
+hold or give us very
+strong guarantees.
+
+602
+00:24:16,040 --> 00:24:19,440
+So these GANs in
+practice, your generator G
+
+603
+00:24:19,440 --> 00:24:21,320
+and your discriminator
+D, both are
+
+604
+00:24:21,320 --> 00:24:23,900
+going to be parametrized
+as neural networks.
+
+605
+00:24:23,900 --> 00:24:25,940
+And they used to be CNNs.
+
+606
+00:24:25,940 --> 00:24:27,860
+The GANs kind of
+fell out of favor
+
+607
+00:24:27,860 --> 00:24:29,660
+before VITs became
+popular, but I'm
+
+608
+00:24:29,660 --> 00:24:31,900
+sure they would work
+with VITs as well.
+
+609
+00:24:31,900 --> 00:24:34,380
+And the first GAN that really
+gave non-trivial results
+
+610
+00:24:34,380 --> 00:24:37,100
+was called DC-GAN that had
+this five layer ConvNet
+
+611
+00:24:37,100 --> 00:24:39,420
+architecture, which gave
+what were at the time
+
+612
+00:24:39,420 --> 00:24:41,060
+pretty exciting samples.
+
+613
+00:24:41,060 --> 00:24:44,180
+And I mentioned DC-GAN because
+the first author, Alec Radford
+
+614
+00:24:44,180 --> 00:24:46,820
+et al, for most people
+doing DC-GAN would have been
+
+615
+00:24:46,820 --> 00:24:48,960
+a highlight of their career,
+but for Alec Radford,
+
+616
+00:24:48,960 --> 00:24:51,293
+it wasn't nearly enough for
+him because the next project
+
+617
+00:24:51,293 --> 00:24:55,060
+he worked on right after
+DC-GAN, does anybody know?
+
+618
+00:24:55,060 --> 00:24:55,860
+GPT.
+
+619
+00:24:55,860 --> 00:24:57,020
+GPT.
+
+620
+00:24:57,020 --> 00:25:00,360
+So Alec Radford, DC-GAN was kind
+of a low light in his career.
+
+621
+00:25:00,360 --> 00:25:04,140
+He went on to do GPT-1
+and GPT-2, as well
+
+622
+00:25:04,140 --> 00:25:05,880
+as some other amazing
+work at OpenAI.
+
+623
+00:25:05,880 --> 00:25:08,540
+So I think there's this really
+cool connection between people
+
+624
+00:25:08,540 --> 00:25:10,840
+that were working on
+generative modeling of images
+
+625
+00:25:10,840 --> 00:25:12,540
+actually jumped over to
+do generative modeling
+
+626
+00:25:12,540 --> 00:25:14,582
+of discrete text data,
+and did some of the really
+
+627
+00:25:14,582 --> 00:25:16,940
+important work there.
+
+628
+00:25:16,940 --> 00:25:19,500
+And one of the only
+other GAN paper
+
+629
+00:25:19,500 --> 00:25:21,480
+that I'm going to highlight
+is called StyleGAN.
+
+630
+00:25:21,480 --> 00:25:23,780
+I'm not really going to walk you
+through the details of this one,
+
+631
+00:25:23,780 --> 00:25:25,880
+other than to point
+you at it as a good one
+
+632
+00:25:25,880 --> 00:25:28,900
+to read if you want to know
+the best practices of GANs.
+
+633
+00:25:28,900 --> 00:25:31,240
+They use a much more
+complicated architecture,
+
+634
+00:25:31,240 --> 00:25:34,400
+but they get pretty good
+results in practice.
+
+635
+00:25:34,400 --> 00:25:36,120
+And one really nice
+thing about GANs
+
+636
+00:25:36,120 --> 00:25:38,320
+is that they actually tend
+to learn something smooth
+
+637
+00:25:38,320 --> 00:25:39,500
+in the latent space.
+
+638
+00:25:39,500 --> 00:25:43,080
+So what I mean by that is that
+if we have two latent vectors Z0
+
+639
+00:25:43,080 --> 00:25:45,740
+and Z1 and we
+interpolate between them,
+
+640
+00:25:45,740 --> 00:25:49,260
+that is draw a sample
+Z0 from your Gaussian,
+
+641
+00:25:49,260 --> 00:25:51,180
+you draw a sample Z1
+from your Gaussian.
+
+642
+00:25:51,180 --> 00:25:54,540
+Then you interpolate some kind
+of curve between Z0 and Z1.
+
+643
+00:25:54,540 --> 00:25:56,040
+Then for every point
+along the curve
+
+644
+00:25:56,040 --> 00:26:00,067
+we're going to generate a
+sample using our generator.
+
+645
+00:26:00,067 --> 00:26:02,400
+Then if we do that, we tend
+to get smooth interpolations
+
+646
+00:26:02,400 --> 00:26:04,275
+through this latent
+space, which is something
+
+647
+00:26:04,275 --> 00:26:05,560
+really cool with GANs.
+
+648
+00:26:05,560 --> 00:26:08,480
+And here's an example of this
+latent space interpolation
+
+649
+00:26:08,480 --> 00:26:10,600
+from the StyleGAN3 paper.
+
+650
+00:26:10,600 --> 00:26:14,000
+So you can see that these
+are all generated samples
+
+651
+00:26:14,000 --> 00:26:16,932
+by smoothly varying
+that latent z
+
+652
+00:26:16,932 --> 00:26:18,640
+and then passing it
+through the generator
+
+653
+00:26:18,640 --> 00:26:20,280
+to generate these
+different samples.
+
+654
+00:26:20,280 --> 00:26:22,900
+And you can see that
+these animals smoothly
+
+655
+00:26:22,900 --> 00:26:23,953
+morph into each other.
+
+656
+00:26:23,953 --> 00:26:25,620
+So that means that
+the model has somehow
+
+657
+00:26:25,620 --> 00:26:27,700
+uncovered some useful
+structure and stuffed it
+
+658
+00:26:27,700 --> 00:26:29,940
+into the latent space.
+
+659
+00:26:29,940 --> 00:26:32,260
+So that's pretty cool.
+
+660
+00:26:32,260 --> 00:26:35,420
+So I used to talk a lot more
+about generative adversarial
+
+661
+00:26:35,420 --> 00:26:36,780
+networks.
+
+662
+00:26:36,780 --> 00:26:39,020
+The pros is basically
+they have a really fairly
+
+663
+00:26:39,020 --> 00:26:40,320
+simple formulation.
+
+664
+00:26:40,320 --> 00:26:43,400
+And if you tune them right,
+like we saw with StyleGAN3
+
+665
+00:26:43,400 --> 00:26:45,900
+then they can actually
+give you very nice results,
+
+666
+00:26:45,900 --> 00:26:49,580
+very beautiful images, very high
+resolution, very good stuff.
+
+667
+00:26:49,580 --> 00:26:52,220
+But the cons like one like
+we talked about, they're
+
+668
+00:26:52,220 --> 00:26:53,583
+fairly unstable to train.
+
+669
+00:26:53,583 --> 00:26:55,000
+You have no loss
+curve to look at.
+
+670
+00:26:55,000 --> 00:26:56,480
+You have very unstable training.
+
+671
+00:26:56,480 --> 00:26:58,820
+They tend to blow up
+at the drop of a hat
+
+672
+00:26:58,820 --> 00:27:02,102
+so you end up with what's
+called mode collapse.
+
+673
+00:27:02,102 --> 00:27:03,560
+All of a sudden
+you might get NaNs.
+
+674
+00:27:03,560 --> 00:27:05,200
+You might get infs.
+
+675
+00:27:05,200 --> 00:27:07,200
+Your discriminator
+starts going crazy.
+
+676
+00:27:07,200 --> 00:27:09,500
+Your generator starts producing
+complete random garbage
+
+677
+00:27:09,500 --> 00:27:10,320
+all the time.
+
+678
+00:27:10,320 --> 00:27:13,340
+You have no loss curves to
+look at to diagnose this.
+
+679
+00:27:13,340 --> 00:27:14,500
+They're kind of a mess.
+
+680
+00:27:14,500 --> 00:27:16,380
+So even though that
+GANs can give you
+
+681
+00:27:16,380 --> 00:27:19,480
+really nice results if you
+very, very carefully tune them
+
+682
+00:27:19,480 --> 00:27:22,460
+and very, very carefully control
+the normalization, the sampling,
+
+683
+00:27:22,460 --> 00:27:25,100
+everything about
+them, in practice
+
+684
+00:27:25,100 --> 00:27:27,700
+they've been fairly hard to
+scale up to really big models,
+
+685
+00:27:27,700 --> 00:27:29,120
+to really big data.
+
+686
+00:27:29,120 --> 00:27:31,680
+So GANs were basically
+the go to category
+
+687
+00:27:31,680 --> 00:27:36,940
+of generative models from around
+2016 to maybe around 2020, 2021,
+
+688
+00:27:36,940 --> 00:27:38,160
+something around there.
+
+689
+00:27:38,160 --> 00:27:40,800
+And in that five years, there
+were literally thousands
+
+690
+00:27:40,800 --> 00:27:43,200
+and thousands of papers,
+people both trying
+
+691
+00:27:43,200 --> 00:27:45,480
+to use different GAN
+formulations, different loss
+
+692
+00:27:45,480 --> 00:27:47,618
+functions, different
+mathematical formalisms,
+
+693
+00:27:47,618 --> 00:27:50,160
+as well as applying GANs to all
+kinds of different generative
+
+694
+00:27:50,160 --> 00:27:51,820
+modeling tasks that
+you can imagine.
+
+695
+00:27:51,820 --> 00:27:54,600
+So this was basically the go to
+generative modeling framework
+
+696
+00:27:54,600 --> 00:27:57,080
+for about five or six years.
+
+697
+00:27:57,080 --> 00:27:59,460
+The question is would
+we just expect this?
+
+698
+00:27:59,460 --> 00:28:02,040
+Shouldn't we just expect these
+smooth latents to pop out?
+
+699
+00:28:02,040 --> 00:28:04,800
+I think not necessarily
+because one thing that
+
+700
+00:28:04,800 --> 00:28:08,240
+can happen with GANs is the
+generator might just memorize
+
+701
+00:28:08,240 --> 00:28:10,260
+a fixed number of data samples.
+
+702
+00:28:10,260 --> 00:28:12,920
+So what if your generator
+ignores the latent z
+
+703
+00:28:12,920 --> 00:28:15,160
+and just memorizes 10
+samples from the training
+
+704
+00:28:15,160 --> 00:28:16,017
+data set somehow?
+
+705
+00:28:16,017 --> 00:28:17,600
+And then no matter
+what z you give it,
+
+706
+00:28:17,600 --> 00:28:19,380
+it always gives you
+one of those 10 samples
+
+707
+00:28:19,380 --> 00:28:20,900
+from the training
+data set, and it never
+
+708
+00:28:20,900 --> 00:28:22,040
+gives you anything else.
+
+709
+00:28:22,040 --> 00:28:24,550
+Then in that case, you're
+going to fool the discriminator
+
+710
+00:28:24,550 --> 00:28:26,300
+because the generator
+is always giving you
+
+711
+00:28:26,300 --> 00:28:28,460
+something which is maybe
+bit wise identical to one
+
+712
+00:28:28,460 --> 00:28:29,440
+of your real samples.
+
+713
+00:28:29,440 --> 00:28:30,940
+And then in that
+case, the generator
+
+714
+00:28:30,940 --> 00:28:34,020
+would have basically
+piled on Dirac delta
+
+715
+00:28:34,020 --> 00:28:36,260
+density in the
+immediate vicinity
+
+716
+00:28:36,260 --> 00:28:39,420
+of a couple finite samples,
+but put no probability mass
+
+717
+00:28:39,420 --> 00:28:40,400
+anywhere else.
+
+718
+00:28:40,400 --> 00:28:43,620
+So that actually is a legitimate
+solution for the generator.
+
+719
+00:28:43,620 --> 00:28:46,177
+And that would definitely not
+give you smooth latents at all.
+
+720
+00:28:46,177 --> 00:28:48,260
+So that's just one example
+of how these things can
+
+721
+00:28:48,260 --> 00:28:50,260
+collapse into unintuitive
+solutions that are not
+
+722
+00:28:50,260 --> 00:28:51,860
+what you want.
+
+723
+00:28:51,860 --> 00:28:52,820
+Oh, good question.
+
+724
+00:28:52,820 --> 00:28:54,980
+What is the relationship
+between your training data
+
+725
+00:28:54,980 --> 00:28:56,623
+set and your latents?
+
+726
+00:28:56,623 --> 00:28:58,540
+So this is actually
+something very fundamental
+
+727
+00:28:58,540 --> 00:29:00,120
+about GANs is a great question.
+
+728
+00:29:00,120 --> 00:29:02,000
+So you can map one way.
+
+729
+00:29:02,000 --> 00:29:03,500
+So the generator
+gives you a mapping
+
+730
+00:29:03,500 --> 00:29:07,040
+from latent space into data
+space, maps from z to an x,
+
+731
+00:29:07,040 --> 00:29:08,740
+but with GANs you in
+general have no way
+
+732
+00:29:08,740 --> 00:29:11,260
+to map back from an x to a z.
+
+733
+00:29:11,260 --> 00:29:14,720
+And that's something very
+different between GANs and VAEs.
+
+734
+00:29:14,720 --> 00:29:17,740
+So VAEs will learn an
+explicit mapping from x to z,
+
+735
+00:29:17,740 --> 00:29:19,600
+but with GANs you
+have no such thing.
+
+736
+00:29:19,600 --> 00:29:21,200
+You can try to
+invert-- you can try
+
+737
+00:29:21,200 --> 00:29:24,560
+to compute an
+inverse numerically
+
+738
+00:29:24,560 --> 00:29:25,660
+via gradient descent.
+
+739
+00:29:25,660 --> 00:29:28,080
+And there's papers that do
+that, but there's actually
+
+740
+00:29:28,080 --> 00:29:31,440
+no explicitly enforced
+relationship between x and z.
+
+741
+00:29:31,440 --> 00:29:33,400
+Instead, you can think
+of the discriminator
+
+742
+00:29:33,400 --> 00:29:35,837
+as trying to just enforce
+a distributional alignment
+
+743
+00:29:35,837 --> 00:29:37,920
+between the distribution
+of all the outputs coming
+
+744
+00:29:37,920 --> 00:29:40,040
+from the generator and the
+distribution of all the data
+
+745
+00:29:40,040 --> 00:29:42,082
+samples, without any kind
+of explicit supervision
+
+746
+00:29:42,082 --> 00:29:43,120
+between them.
+
+747
+00:29:43,120 --> 00:29:44,683
+Of course, when
+it comes to GANs,
+
+748
+00:29:44,683 --> 00:29:46,100
+anything you
+probably think about,
+
+749
+00:29:46,100 --> 00:29:48,060
+there's probably at least
+a dozen papers about.
+
+750
+00:29:48,060 --> 00:29:50,240
+So there's also a lot of
+papers about GAN variants
+
+751
+00:29:50,240 --> 00:29:52,700
+that try to learn bidirectional
+mappings both ways,
+
+752
+00:29:52,700 --> 00:29:54,840
+but those never really took off.
+
+753
+00:29:54,840 --> 00:29:55,740
+Oh, good question.
+
+754
+00:29:55,740 --> 00:29:56,573
+What have we gained?
+
+755
+00:29:56,573 --> 00:29:59,300
+So when we went to VAEs
+we gained latent vectors,
+
+756
+00:29:59,300 --> 00:30:00,420
+but we gave up density.
+
+757
+00:30:00,420 --> 00:30:03,000
+And now with GANs it seems
+like we gave up latent vectors
+
+758
+00:30:03,000 --> 00:30:04,140
+that we can control.
+
+759
+00:30:04,140 --> 00:30:06,400
+What you gained was
+much better samples.
+
+760
+00:30:06,400 --> 00:30:09,280
+So when it comes to
+VAEs, VAEs tend not
+
+761
+00:30:09,280 --> 00:30:11,080
+to give you very good samples.
+
+762
+00:30:11,080 --> 00:30:14,280
+VAEs are characteristically
+always blurry.
+
+763
+00:30:14,280 --> 00:30:16,220
+They never really look good.
+
+764
+00:30:16,220 --> 00:30:18,840
+VAEs on their own just never
+tend to give you very clean,
+
+765
+00:30:18,840 --> 00:30:21,243
+crisp samples, but
+with GANs, as you
+
+766
+00:30:21,243 --> 00:30:22,660
+saw with some of
+the examples, you
+
+767
+00:30:22,660 --> 00:30:28,220
+can get very crisp, very
+clean, very good samples,
+
+768
+00:30:28,220 --> 00:30:30,260
+but what you lost
+was your sanity
+
+769
+00:30:30,260 --> 00:30:31,867
+in trying to tune these systems.
+
+770
+00:30:31,867 --> 00:30:34,200
+Yeah, at inference time you
+throw away the discriminator
+
+771
+00:30:34,200 --> 00:30:35,325
+and just use the generator.
+
+772
+00:30:35,325 --> 00:30:38,942
+So at inference you'll just
+draw a sample z from the prior,
+
+773
+00:30:38,942 --> 00:30:41,400
+pass through the generator,
+get your sample from your data.
+
+774
+00:30:41,400 --> 00:30:44,100
+So it's very, very
+efficient at inference time.
+
+775
+00:30:44,100 --> 00:30:44,600
+All right.
+
+776
+00:30:44,600 --> 00:30:46,340
+So I mentioned that
+GANs used to be
+
+777
+00:30:46,340 --> 00:30:49,750
+the go to category of generative
+modeling for about five
+
+778
+00:30:49,750 --> 00:30:50,780
+or six years.
+
+779
+00:30:50,780 --> 00:30:52,220
+So what displaced them?
+
+780
+00:30:52,220 --> 00:30:55,500
+And what displaced them was
+a very different category
+
+781
+00:30:55,500 --> 00:30:57,460
+of models called
+diffusion models.
+
+782
+00:30:57,460 --> 00:31:00,300
+Now I need to put
+some caveats here.
+
+783
+00:31:00,300 --> 00:31:02,740
+Diffusion model
+literature is crazy.
+
+784
+00:31:02,740 --> 00:31:05,500
+You read these papers, they
+go through five pages of math
+
+785
+00:31:05,500 --> 00:31:07,600
+before they tell you
+at all what's going on.
+
+786
+00:31:07,600 --> 00:31:11,380
+And there's three different
+mathematical formalisms
+
+787
+00:31:11,380 --> 00:31:13,240
+that lead to diffusion
+models that are all
+
+788
+00:31:13,240 --> 00:31:14,660
+very different mathematically.
+
+789
+00:31:14,660 --> 00:31:16,785
+And there's very different
+notation, very different
+
+790
+00:31:16,785 --> 00:31:18,960
+terminology, very different
+mathematical formalisms
+
+791
+00:31:18,960 --> 00:31:20,100
+between papers.
+
+792
+00:31:20,100 --> 00:31:23,080
+So this is a subarea
+that's crazy.
+
+793
+00:31:23,080 --> 00:31:24,720
+So I need to put
+a big caveat here
+
+794
+00:31:24,720 --> 00:31:28,225
+that I'm not going to cover
+fully all the different variants
+
+795
+00:31:28,225 --> 00:31:30,600
+of diffusion models with all
+of their proper mathematical
+
+796
+00:31:30,600 --> 00:31:31,420
+formalism.
+
+797
+00:31:31,420 --> 00:31:32,960
+Instead, what I'm
+going to try to do
+
+798
+00:31:32,960 --> 00:31:35,860
+is give you an intuitive
+overview of diffusion models,
+
+799
+00:31:35,860 --> 00:31:38,040
+as well as an intuitive
+geometric understanding
+
+800
+00:31:38,040 --> 00:31:40,540
+of the most common form
+of diffusion models today,
+
+801
+00:31:40,540 --> 00:31:42,480
+which are called
+rectified flow models.
+
+802
+00:31:42,480 --> 00:31:45,212
+And you could teach many, many
+lectures about diffusion models
+
+803
+00:31:45,212 --> 00:31:47,920
+and get into all the interesting
+mathematical nuance of all these
+
+804
+00:31:47,920 --> 00:31:51,280
+flavors, but we just won't have
+time for that in 2/3 of one
+
+805
+00:31:51,280 --> 00:31:53,320
+lecture, unfortunately.
+
+806
+00:31:53,320 --> 00:31:56,200
+So with that caveat
+aside, the intuition
+
+807
+00:31:56,200 --> 00:31:59,000
+behind diffusion models
+is actually easy.
+
+808
+00:31:59,000 --> 00:32:03,320
+So with all generative models,
+we want to draw samples.
+
+809
+00:32:03,320 --> 00:32:08,080
+And like GANs, we want to
+convert samples from a noise
+
+810
+00:32:08,080 --> 00:32:11,722
+distribution z into a
+data distribution, px,
+
+811
+00:32:11,722 --> 00:32:14,180
+but the way that we're going
+to do that in diffusion models
+
+812
+00:32:14,180 --> 00:32:15,380
+is totally different.
+
+813
+00:32:15,380 --> 00:32:17,300
+GANs learn this
+deterministic mapping
+
+814
+00:32:17,300 --> 00:32:20,122
+through the generator to
+map a z directly to an x.
+
+815
+00:32:20,122 --> 00:32:21,580
+With a diffusion
+model, we're going
+
+816
+00:32:21,580 --> 00:32:24,060
+to do something more
+implicit, more indirect.
+
+817
+00:32:24,060 --> 00:32:26,700
+So what we're going to do,
+first off the first constraint
+
+818
+00:32:26,700 --> 00:32:30,420
+in diffusion models is that
+the z, the noise distribution,
+
+819
+00:32:30,420 --> 00:32:33,640
+the noise always has to have
+the same shape as our data.
+
+820
+00:32:33,640 --> 00:32:36,560
+So if you have an image
+that's H by W by 3,
+
+821
+00:32:36,560 --> 00:32:38,060
+then your noise
+distribution always
+
+822
+00:32:38,060 --> 00:32:39,840
+has to be H by W by 3 as well.
+
+823
+00:32:39,840 --> 00:32:42,220
+They have to be
+exactly the same shape.
+
+824
+00:32:42,220 --> 00:32:45,940
+Now what we're going to do is
+consider different versions
+
+825
+00:32:45,940 --> 00:32:49,393
+of our data that are corrupted
+by increasing levels of noise.
+
+826
+00:32:49,393 --> 00:32:51,060
+So here, if we have
+a data sample, which
+
+827
+00:32:51,060 --> 00:32:54,700
+is this picture of
+a cat, then t is
+
+828
+00:32:54,700 --> 00:32:58,420
+going to be our noise level,
+which ranges from 0 to 1.
+
+829
+00:32:58,420 --> 00:33:00,920
+So at t equals 0
+that means no noise.
+
+830
+00:33:00,920 --> 00:33:03,260
+That means a totally
+clean data sample.
+
+831
+00:33:03,260 --> 00:33:06,000
+t equals 0.3 is a
+little bit of noise.
+
+832
+00:33:06,000 --> 00:33:08,560
+We add some of
+our noise z into--
+
+833
+00:33:08,560 --> 00:33:11,240
+we mix some of our noise,
+z, into our data, x.
+
+834
+00:33:11,240 --> 00:33:14,210
+And if we go all the way to t
+equals 1, we get full noise.
+
+835
+00:33:14,210 --> 00:33:15,960
+And those are going
+to be samples directly
+
+836
+00:33:15,960 --> 00:33:17,660
+from our noise distribution.
+
+837
+00:33:17,660 --> 00:33:21,040
+So somehow this t parameter is
+going to interpolate smoothly
+
+838
+00:33:21,040 --> 00:33:24,422
+between our data distribution
+and our noise distribution.
+
+839
+00:33:24,422 --> 00:33:25,880
+And this is something
+that we can--
+
+840
+00:33:25,880 --> 00:33:27,720
+and the noise
+distribution again is
+
+841
+00:33:27,720 --> 00:33:30,760
+going to be almost always
+Gaussian, Something simple
+
+842
+00:33:30,760 --> 00:33:33,707
+that we understand
+and can sample from.
+
+843
+00:33:33,707 --> 00:33:36,040
+And now what we're going to
+do is train a neural network
+
+844
+00:33:36,040 --> 00:33:38,440
+to do a little bit of
+incremental denoising.
+
+845
+00:33:38,440 --> 00:33:43,208
+So the neural network is going
+to receive some sample, which
+
+846
+00:33:43,208 --> 00:33:45,000
+is a piece of data
+which has been corrupted
+
+847
+00:33:45,000 --> 00:33:46,662
+with some intermediate
+amount of noise.
+
+848
+00:33:46,662 --> 00:33:48,120
+And now the neural
+network is going
+
+849
+00:33:48,120 --> 00:33:50,340
+to be trained to try to
+clean it up a little bit,
+
+850
+00:33:50,340 --> 00:33:52,360
+remove just a
+little bit of noise.
+
+851
+00:33:52,360 --> 00:33:53,960
+So the training
+objective here is
+
+852
+00:33:53,960 --> 00:33:58,777
+going to be neural network
+inputs, an image of some amount
+
+853
+00:33:58,777 --> 00:34:00,360
+with some amount of
+noise and it tries
+
+854
+00:34:00,360 --> 00:34:02,245
+to remove some of the noise.
+
+855
+00:34:02,245 --> 00:34:04,120
+Then at inference time
+what we're going to do
+
+856
+00:34:04,120 --> 00:34:06,480
+is do an iterative
+procedure where we first
+
+857
+00:34:06,480 --> 00:34:10,380
+draw a noise sample directly
+from our noise distribution, pz,
+
+858
+00:34:10,380 --> 00:34:12,340
+and then iteratively
+apply the neural network
+
+859
+00:34:12,340 --> 00:34:15,500
+to remove noise from that
+sample one at a time.
+
+860
+00:34:15,500 --> 00:34:17,639
+So the very first
+time we do this,
+
+861
+00:34:17,639 --> 00:34:20,522
+we're going to draw a complete
+sample that's complete noise.
+
+862
+00:34:20,522 --> 00:34:21,980
+And then the very
+first application
+
+863
+00:34:21,980 --> 00:34:23,397
+of the neural
+network, the network
+
+864
+00:34:23,397 --> 00:34:26,225
+will be trying to remove
+noise from full noise.
+
+865
+00:34:26,225 --> 00:34:28,100
+So it will basically be
+forced to hallucinate
+
+866
+00:34:28,100 --> 00:34:31,620
+just a tiny whiff of data
+structure in that noise.
+
+867
+00:34:31,620 --> 00:34:34,617
+And then once we get to some
+slightly less noisy example,
+
+868
+00:34:34,617 --> 00:34:36,659
+we're going to pass it
+back to the neural network
+
+869
+00:34:36,659 --> 00:34:39,380
+and again ask it to remove
+just a little bit of noise
+
+870
+00:34:39,380 --> 00:34:43,630
+from this now slightly denoised,
+slightly generated image.
+
+871
+00:34:43,630 --> 00:34:45,380
+And then it'll get a
+little bit less noisy
+
+872
+00:34:45,380 --> 00:34:47,199
+and it'll get a
+little bit less noisy,
+
+873
+00:34:47,199 --> 00:34:49,320
+and it'll get a
+little bit less noisy.
+
+874
+00:34:49,320 --> 00:34:52,080
+And eventually, if we set up
+all of this stuff correctly,
+
+875
+00:34:52,080 --> 00:34:53,739
+then we want to
+get to a situation
+
+876
+00:34:53,739 --> 00:34:56,020
+where we can draw a
+complete noise sample
+
+877
+00:34:56,020 --> 00:34:57,700
+and then ask the
+network to remove
+
+878
+00:34:57,700 --> 00:35:01,440
+noise from that complete sample
+z of complete random noise
+
+879
+00:35:01,440 --> 00:35:03,900
+until eventually, we've
+removed all the noise
+
+880
+00:35:03,900 --> 00:35:07,160
+and come up with a generated
+sample from the system.
+
+881
+00:35:07,160 --> 00:35:09,040
+So that's a weird setting.
+
+882
+00:35:09,040 --> 00:35:11,960
+It's a weird thing, but
+that's the intuition
+
+883
+00:35:11,960 --> 00:35:13,280
+behind diffusion models.
+
+884
+00:35:13,280 --> 00:35:15,940
+Is the number of steps
+a fixed hyperparameter?
+
+885
+00:35:15,940 --> 00:35:16,620
+It depends.
+
+886
+00:35:16,620 --> 00:35:18,840
+So on this slide, I've
+intentionally been--
+
+887
+00:35:18,840 --> 00:35:22,600
+I was forced to be very
+vague about all these things.
+
+888
+00:35:22,600 --> 00:35:23,700
+What is the noise?
+
+889
+00:35:23,700 --> 00:35:26,500
+What does it mean to corrupt the
+data with respect to the noise?
+
+890
+00:35:26,500 --> 00:35:28,900
+What does it mean to remove
+a little bit of the noise?
+
+891
+00:35:28,900 --> 00:35:32,263
+What does it mean to apply
+it iteratively at inference?
+
+892
+00:35:32,263 --> 00:35:34,680
+Because, like I said, there's
+so many different formalisms
+
+893
+00:35:34,680 --> 00:35:36,840
+of diffusion, there's a
+lot of different variants
+
+894
+00:35:36,840 --> 00:35:39,220
+about exactly what these
+mean in different situations.
+
+895
+00:35:39,220 --> 00:35:41,480
+So this slide is intended
+to be a fairly high level
+
+896
+00:35:41,480 --> 00:35:42,568
+overview of diffusion.
+
+897
+00:35:42,568 --> 00:35:44,360
+And then different
+specific implementations
+
+898
+00:35:44,360 --> 00:35:46,920
+of diffusion models will have
+different concrete choices
+
+899
+00:35:46,920 --> 00:35:49,840
+for what all these
+terms specifically mean.
+
+900
+00:35:49,840 --> 00:35:53,940
+So does this high level picture
+of diffusion make sense?
+
+901
+00:35:53,940 --> 00:35:55,980
+OK, so then let's make
+this more concrete.
+
+902
+00:35:55,980 --> 00:35:59,400
+So now we're going to jump
+from general diffusion models
+
+903
+00:35:59,400 --> 00:36:02,080
+to a particular category
+of diffusion models called
+
+904
+00:36:02,080 --> 00:36:03,940
+rectified flow models.
+
+905
+00:36:03,940 --> 00:36:06,860
+Some people may argue with me
+and say that rectified flow is
+
+906
+00:36:06,860 --> 00:36:07,793
+not diffusion.
+
+907
+00:36:07,793 --> 00:36:09,960
+Some people might say that
+they're different things.
+
+908
+00:36:09,960 --> 00:36:11,060
+I don't really care.
+
+909
+00:36:11,060 --> 00:36:13,800
+To me, rectified flow is
+a kind of diffusion model.
+
+910
+00:36:13,800 --> 00:36:15,220
+Fight me.
+
+911
+00:36:15,220 --> 00:36:18,260
+So with rectified flow, the
+intuition is basically this.
+
+912
+00:36:18,260 --> 00:36:19,720
+We have the same thing.
+
+913
+00:36:19,720 --> 00:36:20,640
+We have our pnoise.
+
+914
+00:36:20,640 --> 00:36:21,560
+We have our pdata.
+
+915
+00:36:21,560 --> 00:36:23,310
+And we're going to
+draw this geometrically
+
+916
+00:36:23,310 --> 00:36:25,640
+because I think that's a
+nice way to gain intuition.
+
+917
+00:36:25,640 --> 00:36:28,140
+Geometrically in two dimensions
+in particular because that's
+
+918
+00:36:28,140 --> 00:36:29,960
+all that fits on the
+slide, but of course,
+
+919
+00:36:29,960 --> 00:36:32,377
+these are going to be super,
+super high dimensional images
+
+920
+00:36:32,377 --> 00:36:34,300
+and Gaussians,
+which is an easy way
+
+921
+00:36:34,300 --> 00:36:37,140
+to get led astray because you
+know that intuitions that hold
+
+922
+00:36:37,140 --> 00:36:39,560
+in two and three dimensions
+go totally out the window
+
+923
+00:36:39,560 --> 00:36:41,300
+when you go to a
+lot of dimensions.
+
+924
+00:36:41,300 --> 00:36:42,160
+It's really sad.
+
+925
+00:36:42,160 --> 00:36:44,960
+It's sad that we live in such
+a low dimensional universe
+
+926
+00:36:44,960 --> 00:36:47,380
+because our intuitions that
+we build in this universe just
+
+927
+00:36:47,380 --> 00:36:50,200
+don't really transfer to
+100 dimensional spaces,
+
+928
+00:36:50,200 --> 00:36:51,680
+1,000 dimensional spaces.
+
+929
+00:36:51,680 --> 00:36:54,040
+So always be aware,
+but it is what it is.
+
+930
+00:36:54,040 --> 00:36:56,180
+We're stuck with
+the universe we got.
+
+931
+00:36:56,180 --> 00:36:58,060
+So the setup in
+rectified flow is
+
+932
+00:36:58,060 --> 00:37:01,840
+that we've got our distribution
+pnoise, our distribution pdata.
+
+933
+00:37:01,840 --> 00:37:03,320
+pnoise is something
+simple that we
+
+934
+00:37:03,320 --> 00:37:06,020
+understand we can sample from,
+we can compute integrals of.
+
+935
+00:37:06,020 --> 00:37:08,108
+It's a very friendly
+distribution. pdata again,
+
+936
+00:37:08,108 --> 00:37:08,900
+is something crazy.
+
+937
+00:37:08,900 --> 00:37:12,240
+That's what the universe
+is using to give us images.
+
+938
+00:37:12,240 --> 00:37:14,640
+Now at every training
+iteration, we're
+
+939
+00:37:14,640 --> 00:37:18,800
+going to sample a z from our
+prior distribution and sample
+
+940
+00:37:18,800 --> 00:37:21,600
+an x from our data distribution.
+
+941
+00:37:21,600 --> 00:37:23,440
+We can draw a
+sample analytically
+
+942
+00:37:23,440 --> 00:37:26,100
+because pz is something
+simple that we control.
+
+943
+00:37:26,100 --> 00:37:28,320
+And drawing a sample from
+the data distribution
+
+944
+00:37:28,320 --> 00:37:31,600
+just means picking an example
+from your finite training set.
+
+945
+00:37:31,600 --> 00:37:34,640
+Now and you're also
+going to choose a t
+
+946
+00:37:34,640 --> 00:37:36,340
+to be uniform on 0 to 1.
+
+947
+00:37:36,340 --> 00:37:39,940
+Remember t is our noise level,
+where t equals 0 means no noise,
+
+948
+00:37:39,940 --> 00:37:42,280
+t equals 1 means all the noise.
+
+949
+00:37:42,280 --> 00:37:44,840
+So now we're going
+to draw a line
+
+950
+00:37:44,840 --> 00:37:48,720
+that points from our data sample
+x directly to our noise sample
+
+951
+00:37:48,720 --> 00:37:49,600
+z.
+
+952
+00:37:49,600 --> 00:37:52,840
+And this line, this vector
+pointing from x to z,
+
+953
+00:37:52,840 --> 00:37:55,160
+we're going to call it
+v. This is going to be
+
+954
+00:37:55,160 --> 00:37:57,280
+the velocity of a flow field.
+
+955
+00:37:57,280 --> 00:38:01,860
+And then we set xt to be a
+point along this line, which
+
+956
+00:38:01,860 --> 00:38:04,780
+is a linear interpolation
+between x and z.
+
+957
+00:38:04,780 --> 00:38:06,860
+So now we've got
+our noise sample
+
+958
+00:38:06,860 --> 00:38:09,260
+z, our data sample x,
+we've got the velocity
+
+959
+00:38:09,260 --> 00:38:12,580
+vector between them,
+v, and we've picked
+
+960
+00:38:12,580 --> 00:38:15,140
+a noise version of our data xt.
+
+961
+00:38:15,140 --> 00:38:19,458
+And in the previous slide
+when we said get noisy data,
+
+962
+00:38:19,458 --> 00:38:22,000
+this is what that means in the
+case of rectified flow models.
+
+963
+00:38:22,000 --> 00:38:24,180
+It's a linear interpolation
+between a data
+
+964
+00:38:24,180 --> 00:38:26,380
+sample and a noise sample.
+
+965
+00:38:26,380 --> 00:38:28,880
+And now the training objective
+is very, very simple.
+
+966
+00:38:28,880 --> 00:38:31,400
+So now we're going to train
+a neural network f theta,
+
+967
+00:38:31,400 --> 00:38:33,540
+so that's f with learnable
+parameters theta.
+
+968
+00:38:33,540 --> 00:38:36,860
+That neural network is going
+to input the noisy sample xt as
+
+969
+00:38:36,860 --> 00:38:38,580
+well as the noise level t.
+
+970
+00:38:38,580 --> 00:38:41,580
+And it's going to try to
+predict the green vector v.
+
+971
+00:38:41,580 --> 00:38:42,480
+So that's it.
+
+972
+00:38:42,480 --> 00:38:44,900
+That's all we need to
+do in rectified flow.
+
+973
+00:38:44,900 --> 00:38:47,180
+The code for this
+is very simple.
+
+974
+00:38:47,180 --> 00:38:50,340
+You would be shocked
+how much obscurity there
+
+975
+00:38:50,340 --> 00:38:51,640
+is when you read papers here.
+
+976
+00:38:51,640 --> 00:38:53,478
+And it boils down to
+this very simple code.
+
+977
+00:38:53,478 --> 00:38:55,020
+Drives me crazy that
+this is not made
+
+978
+00:38:55,020 --> 00:38:57,580
+more clear in a lot of
+presentations of this.
+
+979
+00:38:57,580 --> 00:38:59,640
+So then the training
+loop for rectified flow
+
+980
+00:38:59,640 --> 00:39:01,200
+is extremely simple.
+
+981
+00:39:01,200 --> 00:39:03,460
+You loop over your data
+set at every iteration.
+
+982
+00:39:03,460 --> 00:39:08,720
+You get z, which is unit
+Gaussian of the same shape as x.
+
+983
+00:39:08,720 --> 00:39:11,980
+You choose a noise level
+t, which is uniform 0 to 1.
+
+984
+00:39:11,980 --> 00:39:14,600
+You compute xt, which is a
+linear interpolation between x
+
+985
+00:39:14,600 --> 00:39:15,720
+and z.
+
+986
+00:39:15,720 --> 00:39:18,040
+You give xt and t to
+your model and then
+
+987
+00:39:18,040 --> 00:39:20,040
+your loss is just the
+mean squared error
+
+988
+00:39:20,040 --> 00:39:24,200
+between this ground truth
+v and the model prediction.
+
+989
+00:39:24,200 --> 00:39:24,900
+And that's it.
+
+990
+00:39:24,900 --> 00:39:27,720
+That's your training objective
+for rectified flow models.
+
+991
+00:39:27,720 --> 00:39:29,320
+Contrast this with GANs.
+
+992
+00:39:29,320 --> 00:39:31,440
+When you train rectified
+flow models or really
+
+993
+00:39:31,440 --> 00:39:33,200
+any kind of diffusion
+model, you have
+
+994
+00:39:33,200 --> 00:39:35,100
+a loss that you can
+look at during training.
+
+995
+00:39:35,100 --> 00:39:37,460
+When the loss goes down, the
+model is generally better.
+
+996
+00:39:37,460 --> 00:39:40,360
+So for those of us that went
+through half a decade of GAN
+
+997
+00:39:40,360 --> 00:39:42,840
+madness, the first time
+you train a diffusion model
+
+998
+00:39:42,840 --> 00:39:45,660
+and there's a loss to look
+at, it's like, oh my god,
+
+999
+00:39:45,660 --> 00:39:47,023
+this is an amazing thing.
+
+1000
+00:39:47,023 --> 00:39:49,440
+How many hours have we spent
+looking at GAN plots and they
+
+1001
+00:39:49,440 --> 00:39:50,420
+look like this?
+
+1002
+00:39:50,420 --> 00:39:51,300
+And you have no idea.
+
+1003
+00:39:51,300 --> 00:39:52,880
+It's like reading tea leaves
+to tell whether or not
+
+1004
+00:39:52,880 --> 00:39:54,140
+the model is working well.
+
+1005
+00:39:54,140 --> 00:39:55,640
+You train a diffusion
+model, you get
+
+1006
+00:39:55,640 --> 00:39:57,720
+this beautiful, smooth
+exponential loss curve
+
+1007
+00:39:57,720 --> 00:40:01,980
+and it just makes you so
+happy, so that's great.
+
+1008
+00:40:01,980 --> 00:40:03,700
+So then that's
+training for that's
+
+1009
+00:40:03,700 --> 00:40:05,420
+training for diffusion models.
+
+1010
+00:40:05,420 --> 00:40:09,417
+Now what do we do at
+inference because the GANs are
+
+1011
+00:40:09,417 --> 00:40:10,500
+kind of easy at inference?
+
+1012
+00:40:10,500 --> 00:40:12,880
+GANs, you just have to take a z,
+pass it through your generator.
+
+1013
+00:40:12,880 --> 00:40:13,977
+You get a data sample.
+
+1014
+00:40:13,977 --> 00:40:16,060
+Very straightforward, but
+now with diffusion model
+
+1015
+00:40:16,060 --> 00:40:19,300
+or rectified flow model in
+this case, the model output
+
+1016
+00:40:19,300 --> 00:40:21,180
+itself is useless.
+
+1017
+00:40:21,180 --> 00:40:22,240
+We get this xt.
+
+1018
+00:40:22,240 --> 00:40:24,160
+We get a v. What are we
+going to do with this?
+
+1019
+00:40:24,160 --> 00:40:25,220
+Not super clear.
+
+1020
+00:40:25,220 --> 00:40:26,900
+So then at inference
+time is where
+
+1021
+00:40:26,900 --> 00:40:28,483
+diffusion models get
+a little bit more
+
+1022
+00:40:28,483 --> 00:40:31,700
+complicated compared to GANs.
+
+1023
+00:40:31,700 --> 00:40:34,780
+So at inference we
+first will upfront
+
+1024
+00:40:34,780 --> 00:40:36,980
+choose a number
+of steps, t, which
+
+1025
+00:40:36,980 --> 00:40:38,532
+is usually a fixed constant.
+
+1026
+00:40:38,532 --> 00:40:40,240
+And in the case of
+rectified flow models,
+
+1027
+00:40:40,240 --> 00:40:43,120
+t equals 50 is usually a
+good number to start with.
+
+1028
+00:40:43,120 --> 00:40:45,940
+Sometimes you can get down to
+t equals 30 and that works OK.
+
+1029
+00:40:45,940 --> 00:40:48,860
+Then what you're going to
+do is sample an x directly
+
+1030
+00:40:48,860 --> 00:40:50,320
+from your noise distribution.
+
+1031
+00:40:50,320 --> 00:40:52,862
+This is going to be pure noise
+that's sampled from your known
+
+1032
+00:40:52,862 --> 00:40:54,500
+noise distribution.
+
+1033
+00:40:54,500 --> 00:40:56,880
+Then you're going to
+evaluate the-- then you're
+
+1034
+00:40:56,880 --> 00:40:59,663
+going to loop from t equals 1.
+
+1035
+00:40:59,663 --> 00:41:01,580
+You're going to march
+backwards to t equals 0.
+
+1036
+00:41:01,580 --> 00:41:02,735
+This is your noise level.
+
+1037
+00:41:02,735 --> 00:41:04,360
+And in this case in
+this simple version
+
+1038
+00:41:04,360 --> 00:41:07,920
+we're just marching linearly
+from full noise 1 back
+
+1039
+00:41:07,920 --> 00:41:11,025
+to noise 0 perfectly clean.
+
+1040
+00:41:11,025 --> 00:41:12,400
+Then at the first
+iteration we're
+
+1041
+00:41:12,400 --> 00:41:16,400
+going to take our xt that
+was at first full noise,
+
+1042
+00:41:16,400 --> 00:41:18,880
+pass it to the network along
+with the current noise level
+
+1043
+00:41:18,880 --> 00:41:21,280
+and get the network's
+predicted vt.
+
+1044
+00:41:21,280 --> 00:41:23,180
+And remember what this
+vt is supposed to be
+
+1045
+00:41:23,180 --> 00:41:24,520
+in the case of rectified flow.
+
+1046
+00:41:24,520 --> 00:41:28,840
+This v, remember, was supposed
+to point from a data sample
+
+1047
+00:41:28,840 --> 00:41:30,820
+all the way to a noise sample.
+
+1048
+00:41:30,820 --> 00:41:32,480
+So then it's
+geometrically obvious
+
+1049
+00:41:32,480 --> 00:41:34,893
+what you should do in the
+case of rectified flow.
+
+1050
+00:41:34,893 --> 00:41:36,560
+You should take a
+little step along that
+
+1051
+00:41:36,560 --> 00:41:40,440
+predicted v vector because the
+problem is, this rectified flow
+
+1052
+00:41:40,440 --> 00:41:42,560
+model, that v is not
+going to point you
+
+1053
+00:41:42,560 --> 00:41:43,810
+all the way to a clean sample.
+
+1054
+00:41:43,810 --> 00:41:45,268
+It's just going to
+get you started.
+
+1055
+00:41:45,268 --> 00:41:46,840
+It's going to set
+you on a trajectory
+
+1056
+00:41:46,840 --> 00:41:48,458
+towards a clean sample.
+
+1057
+00:41:48,458 --> 00:41:51,000
+So we take a little step along
+that predicted v from the flow
+
+1058
+00:41:51,000 --> 00:41:54,832
+model to get a new x2, which is
+now a version of the data that
+
+1059
+00:41:54,832 --> 00:41:56,540
+has had a little bit
+of the noise removed
+
+1060
+00:41:56,540 --> 00:41:58,180
+from it by the model.
+
+1061
+00:41:58,180 --> 00:41:59,480
+And now we iterate this.
+
+1062
+00:41:59,480 --> 00:42:01,805
+So once we have
+this x two thirds,
+
+1063
+00:42:01,805 --> 00:42:03,180
+then we pass it
+back to the model
+
+1064
+00:42:03,180 --> 00:42:06,260
+and get another predicted
+v vector from the model.
+
+1065
+00:42:06,260 --> 00:42:10,740
+And remember the v is supposed
+to point from a clean sample
+
+1066
+00:42:10,740 --> 00:42:12,240
+all the way to a noise sample.
+
+1067
+00:42:12,240 --> 00:42:14,040
+So then again, we can
+take a gradient step,
+
+1068
+00:42:14,040 --> 00:42:15,780
+take a little step
+along this predicted v
+
+1069
+00:42:15,780 --> 00:42:17,820
+to get another x one third.
+
+1070
+00:42:17,820 --> 00:42:19,820
+Repeat this thing again.
+
+1071
+00:42:19,820 --> 00:42:22,460
+Evaluate the model again
+to get another predicted v
+
+1072
+00:42:22,460 --> 00:42:25,940
+and then take a step in this
+case all the way to no noise
+
+1073
+00:42:25,940 --> 00:42:29,900
+all the way to the end of that
+vector to get our predicted x0.
+
+1074
+00:42:29,900 --> 00:42:32,460
+And then that is our sample
+from our diffusion model.
+
+1075
+00:42:32,460 --> 00:42:34,940
+So then the inference
+procedure you
+
+1076
+00:42:34,940 --> 00:42:38,100
+see here got a little bit more
+complicated compared to GANs,
+
+1077
+00:42:38,100 --> 00:42:41,360
+but what we gained
+here was sanity.
+
+1078
+00:42:41,360 --> 00:42:42,860
+When you're training
+you've regained
+
+1079
+00:42:42,860 --> 00:42:45,960
+that and they tend to give
+you much better samples
+
+1080
+00:42:45,960 --> 00:42:48,060
+and they tend to scale
+really well to large data
+
+1081
+00:42:48,060 --> 00:42:49,822
+sets and large models.
+
+1082
+00:42:49,822 --> 00:42:51,280
+And the code here
+is really simple.
+
+1083
+00:42:51,280 --> 00:42:54,340
+So we start off by
+taking a random sample,
+
+1084
+00:42:54,340 --> 00:42:57,200
+make it be perfectly
+random, then march backwards
+
+1085
+00:42:57,200 --> 00:42:59,520
+for t from 1 back to 0.
+
+1086
+00:42:59,520 --> 00:43:01,558
+At every noise level,
+you get a predicted v
+
+1087
+00:43:01,558 --> 00:43:03,600
+from the model, given your
+current sample as well
+
+1088
+00:43:03,600 --> 00:43:06,560
+as your T. Then you take what
+looks like a gradient descent
+
+1089
+00:43:06,560 --> 00:43:09,680
+step on the model's predicted
+v and update the sample
+
+1090
+00:43:09,680 --> 00:43:11,840
+and just repeat this
+whole thing in a loop.
+
+1091
+00:43:11,840 --> 00:43:14,240
+So then you can see
+these diffusion models
+
+1092
+00:43:14,240 --> 00:43:15,640
+aren't so scary after all.
+
+1093
+00:43:15,640 --> 00:43:17,880
+You can actually fit a
+complete implementation
+
+1094
+00:43:17,880 --> 00:43:19,920
+of training and sampling
+from a rectified flow
+
+1095
+00:43:19,920 --> 00:43:23,540
+model in just a couple
+lines on one slide,
+
+1096
+00:43:23,540 --> 00:43:26,360
+which I think is very nice.
+
+1097
+00:43:26,360 --> 00:43:28,780
+OK, so you might be asked--
+so this is pretty nice.
+
+1098
+00:43:28,780 --> 00:43:31,093
+I'm pretty happy that we're
+able to get to a full--
+
+1099
+00:43:31,093 --> 00:43:32,260
+and this will actually work.
+
+1100
+00:43:32,260 --> 00:43:34,600
+If you take this
+code, you plug it in,
+
+1101
+00:43:34,600 --> 00:43:37,560
+you plug it in a reasonable
+model architecture,
+
+1102
+00:43:37,560 --> 00:43:38,560
+this will actually work.
+
+1103
+00:43:38,560 --> 00:43:40,185
+This will actually
+convert to something
+
+1104
+00:43:40,185 --> 00:43:41,720
+reasonable in a lot of cases.
+
+1105
+00:43:41,720 --> 00:43:44,200
+You're hitting on the core
+problem in generative modeling
+
+1106
+00:43:44,200 --> 00:43:46,120
+that I've been thinking about
+a lot the last couple of days
+
+1107
+00:43:46,120 --> 00:43:47,580
+while reviewing these slides.
+
+1108
+00:43:47,580 --> 00:43:49,320
+The core problem in
+generative modeling
+
+1109
+00:43:49,320 --> 00:43:51,740
+is somehow you have a
+prior distribution, which
+
+1110
+00:43:51,740 --> 00:43:53,520
+is z's that you know
+how to sample from.
+
+1111
+00:43:53,520 --> 00:43:55,103
+You have a data
+distribution, which is
+
+1112
+00:43:55,103 --> 00:43:56,680
+x's that you want to generate.
+
+1113
+00:43:56,680 --> 00:43:58,700
+And the core problem
+in generative modeling
+
+1114
+00:43:58,700 --> 00:44:01,600
+is figuring out how to
+associate z's and x's and all
+
+1115
+00:44:01,600 --> 00:44:03,600
+your different categories
+to generative modeling
+
+1116
+00:44:03,600 --> 00:44:05,340
+do it in different ways.
+
+1117
+00:44:05,340 --> 00:44:09,100
+In a VAE, you say I'm going
+to have the model predict a z
+
+1118
+00:44:09,100 --> 00:44:11,460
+and then predict an x and
+then try to force that z
+
+1119
+00:44:11,460 --> 00:44:13,380
+to be something I know
+how to sample from,
+
+1120
+00:44:13,380 --> 00:44:15,420
+which doesn't super
+work that well.
+
+1121
+00:44:15,420 --> 00:44:18,598
+In a GAN you're not
+supervising that relationship.
+
+1122
+00:44:18,598 --> 00:44:20,140
+The generator is
+kind of figuring out
+
+1123
+00:44:20,140 --> 00:44:23,107
+its own mapping from z
+to x in a feedforward way
+
+1124
+00:44:23,107 --> 00:44:24,940
+through this distribution
+matching objective
+
+1125
+00:44:24,940 --> 00:44:26,740
+that the discriminator
+is giving it.
+
+1126
+00:44:26,740 --> 00:44:30,860
+In diffusion, it's
+figuring out by--
+
+1127
+00:44:30,860 --> 00:44:33,700
+it ends up having to
+integrate these curves.
+
+1128
+00:44:33,700 --> 00:44:37,580
+And there's actually several
+different mathematical
+
+1129
+00:44:37,580 --> 00:44:40,060
+formalisms as to why
+objectives that look like this
+
+1130
+00:44:40,060 --> 00:44:41,900
+end up matching
+probability distributions
+
+1131
+00:44:41,900 --> 00:44:43,220
+in a reasonable way.
+
+1132
+00:44:43,220 --> 00:44:45,420
+But again, the
+whole core problem
+
+1133
+00:44:45,420 --> 00:44:48,180
+is that we have no
+way ahead of time
+
+1134
+00:44:48,180 --> 00:44:51,280
+to pair up samples z from
+our prior with samples
+
+1135
+00:44:51,280 --> 00:44:52,340
+x from our data.
+
+1136
+00:44:52,340 --> 00:44:53,840
+If we knew how to
+make that pairing
+
+1137
+00:44:53,840 --> 00:44:57,487
+and also knew how to sample
+from the prior, you'd be done.
+
+1138
+00:44:57,487 --> 00:44:59,320
+And in some sense, all
+these different forms
+
+1139
+00:44:59,320 --> 00:45:01,040
+of generative modeling
+are different ways
+
+1140
+00:45:01,040 --> 00:45:02,720
+to square that
+circle and come up
+
+1141
+00:45:02,720 --> 00:45:06,960
+with a way to learn an
+association from z to x
+
+1142
+00:45:06,960 --> 00:45:08,680
+and be able to
+sample from z even
+
+1143
+00:45:08,680 --> 00:45:11,210
+though we don't have that
+association at training time.
+
+1144
+00:45:11,210 --> 00:45:12,960
+There's a lot of
+different interpretations
+
+1145
+00:45:12,960 --> 00:45:15,500
+of this that can get very,
+very heavy, very quick
+
+1146
+00:45:15,500 --> 00:45:19,040
+so I've tried to avoid them.
+
+1147
+00:45:19,040 --> 00:45:23,000
+But we said last lecture
+that unconditional generative
+
+1148
+00:45:23,000 --> 00:45:26,320
+modeling is pointless,
+so what we almost always
+
+1149
+00:45:26,320 --> 00:45:28,260
+care about is conditional
+generative modeling.
+
+1150
+00:45:28,260 --> 00:45:30,700
+And that's easy to
+accommodate in rectified flow.
+
+1151
+00:45:30,700 --> 00:45:32,820
+So to do conditional
+rectified flow,
+
+1152
+00:45:32,820 --> 00:45:35,520
+we imagine that there's
+different subparts of our data
+
+1153
+00:45:35,520 --> 00:45:36,320
+distribution.
+
+1154
+00:45:36,320 --> 00:45:37,780
+Here I'm saying
+it's categorical.
+
+1155
+00:45:37,780 --> 00:45:40,320
+Maybe our data is actually
+squares and triangles.
+
+1156
+00:45:40,320 --> 00:45:43,520
+And then we have our whole data
+distribution pdata as well as
+
+1157
+00:45:43,520 --> 00:45:47,400
+our two subdistributions, pdata
+x given that y is a square
+
+1158
+00:45:47,400 --> 00:45:51,583
+and pdata x given that
+the label y is a triangle.
+
+1159
+00:45:51,583 --> 00:45:53,500
+So this is the picture
+you should have in mind
+
+1160
+00:45:53,500 --> 00:45:56,380
+when you think about
+conditional generative modeling.
+
+1161
+00:45:56,380 --> 00:45:57,820
+Then in the case
+of rectified flow
+
+1162
+00:45:57,820 --> 00:45:59,520
+this is very easy
+to accommodate.
+
+1163
+00:45:59,520 --> 00:46:02,740
+So your data set now
+has pairs x and y
+
+1164
+00:46:02,740 --> 00:46:05,380
+and your model now takes y as
+an additional auxiliary input
+
+1165
+00:46:05,380 --> 00:46:06,300
+somehow.
+
+1166
+00:46:06,300 --> 00:46:09,860
+And then during
+sampling same thing.
+
+1167
+00:46:09,860 --> 00:46:11,460
+You get your predicted V's.
+
+1168
+00:46:11,460 --> 00:46:14,840
+The model takes as input this
+extra y and you use that.
+
+1169
+00:46:14,840 --> 00:46:16,500
+So this all goes through.
+
+1170
+00:46:16,500 --> 00:46:18,700
+The difference is
+that now y is actually
+
+1171
+00:46:18,700 --> 00:46:20,100
+hopefully some
+conditional signal
+
+1172
+00:46:20,100 --> 00:46:21,553
+that the user can control.
+
+1173
+00:46:21,553 --> 00:46:22,720
+Maybe this is a text prompt.
+
+1174
+00:46:22,720 --> 00:46:23,928
+Maybe this is an input image.
+
+1175
+00:46:23,928 --> 00:46:25,823
+Maybe this is some
+kind of user input
+
+1176
+00:46:25,823 --> 00:46:27,740
+that you're expecting
+at inference time, which
+
+1177
+00:46:27,740 --> 00:46:29,823
+actually make these models
+controllable and useful
+
+1178
+00:46:29,823 --> 00:46:31,740
+in practice.
+
+1179
+00:46:31,740 --> 00:46:34,326
+But then there's another
+really interesting question.
+
+1180
+00:46:34,326 --> 00:46:37,140
+Is there any knob you
+can tune to control
+
+1181
+00:46:37,140 --> 00:46:39,580
+how much the model pays
+attention to the conditioning
+
+1182
+00:46:39,580 --> 00:46:40,240
+signal?
+
+1183
+00:46:40,240 --> 00:46:42,368
+It turns out if you train
+these things naively,
+
+1184
+00:46:42,368 --> 00:46:44,660
+a lot of times they don't
+often follow the conditioning
+
+1185
+00:46:44,660 --> 00:46:46,900
+signal quite as much
+as you would like.
+
+1186
+00:46:46,900 --> 00:46:49,320
+So there's a trick called
+classifier free guidance
+
+1187
+00:46:49,320 --> 00:46:54,040
+or CFG that changes
+our diffusion training
+
+1188
+00:46:54,040 --> 00:46:55,280
+loop just a little bit.
+
+1189
+00:46:55,280 --> 00:46:56,480
+So what we're going
+to do is we're still
+
+1190
+00:46:56,480 --> 00:46:58,647
+going to train this conditional
+diffusion model that
+
+1191
+00:46:58,647 --> 00:47:03,900
+inputs your xt, inputs your y,
+but on every training iteration,
+
+1192
+00:47:03,900 --> 00:47:05,360
+we're going to flip a coin.
+
+1193
+00:47:05,360 --> 00:47:08,040
+And if that coin is heads we're
+going to delete the conditioning
+
+1194
+00:47:08,040 --> 00:47:08,760
+information.
+
+1195
+00:47:08,760 --> 00:47:10,760
+So we're going to set it
+equal to some kind of 0
+
+1196
+00:47:10,760 --> 00:47:13,680
+value or null value, basically
+destroy the conditioning
+
+1197
+00:47:13,680 --> 00:47:15,502
+information 50% of the time.
+
+1198
+00:47:15,502 --> 00:47:17,960
+That could be a hyperparameter,
+but 50 is a pretty good one
+
+1199
+00:47:17,960 --> 00:47:19,335
+that most people
+use in practice.
+
+1200
+00:47:19,335 --> 00:47:20,585
+So we're going to flip a coin.
+
+1201
+00:47:20,585 --> 00:47:23,047
+If the coin is heads, delete
+the conditioning information.
+
+1202
+00:47:23,047 --> 00:47:24,880
+So that means that the
+model is conceptually
+
+1203
+00:47:24,880 --> 00:47:27,610
+now forced to learn two
+different kinds of velocity
+
+1204
+00:47:27,610 --> 00:47:28,110
+vectors.
+
+1206
+00:47:32,640 --> 00:47:36,040
+So then the model is forced
+to learn two different kinds
+
+1207
+00:47:36,040 --> 00:47:37,420
+of velocity vectors.
+
+1208
+00:47:37,420 --> 00:47:42,240
+So in the case where we pass
+it this null value for y that
+
+1209
+00:47:42,240 --> 00:47:44,180
+has destroyed the
+conditioning information,
+
+1210
+00:47:44,180 --> 00:47:46,880
+then this is basically an
+unconditional generative model
+
+1211
+00:47:46,880 --> 00:47:47,500
+now.
+
+1212
+00:47:47,500 --> 00:47:51,660
+Now that predicted velocity
+vector, v, has to point back
+
+1213
+00:47:51,660 --> 00:47:55,780
+towards the meat of the whole
+data distribution pdata,
+
+1214
+00:47:55,780 --> 00:47:58,380
+but when we pass a
+real conditioning input
+
+1215
+00:47:58,380 --> 00:48:01,620
+y that's not destroyed,
+non-null, non-zero,
+
+1216
+00:48:01,620 --> 00:48:04,580
+then we're getting a
+conditional velocity vector that
+
+1217
+00:48:04,580 --> 00:48:07,973
+is pointing us back towards
+not the full data distribution,
+
+1218
+00:48:07,973 --> 00:48:10,140
+but towards the conditional
+data distribution, which
+
+1219
+00:48:10,140 --> 00:48:11,890
+is conditional on that
+conditioning signal
+
+1220
+00:48:11,890 --> 00:48:13,460
+that we cared about.
+
+1221
+00:48:13,460 --> 00:48:15,620
+And then the dumb
+trick is we're going
+
+1222
+00:48:15,620 --> 00:48:18,340
+to take a linear combination
+of these two vectors
+
+1223
+00:48:18,340 --> 00:48:24,260
+to push it more towards the
+conditional velocity vector.
+
+1224
+00:48:24,260 --> 00:48:26,860
+So in particular we'll have
+a scalar hyperparameter w
+
+1225
+00:48:26,860 --> 00:48:29,100
+and take a linear
+combination 1 plus times
+
+1226
+00:48:29,100 --> 00:48:32,362
+vy minus w times v null.
+
+1227
+00:48:32,362 --> 00:48:33,820
+So that's going to
+be a vector that
+
+1228
+00:48:33,820 --> 00:48:38,580
+now points even more towards
+the conditional distribution
+
+1229
+00:48:38,580 --> 00:48:40,380
+than it does the
+data distribution.
+
+1230
+00:48:40,380 --> 00:48:44,498
+And then the idea is that during
+sampling we're now going to--
+
+1231
+00:48:44,498 --> 00:48:46,040
+then during sampling,
+we're now going
+
+1232
+00:48:46,040 --> 00:48:51,360
+to step according to
+this v CFG vector rather
+
+1233
+00:48:51,360 --> 00:48:53,560
+than the raw vectors
+predicted by the model.
+
+1234
+00:48:53,560 --> 00:48:57,000
+And then setting w equals 1--
+
+1235
+00:48:57,000 --> 00:48:59,800
+setting w equals 0 here,
+we'll recover exactly
+
+1236
+00:48:59,800 --> 00:49:01,740
+the conditional 1.
+
+1237
+00:49:01,740 --> 00:49:03,592
+And the higher your
+w is then the more
+
+1238
+00:49:03,592 --> 00:49:05,550
+you're overemphasizing
+the conditioning signal.
+
+1240
+00:49:08,120 --> 00:49:10,020
+And then this is pretty
+easy to implement.
+
+1241
+00:49:10,020 --> 00:49:13,560
+So then your inference code
+doesn't really change too much,
+
+1242
+00:49:13,560 --> 00:49:15,960
+but now you evaluate the
+model twice at every iteration
+
+1243
+00:49:15,960 --> 00:49:18,120
+to get your vy and your v0.
+
+1244
+00:49:18,120 --> 00:49:20,320
+And then you take this
+linear combination
+
+1245
+00:49:20,320 --> 00:49:22,280
+and then step according to that.
+
+1246
+00:49:22,280 --> 00:49:25,792
+And this is called classifier
+free because of a stupid reason.
+
+1247
+00:49:25,792 --> 00:49:28,000
+There was an earlier paper
+called classifier guidance
+
+1248
+00:49:28,000 --> 00:49:29,340
+that I don't want to get into.
+
+1249
+00:49:29,340 --> 00:49:31,040
+And then they removed
+the classifier.
+
+1250
+00:49:31,040 --> 00:49:33,040
+And even though there was only
+nine months between those two
+
+1251
+00:49:33,040 --> 00:49:35,700
+papers and it's now been four
+years since the second one,
+
+1252
+00:49:35,700 --> 00:49:38,075
+we're still stuck with the
+name classifier free guidance.
+
+1253
+00:49:38,075 --> 00:49:39,555
+So it is what it is.
+
+1254
+00:49:39,555 --> 00:49:41,680
+OK, so that's actually
+really important in practice
+
+1255
+00:49:41,680 --> 00:49:44,440
+for getting high quality
+outputs and that's CFG.
+
+1256
+00:49:44,440 --> 00:49:45,440
+That's really important.
+
+1257
+00:49:45,440 --> 00:49:47,540
+That's used everywhere
+in diffusion models.
+
+1258
+00:49:47,540 --> 00:49:49,420
+It does double the cost of
+sampling though because now you
+
+1259
+00:49:49,420 --> 00:49:51,628
+need to hit the model twice
+on every iteration, which
+
+1260
+00:49:51,628 --> 00:49:53,692
+is a problem.
+
+1261
+00:49:53,692 --> 00:49:55,400
+There's this thing on
+optimal prediction.
+
+1262
+00:49:55,400 --> 00:49:56,358
+I think I'll skip that.
+
+1263
+00:49:56,358 --> 00:49:58,100
+That's not so interesting.
+
+1264
+00:49:58,100 --> 00:50:01,880
+It is interesting, but
+I'm worried about time.
+
+1265
+00:50:01,880 --> 00:50:04,060
+But one thing that we
+sometimes need to do
+
+1266
+00:50:04,060 --> 00:50:08,200
+is tweak this t distribution.
+
+1267
+00:50:08,200 --> 00:50:10,660
+So we saw in particular
+that we were sampling t
+
+1268
+00:50:10,660 --> 00:50:13,060
+according to a
+uniform distribution
+
+1269
+00:50:13,060 --> 00:50:15,540
+in a raw rectified flow model.
+
+1270
+00:50:15,540 --> 00:50:18,020
+And the thing about
+that is that is
+
+1271
+00:50:18,020 --> 00:50:21,320
+going to put uniform
+emphasis on all noise levels.
+
+1272
+00:50:21,320 --> 00:50:23,920
+And intuitively, when
+you're at full noise,
+
+1273
+00:50:23,920 --> 00:50:26,740
+the problem is very easy.
+
+1274
+00:50:26,740 --> 00:50:29,400
+When you're at full noise,
+the problem is very easy.
+
+1275
+00:50:29,400 --> 00:50:31,697
+Then the optimal
+prediction from the model
+
+1276
+00:50:31,697 --> 00:50:33,780
+is basically to point
+towards the mean of the data
+
+1277
+00:50:33,780 --> 00:50:34,860
+distribution.
+
+1278
+00:50:34,860 --> 00:50:37,760
+And similarly, when
+you're at 0 noise
+
+1279
+00:50:37,760 --> 00:50:39,420
+then the optimal
+prediction is actually
+
+1280
+00:50:39,420 --> 00:50:42,300
+to point towards the mean
+of the noise distribution.
+
+1281
+00:50:42,300 --> 00:50:44,680
+So actually the
+optimal prediction
+
+1282
+00:50:44,680 --> 00:50:48,240
+from the model at full noise
+and full data and no noise
+
+1283
+00:50:48,240 --> 00:50:50,180
+are actually very
+relatively easy problems.
+
+1284
+00:50:50,180 --> 00:50:53,080
+It just needs to learn the mean
+of those two distributions.
+
+1285
+00:50:53,080 --> 00:50:55,180
+But when you're
+somewhere in the middle,
+
+1286
+00:50:55,180 --> 00:50:57,890
+it's actually really
+hard because when
+
+1287
+00:50:57,890 --> 00:51:00,140
+you're somewhere in the
+middle and you sample that xt,
+
+1288
+00:51:00,140 --> 00:51:02,280
+there might have
+been multiple pairs x
+
+1289
+00:51:02,280 --> 00:51:06,420
+and z that could have given rise
+to that same xt in the middle.
+
+1290
+00:51:06,420 --> 00:51:07,920
+And then the network
+basically needs
+
+1291
+00:51:07,920 --> 00:51:09,600
+to solve this
+expectation problem
+
+1292
+00:51:09,600 --> 00:51:11,960
+and figure out what is
+that optimal direction
+
+1293
+00:51:11,960 --> 00:51:15,920
+to predict that integrates over
+all possible x's and z's that
+
+1294
+00:51:15,920 --> 00:51:17,823
+might intersect
+at this point xt.
+
+1295
+00:51:17,823 --> 00:51:20,240
+So somehow those points in the
+middle are intuitively much
+
+1296
+00:51:20,240 --> 00:51:24,320
+harder for the network to solve,
+but when we sample uniformly
+
+1297
+00:51:24,320 --> 00:51:28,280
+from 0 to 1t, then we're putting
+equal importance on all levels
+
+1298
+00:51:28,280 --> 00:51:30,740
+of noise, which doesn't
+really match this intuition.
+
+1299
+00:51:30,740 --> 00:51:32,320
+So in practice
+you'll often sample
+
+1300
+00:51:32,320 --> 00:51:34,040
+from different noise schedules.
+
+1301
+00:51:34,040 --> 00:51:35,680
+And one very popular
+one is this one
+
+1302
+00:51:35,680 --> 00:51:38,320
+called logit-normal
+sampling, which basically
+
+1303
+00:51:38,320 --> 00:51:40,660
+looks like a Gaussian, puts
+relatively little weight
+
+1304
+00:51:40,660 --> 00:51:43,683
+on the 0 and the 1 with a lot
+more weight in the middle.
+
+1305
+00:51:43,683 --> 00:51:45,100
+Another thing
+you'll see sometimes
+
+1306
+00:51:45,100 --> 00:51:47,100
+are these so-called
+shifted noise schedules
+
+1307
+00:51:47,100 --> 00:51:49,260
+that are asymmetric that
+shift more towards one
+
+1308
+00:51:49,260 --> 00:51:50,500
+direction or the other.
+
+1309
+00:51:50,500 --> 00:51:53,118
+And those are important as we
+scale to high resolution data.
+
+1310
+00:51:53,118 --> 00:51:55,660
+The intuition being that when
+you have a very high resolution
+
+1311
+00:51:55,660 --> 00:51:57,220
+image, then there
+can be very strong
+
+1312
+00:51:57,220 --> 00:51:59,138
+correlations across
+neighboring pixels.
+
+1313
+00:51:59,138 --> 00:52:00,680
+When you have a low
+resolution image,
+
+1314
+00:52:00,680 --> 00:52:02,660
+then the correlations
+across neighboring pixels
+
+1315
+00:52:02,660 --> 00:52:03,820
+tend to be smaller.
+
+1316
+00:52:03,820 --> 00:52:05,980
+So depending on how
+strong of correlations
+
+1317
+00:52:05,980 --> 00:52:07,620
+you have in your
+data, you actually
+
+1318
+00:52:07,620 --> 00:52:09,500
+may need different
+amounts of noise level
+
+1319
+00:52:09,500 --> 00:52:12,300
+to properly destroy
+information in a nice way.
+
+1320
+00:52:12,300 --> 00:52:16,490
+So these things don't naively
+scale to different resolutions.
+
+1321
+00:52:16,490 --> 00:52:18,740
+And that's actually a big
+problem with these diffusion
+
+1322
+00:52:18,740 --> 00:52:21,600
+models is that they're
+a beautiful formulation,
+
+1323
+00:52:21,600 --> 00:52:23,940
+but they're hard to get
+them to work naively
+
+1324
+00:52:23,940 --> 00:52:26,180
+on high resolution data.
+
+1325
+00:52:26,180 --> 00:52:28,100
+So that leads to actually--
+
+1326
+00:52:28,100 --> 00:52:30,620
+I said diffusion models
+are the most popular form
+
+1327
+00:52:30,620 --> 00:52:31,800
+of generative modeling.
+
+1328
+00:52:31,800 --> 00:52:34,092
+That was a little bit of a
+lie, because what's actually
+
+1329
+00:52:34,092 --> 00:52:36,140
+most popular are these
+so-called latent diffusion
+
+1330
+00:52:36,140 --> 00:52:39,840
+models, which is a variant that
+actually gets used everywhere.
+
+1331
+00:52:39,840 --> 00:52:42,080
+So here it's going to be
+a multi-stage procedure.
+
+1332
+00:52:42,080 --> 00:52:45,280
+So what we're going to do is
+first train an encoder network
+
+1333
+00:52:45,280 --> 00:52:46,580
+and a decoder network.
+
+1334
+00:52:46,580 --> 00:52:49,000
+The encoder network is
+going to map from our image
+
+1335
+00:52:49,000 --> 00:52:52,740
+into some latent space,
+which I've colored in purple.
+
+1336
+00:52:52,740 --> 00:52:55,160
+And ideally that latent is
+going to spatially downsample
+
+1337
+00:52:55,160 --> 00:52:58,480
+the image by a factor of D,
+as well as convert from three
+
+1338
+00:52:58,480 --> 00:53:00,175
+channels up into C channels.
+
+1339
+00:53:00,175 --> 00:53:01,800
+And a pretty common
+setting is to get 8
+
+1340
+00:53:01,800 --> 00:53:05,540
+by 8 spatial downsampling and
+to increase to 16 channels.
+
+1341
+00:53:05,540 --> 00:53:08,680
+That's some of these most
+common encoder decoders.
+
+1342
+00:53:08,680 --> 00:53:11,460
+These encoder decoders tend
+to be CNNs with attention,
+
+1343
+00:53:11,460 --> 00:53:15,440
+but some more recent papers
+have explored VITs for these.
+
+1344
+00:53:15,440 --> 00:53:18,240
+Then what we do is we're going
+to train a diffusion model not
+
+1345
+00:53:18,240 --> 00:53:20,180
+on the raw pixel
+space of our images,
+
+1346
+00:53:20,180 --> 00:53:22,560
+but instead on the latent
+space, which is discovered
+
+1347
+00:53:22,560 --> 00:53:24,420
+by this encoder decoder model.
+
+1348
+00:53:24,420 --> 00:53:27,720
+So then the training procedure
+looks for training the diffusion
+
+1349
+00:53:27,720 --> 00:53:29,857
+model, we're going
+to sample an image,
+
+1350
+00:53:29,857 --> 00:53:32,440
+pass it through the encoder that
+we learned in the first stage
+
+1351
+00:53:32,440 --> 00:53:35,680
+to get a latent and then
+add noise to the latent
+
+1352
+00:53:35,680 --> 00:53:40,200
+and train the diffusion model
+to denoise the noise latent.
+
+1353
+00:53:40,200 --> 00:53:42,580
+And really importantly,
+you freeze the encoder
+
+1354
+00:53:42,580 --> 00:53:46,480
+so you do not propagate the
+gradients back into the encoder.
+
+1355
+00:53:46,480 --> 00:53:48,580
+We're only using it to
+extract these latents
+
+1356
+00:53:48,580 --> 00:53:50,413
+and then training a
+diffusion model directly
+
+1357
+00:53:50,413 --> 00:53:52,780
+on the latent space, which
+is learned by the encoder.
+
+1358
+00:53:52,780 --> 00:53:55,240
+Then at inference time, once
+you're all done training,
+
+1359
+00:53:55,240 --> 00:53:57,180
+then we'll sample a
+random latent pass it
+
+1360
+00:53:57,180 --> 00:53:59,430
+through the diffusion model
+many, many times to remove
+
+1361
+00:53:59,430 --> 00:54:01,080
+all the noise to
+get a clean sample,
+
+1362
+00:54:01,080 --> 00:54:04,260
+but that clean sample is now a
+clean sample in latent space.
+
+1363
+00:54:04,260 --> 00:54:05,820
+So then we need
+to run the decoder
+
+1364
+00:54:05,820 --> 00:54:09,060
+to convert that clean
+latent into a clean image.
+
+1365
+00:54:09,060 --> 00:54:11,060
+And this is actually
+the most common form
+
+1366
+00:54:11,060 --> 00:54:13,860
+of most diffusion
+models these days.
+
+1367
+00:54:13,860 --> 00:54:16,300
+So you might be asking OK
+we've knocked this diffusion
+
+1368
+00:54:16,300 --> 00:54:18,560
+model, this encoder decoder.
+
+1369
+00:54:18,560 --> 00:54:20,160
+How do we train an
+encoder decoder?
+
+1370
+00:54:20,160 --> 00:54:22,420
+Any ideas?
+
+1371
+00:54:22,420 --> 00:54:25,020
+Have we seen encoder decoders?
+
+1372
+00:54:25,020 --> 00:54:26,837
+How about a variational
+autoencoder?
+
+1373
+00:54:26,837 --> 00:54:29,420
+So in practice whenever you're
+training these latent diffusion
+
+1374
+00:54:29,420 --> 00:54:31,700
+models, this encoder
+decoder tends
+
+1375
+00:54:31,700 --> 00:54:34,623
+to be a variational
+autoencoder, but we just
+
+1376
+00:54:34,623 --> 00:54:37,040
+said there was a big problem
+with variational autoencoders
+
+1377
+00:54:37,040 --> 00:54:38,582
+is that they give
+you blurry outputs.
+
+1378
+00:54:38,582 --> 00:54:40,800
+And if this encoder
+decoder is going
+
+1379
+00:54:40,800 --> 00:54:43,880
+to give you blurry outputs, the
+quality of the reconstructions
+
+1380
+00:54:43,880 --> 00:54:45,400
+you get out of the
+decoder is going
+
+1381
+00:54:45,400 --> 00:54:47,520
+to bottleneck the quality of
+the generations you get out
+
+1382
+00:54:47,520 --> 00:54:49,020
+of the downstream
+diffusion model.
+
+1383
+00:54:49,020 --> 00:54:51,600
+So if your encoder
+decoder is giving you
+
+1384
+00:54:51,600 --> 00:54:54,220
+blurry, ugly reconstructions,
+that's not going to fly.
+
+1385
+00:54:54,220 --> 00:54:56,360
+That's not going to get
+us good clean samples.
+
+1386
+00:54:56,360 --> 00:54:58,440
+So anyone have an
+idea for cleaning up
+
+1387
+00:54:58,440 --> 00:55:01,600
+the sample quality of a VAE?
+
+1388
+00:55:01,600 --> 00:55:04,840
+But something after the
+decoder in particular,
+
+1389
+00:55:04,840 --> 00:55:07,640
+we can make it a GAN.
+
+1390
+00:55:07,640 --> 00:55:10,200
+So what we tend
+to do is actually
+
+1391
+00:55:10,200 --> 00:55:12,960
+train this encoder that
+encodes from an image
+
+1392
+00:55:12,960 --> 00:55:15,800
+into latent space, a decoder
+that goes from latent space
+
+1393
+00:55:15,800 --> 00:55:17,440
+back to image, a
+discriminator that
+
+1394
+00:55:17,440 --> 00:55:20,560
+tries to tell the fake
+images from the real images,
+
+1395
+00:55:20,560 --> 00:55:23,360
+and then a diffusion
+model that generates
+
+1396
+00:55:23,360 --> 00:55:24,820
+these things in latent space.
+
+1397
+00:55:24,820 --> 00:55:27,400
+So this is basically why
+we have to walk through all
+
+1398
+00:55:27,400 --> 00:55:30,455
+of these different formulations
+of generative models
+
+1399
+00:55:30,455 --> 00:55:32,580
+in order for you to understand
+the modern pipeline.
+
+1400
+00:55:32,580 --> 00:55:35,020
+Basically the state of the
+art in generative modeling
+
+1401
+00:55:35,020 --> 00:55:36,260
+is is it a VAE?
+
+1402
+00:55:36,260 --> 00:55:36,920
+Is it a GAN?
+
+1403
+00:55:36,920 --> 00:55:37,880
+Is it a diffusion?
+
+1404
+00:55:37,880 --> 00:55:39,180
+It's all of them.
+
+1405
+00:55:39,180 --> 00:55:40,120
+It's all of them.
+
+1406
+00:55:40,120 --> 00:55:41,980
+The modern generative
+modeling pipeline
+
+1407
+00:55:41,980 --> 00:55:45,680
+involves training a VAE and
+a GAN and a diffusion model.
+
+1408
+00:55:45,680 --> 00:55:46,280
+I'm sorry.
+
+1409
+00:55:46,280 --> 00:55:47,820
+It's a mess.
+
+1410
+00:55:47,820 --> 00:55:51,060
+OK, so then you might ask, what
+do the neural networks actually
+
+1411
+00:55:51,060 --> 00:55:52,820
+look like under the hood here?
+
+1412
+00:55:52,820 --> 00:55:55,180
+So thankfully there
+is some sanity here
+
+1413
+00:55:55,180 --> 00:55:57,480
+the last couple of years.
+
+1414
+00:55:57,480 --> 00:55:59,940
+It turns out that relatively
+straightforward transformers
+
+1415
+00:55:59,940 --> 00:56:02,040
+actually can be applied
+to these diffusion models
+
+1416
+00:56:02,040 --> 00:56:03,500
+and they work really well.
+
+1417
+00:56:03,500 --> 00:56:06,760
+These are typically called
+diffusion transformers or DiTs,
+
+1418
+00:56:06,760 --> 00:56:09,320
+but basically these are just
+standard diffusion models
+
+1419
+00:56:09,320 --> 00:56:11,820
+or standard transformer blocks
+that really don't really have
+
+1420
+00:56:11,820 --> 00:56:13,620
+much special sauce in them.
+
+1421
+00:56:13,620 --> 00:56:15,180
+There's a couple of questions.
+
+1422
+00:56:15,180 --> 00:56:17,740
+The main question you need to
+solve in the architectural side
+
+1423
+00:56:17,740 --> 00:56:20,460
+is how do you inject the
+conditioning information?
+
+1424
+00:56:20,460 --> 00:56:22,060
+And in particular,
+the diffusion model
+
+1425
+00:56:22,060 --> 00:56:24,038
+now needs to take
+three things as input.
+
+1426
+00:56:24,038 --> 00:56:25,580
+It needs to take
+your noisy image, it
+
+1427
+00:56:25,580 --> 00:56:26,982
+needs to take your timestamp t.
+
+1428
+00:56:26,982 --> 00:56:28,940
+It also needs to take
+your conditioning signal,
+
+1429
+00:56:28,940 --> 00:56:31,920
+which it might be your text
+or something like that.
+
+1430
+00:56:31,920 --> 00:56:33,880
+And then you have a couple
+different mechanisms
+
+1431
+00:56:33,880 --> 00:56:36,520
+for injecting that conditioning
+signal into your transformer
+
+1432
+00:56:36,520 --> 00:56:37,400
+blocks.
+
+1433
+00:56:37,400 --> 00:56:40,600
+So the first is to predict
+a scale and shift that
+
+1434
+00:56:40,600 --> 00:56:42,360
+are going to be used
+to modulate some
+
+1435
+00:56:42,360 --> 00:56:45,385
+of the intermediate activations
+of your diffusion block.
+
+1436
+00:56:45,385 --> 00:56:47,760
+And that's typically the way
+that we inject the timestamp
+
+1437
+00:56:47,760 --> 00:56:49,760
+information into
+diffusion models.
+
+1438
+00:56:49,760 --> 00:56:51,950
+Another thing you can
+do is transformers
+
+1439
+00:56:51,950 --> 00:56:54,200
+are just models of sequences
+so you can jam everything
+
+1440
+00:56:54,200 --> 00:56:55,360
+into the sequence.
+
+1441
+00:56:55,360 --> 00:56:57,220
+You can jam the timestamp
+into the sequence.
+
+1442
+00:56:57,220 --> 00:56:58,700
+You can jam your text
+into the sequence.
+
+1443
+00:56:58,700 --> 00:57:00,658
+You can jam whatever you
+want into the sequence
+
+1444
+00:57:00,658 --> 00:57:03,440
+and have the transformer just
+model that sequence of data
+
+1445
+00:57:03,440 --> 00:57:04,363
+all together.
+
+1446
+00:57:04,363 --> 00:57:06,280
+And you can do that
+either via cross-attention
+
+1447
+00:57:06,280 --> 00:57:09,420
+or joint attention and
+different models do both.
+
+1448
+00:57:09,420 --> 00:57:11,760
+And typically in
+modern diffusion
+
+1449
+00:57:11,760 --> 00:57:14,520
+DiTs we inject the timestamp
+through this scale shift
+
+1450
+00:57:14,520 --> 00:57:15,300
+mechanism.
+
+1451
+00:57:15,300 --> 00:57:17,840
+And you inject the text or
+other conditioning signal
+
+1452
+00:57:17,840 --> 00:57:20,440
+through sequence concatenation
+usually cross-attention,
+
+1453
+00:57:20,440 --> 00:57:23,135
+but sometimes joint
+attention as well.
+
+1454
+00:57:23,135 --> 00:57:24,760
+So then how can you
+actually apply this
+
+1455
+00:57:24,760 --> 00:57:26,160
+to different problems?
+
+1456
+00:57:26,160 --> 00:57:28,080
+So one task that
+people care about a lot
+
+1457
+00:57:28,080 --> 00:57:30,820
+is the task of text
+to image generation.
+
+1458
+00:57:30,820 --> 00:57:32,802
+So here we're going to
+input a text prompt.
+
+1459
+00:57:32,802 --> 00:57:34,260
+This is one that
+I wrote yesterday.
+
+1460
+00:57:34,260 --> 00:57:36,180
+A professional documentary
+photograph of a monkey
+
+1461
+00:57:36,180 --> 00:57:38,210
+shaking hands with a tiger
+in front of the Eiffel Tower.
+
+1462
+00:57:38,210 --> 00:57:40,210
+The monkey is wearing a
+hat made out of bananas.
+
+1463
+00:57:40,210 --> 00:57:42,300
+Tiger is standing on two
+legs and wearing a suit.
+
+1464
+00:57:42,300 --> 00:57:43,878
+And this is a real sample.
+
+1465
+00:57:43,878 --> 00:57:45,420
+It's crazy that this
+stuff works now,
+
+1466
+00:57:45,420 --> 00:57:47,838
+but I'm sure you've all seen
+these kind of things before.
+
+1467
+00:57:47,838 --> 00:57:49,380
+And the way that
+this works is you'll
+
+1468
+00:57:49,380 --> 00:57:51,620
+take your text prompt,
+pass it through usually
+
+1469
+00:57:51,620 --> 00:57:53,260
+a pre-trained text encoder.
+
+1470
+00:57:53,260 --> 00:57:54,422
+So actually I lied.
+
+1471
+00:57:54,422 --> 00:57:56,380
+There's actually more
+models you have to train.
+
+1472
+00:57:56,380 --> 00:57:58,140
+In addition to an
+encoder and a decoder
+
+1473
+00:57:58,140 --> 00:57:59,915
+and a VAE and a
+discriminator, you also
+
+1474
+00:57:59,915 --> 00:58:01,540
+need to train a
+language model secretly
+
+1475
+00:58:01,540 --> 00:58:02,980
+to get these things to work.
+
+1476
+00:58:02,980 --> 00:58:05,272
+So you'll actually typically
+pick up a pre-trained text
+
+1477
+00:58:05,272 --> 00:58:07,020
+encoder, usually
+T5 clip, something
+
+1478
+00:58:07,020 --> 00:58:08,960
+like that to give
+text embeddings.
+
+1479
+00:58:08,960 --> 00:58:10,920
+And usually the text
+encoder will be frozen.
+
+1480
+00:58:10,920 --> 00:58:13,740
+Then those text embeddings
+you pass your text embeddings
+
+1481
+00:58:13,740 --> 00:58:16,703
+together with your noisy latents
+into your diffusion transformer
+
+1482
+00:58:16,703 --> 00:58:18,620
+that also gets your
+diffusion time step that's
+
+1483
+00:58:18,620 --> 00:58:19,880
+going to output clean latents.
+
+1484
+00:58:19,880 --> 00:58:22,120
+And this thing will
+go iteratively.
+
+1485
+00:58:22,120 --> 00:58:24,100
+And that'll go through
+your VAE decoder
+
+1486
+00:58:24,100 --> 00:58:26,140
+to give you your final image.
+
+1487
+00:58:26,140 --> 00:58:28,640
+And just to put some numbers
+on this to make it concrete,
+
+1488
+00:58:28,640 --> 00:58:31,440
+one pretty powerful open
+source model right now
+
+1489
+00:58:31,440 --> 00:58:32,860
+is called FLUX1 dev.
+
+1490
+00:58:32,860 --> 00:58:34,500
+They use the T5
+and clip encoders.
+
+1491
+00:58:34,500 --> 00:58:36,540
+Their encoder uses
+8x downsampling.
+
+1492
+00:58:36,540 --> 00:58:38,800
+They train a 12 billion
+parameter transformer
+
+1493
+00:58:38,800 --> 00:58:41,000
+model on this and
+that transformer
+
+1494
+00:58:41,000 --> 00:58:44,780
+has an additional layer of
+downsampling on top of the VAE,
+
+1495
+00:58:44,780 --> 00:58:45,840
+which is kind of messy.
+
+1496
+00:58:45,840 --> 00:58:50,320
+So it ends up having a sequence
+length of 1,024 image tokens.
+
+1497
+00:58:50,320 --> 00:58:53,177
+Another task that people care
+about a lot is text to video.
+
+1498
+00:58:53,177 --> 00:58:54,760
+So we can input a
+text prompt and then
+
+1499
+00:58:54,760 --> 00:58:57,740
+output the pixels of a video
+that follow that text prompt.
+
+1500
+00:58:57,740 --> 00:59:00,578
+And the pipeline
+basically looks the same.
+
+1501
+00:59:00,578 --> 00:59:03,120
+So you're going to input a text
+through your pre-trained text
+
+1502
+00:59:03,120 --> 00:59:04,980
+encoder, get noisy latents.
+
+1503
+00:59:04,980 --> 00:59:07,400
+Importantly, the only difference
+is that your latents now
+
+1504
+00:59:07,400 --> 00:59:09,660
+have an extra dimension
+to accommodate the time.
+
+1505
+00:59:09,660 --> 00:59:12,040
+So in addition to two
+spatial dimensions hw,
+
+1506
+00:59:12,040 --> 00:59:14,040
+you'll also have a time
+dimension in your latent
+
+1507
+00:59:14,040 --> 00:59:15,582
+and that will give
+you clean latents.
+
+1508
+00:59:15,582 --> 00:59:17,520
+And then your decoder,
+this is typically
+
+1509
+00:59:17,520 --> 00:59:19,860
+going to be a spatial
+temporal autoencoder now.
+
+1510
+00:59:19,860 --> 00:59:22,545
+So it will downsample both
+spatially and temporally.
+
+1511
+00:59:22,545 --> 00:59:23,920
+So then it will
+take your latents
+
+1512
+00:59:23,920 --> 00:59:26,220
+and then upsample
+them into pixels,
+
+1513
+00:59:26,220 --> 00:59:27,700
+which will give you a video.
+
+1514
+00:59:27,700 --> 00:59:31,740
+And this is actually a generated
+video from Meta's GOOVIGEN paper
+
+1515
+00:59:31,740 --> 00:59:33,680
+that came out last year.
+
+1517
+00:59:36,780 --> 00:59:39,340
+And that's putting
+some particular numbers
+
+1518
+00:59:39,340 --> 00:59:40,260
+on this thing.
+
+1519
+00:59:40,260 --> 00:59:42,960
+And the key takeaway of
+these video generation models
+
+1520
+00:59:42,960 --> 00:59:45,460
+is that they get very expensive
+to train due to the sequence
+
+1521
+00:59:45,460 --> 00:59:47,620
+length, because if
+you want to generate
+
+1522
+00:59:47,620 --> 00:59:51,400
+high FPS, high resolution,
+high frame rate video,
+
+1523
+00:59:51,400 --> 00:59:52,960
+it just ends up with
+a lot of tokens.
+
+1524
+00:59:52,960 --> 00:59:56,900
+So we said that with a fairly
+state of the art text to image
+
+1525
+00:59:56,900 --> 00:59:59,020
+diffusion model, that
+transformer ended up working
+
+1526
+00:59:59,020 --> 01:00:02,100
+on a sequence of
+1,024 image tokens.
+
+1527
+01:00:02,100 --> 01:00:03,960
+For this text to
+video diffusion model,
+
+1528
+01:00:03,960 --> 01:00:05,460
+even though the
+overall architecture
+
+1529
+01:00:05,460 --> 01:00:07,293
+looks pretty similar,
+the biggest difference
+
+1530
+01:00:07,293 --> 01:00:09,300
+is in the sequence length.
+
+1531
+01:00:09,300 --> 01:00:13,273
+Now they actually need to
+process 76,000 video tokens
+
+1532
+01:00:13,273 --> 01:00:15,940
+to process this, to create this
+high resolution video with a lot
+
+1533
+01:00:15,940 --> 01:00:16,562
+of frames.
+
+1534
+01:00:16,562 --> 01:00:18,020
+So that's where
+the expense happens
+
+1535
+01:00:18,020 --> 01:00:20,270
+in these video diffusion
+models is actually processing
+
+1536
+01:00:20,270 --> 01:00:23,020
+these really long sequences.
+
+1537
+01:00:23,020 --> 01:00:25,720
+So I think basically
+the last year
+
+1538
+01:00:25,720 --> 01:00:28,780
+has pretty much been the era
+of video diffusion models.
+
+1539
+01:00:28,780 --> 01:00:33,843
+So it basically seems like every
+week almost for the past year,
+
+1540
+01:00:33,843 --> 01:00:35,760
+there's been a new
+interesting video diffusion
+
+1541
+01:00:35,760 --> 01:00:37,280
+model coming out.
+
+1542
+01:00:37,280 --> 01:00:40,280
+And these have been a mix of
+open source models, models
+
+1543
+01:00:40,280 --> 01:00:42,360
+that have technical reports.
+
+1544
+01:00:42,360 --> 01:00:44,800
+So they give you some details
+about the model architecture
+
+1545
+01:00:44,800 --> 01:00:47,362
+and the training and
+purely industrial models
+
+1546
+01:00:47,362 --> 01:00:48,820
+where they don't
+tell you anything,
+
+1547
+01:00:48,820 --> 01:00:49,880
+but they'll take your
+credit card number
+
+1548
+01:00:49,880 --> 01:00:51,960
+and let you generate
+samples from it.
+
+1549
+01:00:51,960 --> 01:00:55,622
+So I'm not going to go through
+all of these one by one,
+
+1550
+01:00:55,622 --> 01:00:57,080
+but I just wanted
+to give the sense
+
+1551
+01:00:57,080 --> 01:01:01,680
+of this has been a really hot
+topic really the past 18 months.
+
+1552
+01:01:01,680 --> 01:01:04,160
+And in particular there
+was this really influential
+
+1553
+01:01:04,160 --> 01:01:06,760
+blog post from OpenAI
+called Sora that came out
+
+1554
+01:01:06,760 --> 01:01:10,537
+in March 2024, which was not the
+first diffusion model on videos,
+
+1555
+01:01:10,537 --> 01:01:13,120
+but it was the first one that
+gave really, really, really good
+
+1556
+01:01:13,120 --> 01:01:14,240
+results.
+
+1557
+01:01:14,240 --> 01:01:17,960
+And they adopted this
+modern diffusion transformer
+
+1558
+01:01:17,960 --> 01:01:19,082
+plus rectified flow.
+
+1559
+01:01:19,082 --> 01:01:20,540
+Actually, I don't
+know if they were
+
+1560
+01:01:20,540 --> 01:01:21,748
+using rectified flow in Sora.
+
+1561
+01:01:21,748 --> 01:01:24,180
+I don't know if they said,
+but they were one of the first
+
+1562
+01:01:24,180 --> 01:01:26,660
+to really scale up these
+diffusion transformers
+
+1563
+01:01:26,660 --> 01:01:28,320
+and get this thing
+to work really well.
+
+1564
+01:01:28,320 --> 01:01:31,020
+And then that was the
+four minute mile moment
+
+1565
+01:01:31,020 --> 01:01:32,320
+in video diffusion models.
+
+1566
+01:01:32,320 --> 01:01:34,653
+And then all the other big
+companies took notice of that
+
+1567
+01:01:34,653 --> 01:01:36,420
+and quickly tried
+to replicate Sora.
+
+1568
+01:01:36,420 --> 01:01:39,140
+So I said it's felt like
+for the past year and a half
+
+1569
+01:01:39,140 --> 01:01:41,260
+that almost every
+week, there's been
+
+1570
+01:01:41,260 --> 01:01:43,660
+a brand new, state of the
+art video diffusion model.
+
+1571
+01:01:43,660 --> 01:01:47,300
+And today is no exception
+because an hour and a half--
+
+1572
+01:01:47,300 --> 01:01:52,600
+at 11:00 AM this morning,
+Google announced Veo 3,
+
+1573
+01:01:52,600 --> 01:01:55,100
+which is almost certainly the
+best generative model of video
+
+1574
+01:01:55,100 --> 01:01:56,580
+out there right now.
+
+1575
+01:01:56,580 --> 01:01:58,740
+I literally read the
+blog post while I
+
+1576
+01:01:58,740 --> 01:02:02,080
+was in the car on the way
+here, but it seems cool.
+
+1577
+01:02:02,080 --> 01:02:04,780
+Here's some samples from V3.
+
+1578
+01:02:04,780 --> 01:02:07,460
+So these are actually
+generated videos
+
+1579
+01:02:07,460 --> 01:02:10,760
+from a text prompt in Google's
+new model, kind of crazy.
+
+1580
+01:02:10,760 --> 01:02:13,660
+Also this model also
+models sound jointly
+
+1581
+01:02:13,660 --> 01:02:17,540
+so they can output audio
+along with the video frames.
+
+1582
+01:02:17,540 --> 01:02:19,340
+This is another
+generated one, so you
+
+1583
+01:02:19,340 --> 01:02:21,600
+can tell what you want
+to happen in text.
+
+1584
+01:02:21,600 --> 01:02:25,200
+It'll fly over here
+and looks crazy.
+
+1585
+01:02:25,200 --> 01:02:30,200
+OK, so I thought that's just
+fun to incorporate new stuff.
+
+1586
+01:02:30,200 --> 01:02:32,920
+OK, so one big
+problem with diffusion
+
+1587
+01:02:32,920 --> 01:02:35,460
+is that during sampling
+it's really slow.
+
+1588
+01:02:35,460 --> 01:02:37,660
+We said that sampling was
+this iterative procedure.
+
+1589
+01:02:37,660 --> 01:02:39,140
+And these models
+can be really big.
+
+1590
+01:02:39,140 --> 01:02:40,600
+These can be models
+with tens of billions
+
+1591
+01:02:40,600 --> 01:02:42,960
+of parameters potentially
+operating on sequence lengths
+
+1592
+01:02:42,960 --> 01:02:45,360
+of tens of thousands or more.
+
+1593
+01:02:45,360 --> 01:02:47,720
+So these things get really
+slow at inference time
+
+1594
+01:02:47,720 --> 01:02:49,300
+because even with
+rectified flow,
+
+1595
+01:02:49,300 --> 01:02:54,160
+you need like tens of iterations
+of the model at inference time.
+
+1596
+01:02:54,160 --> 01:02:56,640
+So the solution is a
+category of algorithms
+
+1597
+01:02:56,640 --> 01:02:59,057
+called distillation, which we
+don't have time to get into.
+
+1598
+01:02:59,057 --> 01:03:01,098
+I just wanted to put a
+couple of references here,
+
+1599
+01:03:01,098 --> 01:03:03,460
+make you aware that this
+exists as a set of techniques.
+
+1600
+01:03:03,460 --> 01:03:05,520
+So distillation
+algorithms are basically
+
+1601
+01:03:05,520 --> 01:03:07,880
+ways that you can take a
+diffusion model that normally
+
+1602
+01:03:07,880 --> 01:03:10,960
+would take 30, 50, 100
+iterations at inference time
+
+1603
+01:03:10,960 --> 01:03:14,360
+to get good samples and then
+modify the model in some way
+
+1604
+01:03:14,360 --> 01:03:17,000
+such that you can take many,
+many fewer steps on inference
+
+1605
+01:03:17,000 --> 01:03:18,560
+and still get good samples.
+
+1606
+01:03:18,560 --> 01:03:20,500
+They tend to sacrifice
+sample quality.
+
+1607
+01:03:20,500 --> 01:03:22,260
+So the whole trick in
+distillation methods
+
+1608
+01:03:22,260 --> 01:03:24,580
+is trying to maintain the
+sample quality as good as you
+
+1609
+01:03:24,580 --> 01:03:26,300
+can, while still
+letting you take fewer
+
+1610
+01:03:26,300 --> 01:03:27,532
+samples at inference time.
+
+1611
+01:03:27,532 --> 01:03:29,740
+And some distillation methods
+let you get all the way
+
+1612
+01:03:29,740 --> 01:03:32,320
+down to single step sampling,
+which is really cool,
+
+1613
+01:03:32,320 --> 01:03:35,860
+although they tend to take quite
+a hit on the generation quality
+
+1614
+01:03:35,860 --> 01:03:39,220
+when you do that.
+
+1615
+01:03:39,220 --> 01:03:40,840
+I'm not going to
+go through these,
+
+1616
+01:03:40,840 --> 01:03:42,420
+but I just put some
+references here
+
+1617
+01:03:42,420 --> 01:03:44,100
+to different papers
+on distillation
+
+1618
+01:03:44,100 --> 01:03:45,340
+if you want to take a look.
+
+1619
+01:03:45,340 --> 01:03:47,880
+And this is a really active
+and evolving area of research.
+
+1620
+01:03:47,880 --> 01:03:49,338
+So if you look at
+these references,
+
+1621
+01:03:49,338 --> 01:03:52,180
+these are from 2024, from 2025.
+
+1622
+01:03:52,180 --> 01:03:54,380
+So these are stuff that
+people are working on right
+
+1623
+01:03:54,380 --> 01:03:56,680
+now is how do we get
+better distillation,
+
+1624
+01:03:56,680 --> 01:03:59,180
+how do we get diffusion
+models to be more
+
+1625
+01:03:59,180 --> 01:04:01,580
+efficient at inference time?
+
+1626
+01:04:01,580 --> 01:04:02,700
+So another thing.
+
+1627
+01:04:02,700 --> 01:04:06,860
+So I mentioned that diffusion
+has this black hole of math
+
+1628
+01:04:06,860 --> 01:04:08,318
+that you can get sucked into.
+
+1629
+01:04:08,318 --> 01:04:09,860
+And we intentionally
+sidestepped that
+
+1630
+01:04:09,860 --> 01:04:12,880
+by just walking very intuitively
+through rectified flow models,
+
+1631
+01:04:12,880 --> 01:04:15,060
+giving you a geometric
+intuition for the problem
+
+1632
+01:04:15,060 --> 01:04:18,140
+without really diving through
+any math that proves anything.
+
+1633
+01:04:18,140 --> 01:04:20,600
+So I wanted to give you
+just a brief sense of what
+
+1634
+01:04:20,600 --> 01:04:22,600
+some of these formalisms
+are, but we're not
+
+1635
+01:04:22,600 --> 01:04:24,760
+going to be able to go
+through them in detail.
+
+1636
+01:04:24,760 --> 01:04:27,383
+So here's restating the
+rectified flow objective.
+
+1637
+01:04:27,383 --> 01:04:28,800
+We said that during
+training we're
+
+1638
+01:04:28,800 --> 01:04:31,280
+going to sample our x's
+and our z's according
+
+1639
+01:04:31,280 --> 01:04:33,588
+to our data distribution
+and our noise distribution.
+
+1640
+01:04:33,588 --> 01:04:35,880
+We're going two sample t
+according to some distribution
+
+1641
+01:04:35,880 --> 01:04:38,840
+pt that we choose either
+on uniform, logit-normal
+
+1642
+01:04:38,840 --> 01:04:40,388
+or shifted, something like that.
+
+1643
+01:04:40,388 --> 01:04:42,680
+And then we'll set xt equal
+to the linear interpolation
+
+1644
+01:04:42,680 --> 01:04:43,800
+between x and z.
+
+1645
+01:04:43,800 --> 01:04:46,720
+We'll set our-- now we've
+written this a little bit
+
+1646
+01:04:46,720 --> 01:04:48,340
+differently in this slide.
+
+1647
+01:04:48,340 --> 01:04:51,280
+Now we're writing down a
+ground truth velocity vgt
+
+1648
+01:04:51,280 --> 01:04:54,160
+that we want the network to
+predict which is z minus x.
+
+1649
+01:04:54,160 --> 01:04:56,320
+We compute a predicted
+v from the network
+
+1650
+01:04:56,320 --> 01:04:58,680
+by passing our
+noisy xt and our t,
+
+1651
+01:04:58,680 --> 01:05:01,400
+then compute an L2
+loss, minimizing
+
+1652
+01:05:01,400 --> 01:05:04,490
+the vgt and the predicted
+v from the network.
+
+1654
+01:05:06,928 --> 01:05:09,220
+When I said that there's a
+lot of different formalisms,
+
+1655
+01:05:09,220 --> 01:05:11,840
+a lot of different flavors of
+diffusion, what a lot of these
+
+1656
+01:05:11,840 --> 01:05:15,660
+look to is different
+functional hyperparameters
+
+1657
+01:05:15,660 --> 01:05:16,880
+in this general setup.
+
+1658
+01:05:16,880 --> 01:05:20,900
+So in more generalized
+flavors of diffusion usually
+
+1659
+01:05:20,900 --> 01:05:23,883
+you might vary what is
+this pt distribution.
+
+1660
+01:05:23,883 --> 01:05:25,800
+Usually you don't vary
+the noise distribution.
+
+1661
+01:05:25,800 --> 01:05:29,380
+This is almost always Gaussian,
+at least for continuous models,
+
+1662
+01:05:29,380 --> 01:05:32,660
+but what you will vary is how
+do you compute that noisy xt.
+
+1663
+01:05:32,660 --> 01:05:35,420
+And in general that will be some
+functional combination-- that
+
+1664
+01:05:35,420 --> 01:05:38,420
+will be some linear
+combination of x and z.
+
+1665
+01:05:38,420 --> 01:05:41,340
+And the linear combination
+weights will in general
+
+1666
+01:05:41,340 --> 01:05:44,220
+be some function of t, but
+what exactly that function is
+
+1667
+01:05:44,220 --> 01:05:46,340
+depends on the
+diffusion formulation.
+
+1668
+01:05:46,340 --> 01:05:49,620
+Then what also varies is what is
+that ground truth target that we
+
+1669
+01:05:49,620 --> 01:05:51,002
+ask the model to predict.
+
+1670
+01:05:51,002 --> 01:05:53,460
+It's always going to be some
+linear combination of our data
+
+1671
+01:05:53,460 --> 01:05:56,740
+sample x and our latent z.
+
+1672
+01:05:56,740 --> 01:05:58,960
+And again, what are
+the linear combination
+
+1673
+01:05:58,960 --> 01:06:02,200
+weights might be functions
+of t in some formulations.
+
+1674
+01:06:02,200 --> 01:06:03,805
+So basically and
+then we're going
+
+1675
+01:06:03,805 --> 01:06:05,180
+to ask the model
+to-- we're going
+
+1676
+01:06:05,180 --> 01:06:08,240
+to give it that noisy xt and
+the t, get a predicted y.
+
+1677
+01:06:08,240 --> 01:06:10,640
+And then always compute an
+L2 loss between the two.
+
+1678
+01:06:10,640 --> 01:06:12,885
+I mean, not always, but usually.
+
+1679
+01:06:12,885 --> 01:06:14,260
+And then what
+varies is basically
+
+1680
+01:06:14,260 --> 01:06:16,080
+what are these different
+functional forms.
+
+1681
+01:06:16,080 --> 01:06:17,120
+What are these
+different functions
+
+1682
+01:06:17,120 --> 01:06:19,160
+that we plot, that we
+slot into these four
+
+1683
+01:06:19,160 --> 01:06:21,120
+different spots in this thing?
+
+1684
+01:06:21,120 --> 01:06:24,160
+So in the case of rectified
+flow it's fairly simple.
+
+1685
+01:06:24,160 --> 01:06:26,140
+These all take these
+really simple forms.
+
+1686
+01:06:26,140 --> 01:06:30,200
+And ct and dt are
+actually just constants.
+
+1687
+01:06:30,200 --> 01:06:35,480
+There's another flavor of this
+called variance preserving where
+
+1688
+01:06:35,480 --> 01:06:38,640
+you collapse these two into one
+scalar hyperparameter called
+
+1689
+01:06:38,640 --> 01:06:39,960
+sigma of t.
+
+1690
+01:06:39,960 --> 01:06:42,160
+And now you have these
+linear combinations
+
+1691
+01:06:42,160 --> 01:06:43,360
+in this particular way.
+
+1692
+01:06:43,360 --> 01:06:46,200
+And you choose this because if
+x and z are independent and have
+
+1693
+01:06:46,200 --> 01:06:48,400
+unit variance, then
+your output also
+
+1694
+01:06:48,400 --> 01:06:50,030
+is guaranteed to
+have unit variance.
+
+1695
+01:06:50,030 --> 01:06:52,280
+So that collapses these two
+functional hyperparameters
+
+1696
+01:06:52,280 --> 01:06:54,040
+into just one noise
+schedule and then
+
+1697
+01:06:54,040 --> 01:06:56,873
+you still need to
+choose that somehow.
+
+1698
+01:06:56,873 --> 01:06:58,540
+In combination with
+variance preserving,
+
+1699
+01:06:58,540 --> 01:07:00,080
+there's also
+variance exploding is
+
+1700
+01:07:00,080 --> 01:07:03,240
+another one where you'll set
+at equals 1, bt equal to again
+
+1701
+01:07:03,240 --> 01:07:04,380
+some sigma of t.
+
+1702
+01:07:04,380 --> 01:07:06,640
+And then you need to
+choose that somehow.
+
+1703
+01:07:06,640 --> 01:07:10,785
+There's a lot of different
+targets that people will choose.
+
+1704
+01:07:10,785 --> 01:07:12,160
+Sometimes they'll
+ask the network
+
+1705
+01:07:12,160 --> 01:07:13,510
+to predict the clean data.
+
+1706
+01:07:13,510 --> 01:07:15,260
+Sometimes they'll ask
+the model to predict
+
+1707
+01:07:15,260 --> 01:07:16,325
+the noise that was added.
+
+1708
+01:07:16,325 --> 01:07:17,700
+Sometimes they'll
+ask the network
+
+1709
+01:07:17,700 --> 01:07:20,100
+to predict some linear
+combination of the two.
+
+1710
+01:07:20,100 --> 01:07:22,200
+And in the case
+of rectified flow,
+
+1711
+01:07:22,200 --> 01:07:24,380
+you are just predicting
+that velocity vector that
+
+1712
+01:07:24,380 --> 01:07:26,540
+points from a data
+directly to a noise,
+
+1713
+01:07:26,540 --> 01:07:30,060
+but in more in different flavors
+of diffusion, all of these
+
+1714
+01:07:30,060 --> 01:07:31,620
+can change.
+
+1715
+01:07:31,620 --> 01:07:34,580
+Then you might be
+wondering choosing
+
+1716
+01:07:34,580 --> 01:07:35,830
+hyperparameters is bad enough.
+
+1717
+01:07:35,830 --> 01:07:37,663
+Now we need to choose
+hyperparameters, which
+
+1718
+01:07:37,663 --> 01:07:38,940
+are themselves functions of t.
+
+1719
+01:07:38,940 --> 01:07:40,007
+This is crazy.
+
+1720
+01:07:40,007 --> 01:07:41,840
+You're never going to
+set these intuitively,
+
+1721
+01:07:41,840 --> 01:07:43,937
+so you have to be guided
+by some kind of math.
+
+1722
+01:07:43,937 --> 01:07:46,020
+And there's basically three
+different mathematical
+
+1723
+01:07:46,020 --> 01:07:48,597
+formalisms that people
+think about when
+
+1724
+01:07:48,597 --> 01:07:51,180
+training diffusion models that
+again, we will not walk through
+
+1725
+01:07:51,180 --> 01:07:51,680
+in practice.
+
+1726
+01:07:51,680 --> 01:07:54,340
+I just want to get you
+to know the existence of.
+
+1727
+01:07:54,340 --> 01:07:57,460
+The first is that diffusion
+is a latent variable model.
+
+1728
+01:07:57,460 --> 01:07:59,680
+We have our clean
+data samples x0,
+
+1729
+01:07:59,680 --> 01:08:01,460
+but then associated
+to every clean data
+
+1730
+01:08:01,460 --> 01:08:03,180
+sample there exists
+some sequence
+
+1731
+01:08:03,180 --> 01:08:06,540
+of corrupted or noisy
+samples that correspond
+
+1732
+01:08:06,540 --> 01:08:07,677
+to that clean sample.
+
+1733
+01:08:07,677 --> 01:08:08,760
+And we can't observe them.
+
+1734
+01:08:08,760 --> 01:08:10,140
+We don't know what
+they are, but we need
+
+1735
+01:08:10,140 --> 01:08:11,160
+to figure them out somehow.
+
+1736
+01:08:11,160 --> 01:08:12,577
+So that's a latent
+variable model.
+
+1737
+01:08:12,577 --> 01:08:15,140
+That ends up looking a lot
+like a variational autoencoder.
+
+1738
+01:08:15,140 --> 01:08:17,700
+Remember, in a variational
+autoencoder we had a z and an x.
+
+1739
+01:08:17,700 --> 01:08:18,779
+We didn't observe the z.
+
+1740
+01:08:18,779 --> 01:08:21,040
+We wanted to train
+this thing somehow.
+
+1741
+01:08:21,040 --> 01:08:25,359
+Then it turns out you can use a
+very similar mathematical trick
+
+1742
+01:08:25,359 --> 01:08:27,100
+as we did in
+variational autoencoders
+
+1743
+01:08:27,100 --> 01:08:28,840
+and maximize some
+variational lower bound
+
+1744
+01:08:28,840 --> 01:08:30,260
+of the likelihood of the data.
+
+1745
+01:08:30,260 --> 01:08:32,359
+And that gives rise to
+this latent variable model
+
+1746
+01:08:32,359 --> 01:08:35,441
+interpretation of diffusion.
+
+1747
+01:08:35,441 --> 01:08:37,399
+A totally different
+interpretation of diffusion
+
+1748
+01:08:37,399 --> 01:08:39,760
+is that it models something
+called the score function.
+
+1749
+01:08:39,760 --> 01:08:45,040
+So given a distribution
+pdata of x,
+
+1750
+01:08:45,040 --> 01:08:47,479
+there's this nice thing
+called the score function
+
+1751
+01:08:47,479 --> 01:08:49,920
+of the distribution, which is
+the derivative with respect
+
+1752
+01:08:49,920 --> 01:08:52,040
+to x of the log of pdata of x.
+
+1753
+01:08:52,040 --> 01:08:54,180
+And intuitively
+given a distribution,
+
+1754
+01:08:54,180 --> 01:08:55,920
+the score function
+is a vector field
+
+1755
+01:08:55,920 --> 01:09:00,319
+that points towards areas
+of high probability density.
+
+1756
+01:09:00,319 --> 01:09:02,785
+So for any point
+in the data space,
+
+1757
+01:09:02,785 --> 01:09:04,160
+the score function
+is going to be
+
+1758
+01:09:04,160 --> 01:09:08,240
+a vector that points you towards
+areas of high data density.
+
+1759
+01:09:08,240 --> 01:09:10,439
+And now another
+interpretation of diffusion
+
+1760
+01:09:10,439 --> 01:09:12,939
+is that diffusion is learning
+the score function of the data
+
+1761
+01:09:12,939 --> 01:09:14,660
+distribution and
+in fact, learning
+
+1762
+01:09:14,660 --> 01:09:16,740
+a set of score
+functions corresponding
+
+1763
+01:09:16,740 --> 01:09:19,725
+to different levels of noise
+on the data distribution.
+
+1764
+01:09:19,725 --> 01:09:21,100
+So there's another
+interpretation
+
+1765
+01:09:21,100 --> 01:09:22,725
+of diffusion, which
+is that it's trying
+
+1766
+01:09:22,725 --> 01:09:25,140
+to learn a family of score
+functions corresponding
+
+1767
+01:09:25,140 --> 01:09:27,180
+to a family of
+noise distributions
+
+1768
+01:09:27,180 --> 01:09:29,700
+that corrupt the true data
+distribution with increasing
+
+1769
+01:09:29,700 --> 01:09:31,080
+amounts of known noise.
+
+1770
+01:09:31,080 --> 01:09:33,340
+And that's a totally different
+mathematical formalism
+
+1771
+01:09:33,340 --> 01:09:36,837
+that gives rise to very similar
+looking algorithm at the end.
+
+1772
+01:09:36,837 --> 01:09:39,420
+And then the third one that's
+come onto the scene a little bit
+
+1773
+01:09:39,420 --> 01:09:41,620
+more recently is this
+notion of diffusion
+
+1774
+01:09:41,620 --> 01:09:43,755
+as solving stochastic
+differential equations.
+
+1775
+01:09:43,755 --> 01:09:46,380
+And I got to admit I don't fully
+understand this one myself, so
+
+1776
+01:09:46,380 --> 01:09:49,020
+don't ask me too many
+questions, but the idea
+
+1777
+01:09:49,020 --> 01:09:52,020
+is that you want to write
+down some differential
+
+1778
+01:09:52,020 --> 01:09:55,260
+equation that's going to write
+down some infinitesimal way
+
+1779
+01:09:55,260 --> 01:09:58,060
+to transport samples
+from a noise distribution
+
+1780
+01:09:58,060 --> 01:10:00,040
+into samples from a
+data distribution.
+
+1781
+01:10:00,040 --> 01:10:02,220
+And then inference,
+then the neural network
+
+1782
+01:10:02,220 --> 01:10:05,720
+is basically learning some
+kind of numeric integrator,
+
+1783
+01:10:05,720 --> 01:10:08,620
+some numeric integrator to this
+stochastic differential equation
+
+1784
+01:10:08,620 --> 01:10:09,940
+that we can write down.
+
+1785
+01:10:09,940 --> 01:10:12,683
+And this opens up a whole new
+way of thinking about it because
+
+1786
+01:10:12,683 --> 01:10:14,600
+from under the lens of
+stochastic differential
+
+1787
+01:10:14,600 --> 01:10:19,680
+equations, then we get access to
+two whole different categories
+
+1788
+01:10:19,680 --> 01:10:22,380
+of methods to sample from
+these things at inference time.
+
+1789
+01:10:22,380 --> 01:10:26,880
+And from this perspective, the
+naive gradient descent type
+
+1790
+01:10:26,880 --> 01:10:28,720
+approach that we saw
+in rectified flow
+
+1791
+01:10:28,720 --> 01:10:31,320
+basically corresponds to a
+forward Euler type of integrator
+
+1792
+01:10:31,320 --> 01:10:33,682
+on top of a stochastic
+differential equation.
+
+1793
+01:10:33,682 --> 01:10:35,140
+And then under this
+interpretation,
+
+1794
+01:10:35,140 --> 01:10:37,765
+you can imagine doing all kinds
+of more complicated integrators
+
+1795
+01:10:37,765 --> 01:10:40,440
+to maybe do a better job at
+marching along this score
+
+1796
+01:10:40,440 --> 01:10:41,240
+function.
+
+1797
+01:10:41,240 --> 01:10:43,820
+So again, these are deep waters.
+
+1798
+01:10:43,820 --> 01:10:46,400
+There's papers that go
+into great detail on all
+
+1799
+01:10:46,400 --> 01:10:47,560
+these things.
+
+1800
+01:10:47,560 --> 01:10:49,040
+And a blog post
+that I really like
+
+1801
+01:10:49,040 --> 01:10:52,203
+is this one by Sander Dielman
+on perspectives on diffusion,
+
+1802
+01:10:52,203 --> 01:10:54,120
+who actually gave eight
+different perspectives
+
+1803
+01:10:54,120 --> 01:10:56,812
+on different ways to think
+about or view diffusion models.
+
+1804
+01:10:56,812 --> 01:10:58,020
+So this is an excellent post.
+
+1805
+01:10:58,020 --> 01:10:59,140
+I would highly recommend.
+
+1806
+01:10:59,140 --> 01:11:00,280
+I would actually
+highly recommend
+
+1807
+01:11:00,280 --> 01:11:02,020
+everything he's written
+about diffusion models.
+
+1808
+01:11:02,020 --> 01:11:03,312
+All his blog posts are amazing.
+
+1810
+01:11:05,800 --> 01:11:07,700
+Autoregressive models
+actually come back.
+
+1811
+01:11:07,700 --> 01:11:10,780
+We can do the same
+thing, encoder-decoder
+
+1812
+01:11:10,780 --> 01:11:12,940
+and put an autoregressive
+model on there too.
+
+1813
+01:11:12,940 --> 01:11:16,560
+So just sneaking this
+in there at the end,
+
+1814
+01:11:16,560 --> 01:11:19,620
+in addition to diffusion
+models, the other modern recipe
+
+1815
+01:11:19,620 --> 01:11:22,260
+for generative modeling is to
+train an autoregressive model
+
+1816
+01:11:22,260 --> 01:11:24,060
+on discrete latents
+that are computed
+
+1817
+01:11:24,060 --> 01:11:26,060
+by a discrete
+variational autoencoder.
+
+1818
+01:11:26,060 --> 01:11:30,860
+So that's why we did for
+generative models that we did,
+
+1819
+01:11:30,860 --> 01:11:33,220
+GANs, VAEs, autoregressive
+models diffusion
+
+1820
+01:11:33,220 --> 01:11:36,140
+because it turns out they all
+get used in modern machine
+
+1821
+01:11:36,140 --> 01:11:38,512
+learning pipelines.
+
+1822
+01:11:38,512 --> 01:11:40,220
+So that's basically
+the summary of today.
+
+1823
+01:11:40,220 --> 01:11:42,660
+Today we did a whirlwind tour
+of two different categories
+
+1824
+01:11:42,660 --> 01:11:43,720
+of generative models.
+
+1825
+01:11:43,720 --> 01:11:46,137
+We talked about generative
+adversarial networks as well as
+
+1826
+01:11:46,137 --> 01:11:46,880
+diffusion models.
+
+1827
+01:11:46,880 --> 01:11:49,900
+And we saw their modern
+full pipeline instantiated
+
+1828
+01:11:49,900 --> 01:11:52,100
+in latent diffusion models,
+which is of a nice way
+
+1829
+01:11:52,100 --> 01:11:53,960
+to wrap up this generative
+modeling section,
+
+1830
+01:11:53,960 --> 01:11:56,252
+because all the generative
+models that we saw basically
+
+1831
+01:11:56,252 --> 01:11:59,500
+come back and come together to
+form these big modern pipelines.
+
+1832
+01:11:59,500 --> 01:12:03,690
+So thanks and next time, we'll
+talk about vision and language.

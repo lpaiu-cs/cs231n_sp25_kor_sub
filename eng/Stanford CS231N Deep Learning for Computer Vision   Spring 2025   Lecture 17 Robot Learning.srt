@@ -1,0 +1,8461 @@
+2
+00:00:05,270 --> 00:00:09,140
+We're here with our final
+guest lecturer for the course.
+
+3
+00:00:09,140 --> 00:00:12,410
+And today, we have
+Dr. Yunzhu Li.
+
+4
+00:00:12,410 --> 00:00:14,870
+He is an assistant professor
+of computer science
+
+5
+00:00:14,870 --> 00:00:18,750
+at Columbia University, where
+he leads the Robotic Perception,
+
+6
+00:00:18,750 --> 00:00:20,160
+Interaction, and Learning Lab.
+
+7
+00:00:20,160 --> 00:00:23,070
+He is also a former
+instructor of CS231N,
+
+8
+00:00:23,070 --> 00:00:24,600
+like all of our guest lecturers.
+
+9
+00:00:24,600 --> 00:00:28,550
+And he taught the course in 2023
+while he completed his postdoc
+
+10
+00:00:28,550 --> 00:00:31,770
+here at Stanford with professors
+Fei-Fei Li and Jiajun Wu.
+
+11
+00:00:31,770 --> 00:00:33,680
+His research lies
+at the intersection
+
+12
+00:00:33,680 --> 00:00:36,750
+of robotics, computer
+vision, and machine learning.
+
+13
+00:00:36,750 --> 00:00:40,100
+And specifically, his work
+focuses on robot learning
+
+14
+00:00:40,100 --> 00:00:43,040
+and aims to significantly
+expand robots' perception
+
+15
+00:00:43,040 --> 00:00:45,180
+and physical interaction
+capabilities.
+
+16
+00:00:45,180 --> 00:00:47,750
+In today's lecture, he'll
+be discussing exactly that,
+
+17
+00:00:47,750 --> 00:00:49,020
+topic robot learning.
+
+18
+00:00:49,020 --> 00:00:52,490
+And I'll now hand it off to
+Yunzhu for today's lecture.
+
+19
+00:00:52,490 --> 00:00:55,380
+Yeah, thank you, Dean, for
+the very kind introduction.
+
+20
+00:00:55,380 --> 00:00:57,200
+I'm super excited to be here.
+
+21
+00:00:57,200 --> 00:00:59,010
+The last time I was
+here giving lectures
+
+22
+00:00:59,010 --> 00:01:01,270
+was two years ago, 2023.
+
+23
+00:01:01,270 --> 00:01:05,489
+And similar, lately, I was going
+through many of the lectures.
+
+24
+00:01:05,489 --> 00:01:09,060
+And today, I'm going to be
+talking about some of the things
+
+25
+00:01:09,060 --> 00:01:10,570
+that I have been working on.
+
+26
+00:01:10,570 --> 00:01:13,440
+And it's also a
+very coherent piece
+
+27
+00:01:13,440 --> 00:01:16,290
+of this overall picture on deep
+learning for computer vision.
+
+28
+00:01:16,290 --> 00:01:19,140
+And this is specifically
+on robot learning.
+
+29
+00:01:19,140 --> 00:01:20,910
+So I'll be discussing
+what are some
+
+30
+00:01:20,910 --> 00:01:23,110
+of the interesting
+considerations
+
+31
+00:01:23,110 --> 00:01:26,340
+especially in enabling the
+robots to better perceive
+
+32
+00:01:26,340 --> 00:01:28,270
+and interact with
+the physical world
+
+33
+00:01:28,270 --> 00:01:30,150
+and how some of
+the considerations
+
+34
+00:01:30,150 --> 00:01:33,420
+might be different from some
+typical computer vision tasks
+
+35
+00:01:33,420 --> 00:01:36,075
+and computer vision methods.
+
+36
+00:01:36,075 --> 00:01:38,580
+So first of all, you
+guys have already
+
+37
+00:01:38,580 --> 00:01:42,095
+learned a lot about
+supervised learning.
+
+38
+00:01:42,095 --> 00:01:44,850
+The scene and the setup
+for supervised learning
+
+39
+00:01:44,850 --> 00:01:47,130
+is that you have data x and y.
+
+40
+00:01:47,130 --> 00:01:49,750
+X is the input,
+and y is the label.
+
+41
+00:01:49,750 --> 00:01:53,220
+And you are trying to learn a
+mapping that maps from the input
+
+42
+00:01:53,220 --> 00:01:55,057
+x to the output y.
+
+43
+00:01:55,057 --> 00:01:56,890
+There are examples you
+have already learned,
+
+44
+00:01:56,890 --> 00:02:01,295
+like classification, regression,
+object detection, et cetera.
+
+45
+00:02:01,295 --> 00:02:05,300
+And you have also learned about
+self-supervised learning, where
+
+46
+00:02:05,300 --> 00:02:07,890
+instead of having
+labels, in this case,
+
+47
+00:02:07,890 --> 00:02:11,130
+you are just having the
+data without any labels.
+
+48
+00:02:11,130 --> 00:02:13,190
+What you are trying
+to do is you come up
+
+49
+00:02:13,190 --> 00:02:17,270
+with learning algorithms that
+is able to extract or identify
+
+50
+00:02:17,270 --> 00:02:19,680
+the underlying hidden
+structures of the data,
+
+51
+00:02:19,680 --> 00:02:24,060
+just by working or designing
+some auxiliary loss.
+
+52
+00:02:24,060 --> 00:02:27,230
+Some typical examples, including
+autoencoders, and there's
+
+53
+00:02:27,230 --> 00:02:31,010
+many other examples in trying
+to do unsupervised learning
+
+54
+00:02:31,010 --> 00:02:34,160
+or self-supervised
+learning on top
+
+55
+00:02:34,160 --> 00:02:37,520
+of this mass amount
+of unlabeled data.
+
+56
+00:02:37,520 --> 00:02:40,010
+And the special thing
+and the unique things
+
+57
+00:02:40,010 --> 00:02:42,140
+about robot learning
+is that the robot
+
+58
+00:02:42,140 --> 00:02:44,810
+has to make physical
+interactions that make
+
+59
+00:02:44,810 --> 00:02:46,830
+interactions with the world.
+
+60
+00:02:46,830 --> 00:02:49,010
+So it's not just you have
+the input and outputs
+
+61
+00:02:49,010 --> 00:02:50,790
+and mapping from
+the input x to y
+
+62
+00:02:50,790 --> 00:02:52,620
+or some kind of latent
+representations.
+
+63
+00:02:52,620 --> 00:02:55,140
+It's really about
+you are influenced
+
+64
+00:02:55,140 --> 00:02:56,610
+evolutions of the environments.
+
+65
+00:02:56,610 --> 00:02:58,340
+So no matter what
+action you decide
+
+66
+00:02:58,340 --> 00:03:00,440
+to take in the real
+world, the world
+
+67
+00:03:00,440 --> 00:03:03,270
+will change as a
+result of that actions.
+
+68
+00:03:03,270 --> 00:03:05,900
+And the world will give you
+some kind of new observations
+
+69
+00:03:05,900 --> 00:03:09,068
+or reward telling
+you how the thing--
+
+70
+00:03:09,068 --> 00:03:10,610
+how the environment
+has been changing
+
+71
+00:03:10,610 --> 00:03:13,740
+and how good you are in
+executing certain tasks.
+
+72
+00:03:13,740 --> 00:03:16,520
+So the goal is trying
+to actually come up
+
+73
+00:03:16,520 --> 00:03:21,180
+with a sequence of actions with
+feedback from the environments,
+
+74
+00:03:21,180 --> 00:03:25,670
+that is, to maximize some
+reward or minimize some cost.
+
+75
+00:03:25,670 --> 00:03:30,420
+And robot learning, especially
+in the recent years,
+
+76
+00:03:30,420 --> 00:03:34,190
+has attracted significant
+attention both within academia
+
+77
+00:03:34,190 --> 00:03:36,450
+and also within industries.
+
+78
+00:03:36,450 --> 00:03:41,280
+So we have seen many startup
+companies and including,
+
+79
+00:03:41,280 --> 00:03:43,910
+for example, physical
+intelligence like Tesla bots
+
+80
+00:03:43,910 --> 00:03:45,200
+or Figure.
+
+81
+00:03:45,200 --> 00:03:49,940
+They are producing those very
+seemingly very nice and fancy
+
+82
+00:03:49,940 --> 00:03:54,240
+videos of robots doing a wide
+range of very complicated tasks,
+
+83
+00:03:54,240 --> 00:03:56,700
+like folding shirts, like
+manipulating coffee beans,
+
+84
+00:03:56,700 --> 00:03:58,890
+or trying to have this
+human noise, like doing
+
+85
+00:03:58,890 --> 00:04:01,920
+interesting tasks in
+the real physical world.
+
+86
+00:04:01,920 --> 00:04:05,580
+So this field, like I mentioned,
+has attracted a lot of attention
+
+87
+00:04:05,580 --> 00:04:07,510
+and also a lot of investments.
+
+88
+00:04:07,510 --> 00:04:10,140
+Here are just some examples
+of some recent startups
+
+89
+00:04:10,140 --> 00:04:12,300
+in the field of
+robot learnings that
+
+90
+00:04:12,300 --> 00:04:15,090
+is able to attract a huge
+amount of investments, trying
+
+91
+00:04:15,090 --> 00:04:17,370
+to build this general
+purpose robots
+
+92
+00:04:17,370 --> 00:04:19,050
+that can make
+physical interactions
+
+93
+00:04:19,050 --> 00:04:20,200
+with the environments.
+
+94
+00:04:20,200 --> 00:04:23,550
+So obviously, not only
+those startups, mainly
+
+95
+00:04:23,550 --> 00:04:28,370
+big established companies are
+also having their own robotics
+
+96
+00:04:28,370 --> 00:04:30,420
+investigations and
+initiatives, trying
+
+97
+00:04:30,420 --> 00:04:32,520
+to develop their own
+general purpose robots
+
+98
+00:04:32,520 --> 00:04:36,090
+that is able to make general
+purpose and high performance
+
+99
+00:04:36,090 --> 00:04:39,615
+physical interactions
+with the environment.
+
+100
+00:04:39,615 --> 00:04:42,060
+So for today's
+lectures, I'm going
+
+101
+00:04:42,060 --> 00:04:44,535
+to give you some
+kind of overviews
+
+102
+00:04:44,535 --> 00:04:47,160
+on some of the key
+techniques enabling
+
+103
+00:04:47,160 --> 00:04:50,910
+factors of the current success
+and boom of robot learnings.
+
+104
+00:04:50,910 --> 00:04:53,210
+We will start with
+problem formulations.
+
+105
+00:04:53,210 --> 00:04:55,840
+How can we more
+concretely define
+
+106
+00:04:55,840 --> 00:04:57,620
+the problems we
+have been building,
+
+107
+00:04:57,620 --> 00:05:00,490
+and how can we formally think
+about the robust interactions
+
+108
+00:05:00,490 --> 00:05:01,700
+with the environments?
+
+109
+00:05:01,700 --> 00:05:05,510
+So I will then discuss
+the more perception side.
+
+110
+00:05:05,510 --> 00:05:07,870
+I will talk about the
+different considerations
+
+111
+00:05:07,870 --> 00:05:10,270
+between how robots
+perceive the environments
+
+112
+00:05:10,270 --> 00:05:13,480
+and how people typically
+consider in the computer vision
+
+113
+00:05:13,480 --> 00:05:16,460
+community and what's special
+about robots' perception,
+
+114
+00:05:16,460 --> 00:05:19,270
+now talking about
+reinforcement learning, model
+
+115
+00:05:19,270 --> 00:05:22,750
+learning, model-based planning,
+imitation learning, also
+
+116
+00:05:22,750 --> 00:05:25,970
+some of the recent trends
+on robotic foundation models
+
+117
+00:05:25,970 --> 00:05:29,350
+and also using the
+remaining time to discuss
+
+118
+00:05:29,350 --> 00:05:34,330
+some of the challenges we
+still see lies ahead of us.
+
+119
+00:05:34,330 --> 00:05:37,690
+So we'll start with
+problem formulation.
+
+120
+00:05:37,690 --> 00:05:40,930
+So this is, in general,
+how the problem
+
+121
+00:05:40,930 --> 00:05:45,350
+should look like, at least
+in a graphical illustration.
+
+122
+00:05:45,350 --> 00:05:47,300
+So in the middle,
+we have this agent.
+
+123
+00:05:47,300 --> 00:05:50,400
+The agent is given
+some task objective.
+
+124
+00:05:50,400 --> 00:05:52,760
+This task objective could
+be, for example, language
+
+125
+00:05:52,760 --> 00:05:55,910
+instructions from human or some
+kind of objective functions
+
+126
+00:05:55,910 --> 00:06:00,530
+measuring how good this agent
+is in doing some specific task.
+
+127
+00:06:00,530 --> 00:06:04,610
+This agent is taking states
+from the physical world
+
+128
+00:06:04,610 --> 00:06:06,330
+or some kind of environments.
+
+129
+00:06:06,330 --> 00:06:09,050
+And the agent decides
+what action to take,
+
+130
+00:06:09,050 --> 00:06:11,270
+like this at here,
+that needs to be
+
+131
+00:06:11,270 --> 00:06:13,470
+executed in the physical world.
+
+132
+00:06:13,470 --> 00:06:17,450
+And this physical world
+will be updated and given
+
+133
+00:06:17,450 --> 00:06:20,180
+this state's st
+plus 1, as well as
+
+134
+00:06:20,180 --> 00:06:24,000
+the rewards, telling the agents
+how good it is doing its task.
+
+135
+00:06:24,000 --> 00:06:26,670
+So this is how the framework
+in general looks like.
+
+136
+00:06:26,670 --> 00:06:31,400
+So you have to be very clear on
+this type of formulation that
+
+137
+00:06:31,400 --> 00:06:36,210
+consists of goal, states,
+actions, and also rewards.
+
+138
+00:06:36,210 --> 00:06:41,300
+That specifically defines the
+problems of the robot learning
+
+139
+00:06:41,300 --> 00:06:44,750
+type of scenarios is very
+different from the computer
+
+140
+00:06:44,750 --> 00:06:45,510
+visions.
+
+141
+00:06:45,510 --> 00:06:48,260
+I would like to say
+computer vision is mostly
+
+142
+00:06:48,260 --> 00:06:50,600
+about trying to learn some
+kind of representations
+
+143
+00:06:50,600 --> 00:06:53,160
+of the environment
+based on the inputs,
+
+144
+00:06:53,160 --> 00:06:54,540
+like high-dimensional data.
+
+145
+00:06:54,540 --> 00:06:56,870
+But for robotics,
+it's basically trying
+
+146
+00:06:56,870 --> 00:06:59,750
+to solve some kind of
+optimization problems
+
+147
+00:06:59,750 --> 00:07:02,150
+where you have the
+constraints, which
+
+148
+00:07:02,150 --> 00:07:04,105
+is a physical world
+of the environment.
+
+149
+00:07:04,105 --> 00:07:05,480
+You have your
+objective functions
+
+150
+00:07:05,480 --> 00:07:06,810
+defined over your goal.
+
+151
+00:07:06,810 --> 00:07:09,410
+And you are essentially trying
+to solve this optimization
+
+152
+00:07:09,410 --> 00:07:12,320
+problems by coming up
+with a sequence of actions
+
+153
+00:07:12,320 --> 00:07:15,570
+that can maximize or minimize
+your objective functions.
+
+154
+00:07:15,570 --> 00:07:17,960
+So that's a key difference
+between robot learning
+
+155
+00:07:17,960 --> 00:07:22,070
+and what people typically
+consider in computer vision.
+
+156
+00:07:22,070 --> 00:07:24,440
+So some specific
+instantiations of this problem
+
+157
+00:07:24,440 --> 00:07:27,300
+like, for example,
+cart-pole, the goal
+
+158
+00:07:27,300 --> 00:07:31,380
+can be balance a pole on
+the top of a movable cart.
+
+159
+00:07:31,380 --> 00:07:33,200
+And the states of
+this environment
+
+160
+00:07:33,200 --> 00:07:35,900
+essentially describe the
+physical state status
+
+161
+00:07:35,900 --> 00:07:39,500
+of the systems, which can
+include the angle, the angular
+
+162
+00:07:39,500 --> 00:07:43,127
+speed, positions, horizontal
+velocities, et cetera.
+
+163
+00:07:43,127 --> 00:07:44,960
+And the action would
+be the horizontal force
+
+164
+00:07:44,960 --> 00:07:47,580
+that is applied to the carts.
+
+165
+00:07:47,580 --> 00:07:51,000
+And you can have the rewards
+where 1 indicating at each time
+
+166
+00:07:51,000 --> 00:07:56,100
+step if the poll is being
+kept as an upright position.
+
+167
+00:07:56,100 --> 00:07:59,650
+Some other example could
+include robot locomotion,
+
+168
+00:07:59,650 --> 00:08:03,310
+where the goal is to make
+these robots move forwards.
+
+169
+00:08:03,310 --> 00:08:06,720
+And the states could include
+the angle position velocities
+
+170
+00:08:06,720 --> 00:08:09,160
+of all joints within this robot.
+
+171
+00:08:09,160 --> 00:08:11,160
+And the action could
+be the torque applied
+
+172
+00:08:11,160 --> 00:08:13,390
+to each one of the joints.
+
+173
+00:08:13,390 --> 00:08:16,380
+And the reward can
+be 1 at each time.
+
+174
+00:08:16,380 --> 00:08:20,010
+The robot make a step
+forwards and also being
+
+175
+00:08:20,010 --> 00:08:22,995
+kept in an upright positions.
+
+176
+00:08:22,995 --> 00:08:25,770
+And also some
+interesting examples
+
+177
+00:08:25,770 --> 00:08:27,460
+including the Atari games.
+
+178
+00:08:27,460 --> 00:08:31,470
+The goal can be complete the
+game with the highest score, as
+
+179
+00:08:31,470 --> 00:08:33,549
+high as possible you can get.
+
+180
+00:08:33,549 --> 00:08:35,880
+And the states will be
+the raw pixel inputs
+
+181
+00:08:35,880 --> 00:08:37,480
+of the gaming screen.
+
+182
+00:08:37,480 --> 00:08:41,010
+And action could be the gaming
+control like up, down, left,
+
+183
+00:08:41,010 --> 00:08:41,710
+and right.
+
+184
+00:08:41,710 --> 00:08:43,650
+And the reward could
+be the score increase
+
+185
+00:08:43,650 --> 00:08:47,170
+and decrease at each time step.
+
+186
+00:08:47,170 --> 00:08:50,320
+And some of the more
+famous examples you
+
+187
+00:08:50,320 --> 00:08:53,050
+probably have noticed
+earlier, especially
+
+188
+00:08:53,050 --> 00:08:55,240
+with the developments
+of AlphaGo.
+
+189
+00:08:55,240 --> 00:08:57,400
+And the definition
+and the problem of Go
+
+190
+00:08:57,400 --> 00:09:00,190
+can also be defined
+in similar ways, where
+
+191
+00:09:00,190 --> 00:09:02,350
+the goal is to win the game.
+
+192
+00:09:02,350 --> 00:09:05,290
+And the states will be all
+the pieces that are currently
+
+193
+00:09:05,290 --> 00:09:06,950
+already on the Go board.
+
+194
+00:09:06,950 --> 00:09:09,460
+And action could be where
+to put the next piece down
+
+195
+00:09:09,460 --> 00:09:10,520
+on this board.
+
+196
+00:09:10,520 --> 00:09:13,670
+And the reward could be, on
+the last turn, if you win,
+
+197
+00:09:13,670 --> 00:09:19,150
+you get a reward of 1, and if
+you lose, you get a reward of 0.
+
+198
+00:09:19,150 --> 00:09:22,270
+And this not only applies to,
+for example, gaming domains.
+
+199
+00:09:22,270 --> 00:09:25,900
+Even with the recent
+developments of large language
+
+200
+00:09:25,900 --> 00:09:29,090
+models, you can also think
+about those problems,
+
+201
+00:09:29,090 --> 00:09:32,890
+especially for sequential
+generation problems,
+
+202
+00:09:32,890 --> 00:09:34,960
+in a similar manner
+where the goal could
+
+203
+00:09:34,960 --> 00:09:37,340
+be to predict the next word.
+
+204
+00:09:37,340 --> 00:09:40,010
+And the states could be the
+current words in the sentence.
+
+205
+00:09:40,010 --> 00:09:42,340
+And the action will be what
+the specific next words
+
+206
+00:09:42,340 --> 00:09:43,920
+you want to put there.
+
+207
+00:09:43,920 --> 00:09:46,830
+And if it is correct,
+you get the reward.
+
+208
+00:09:46,830 --> 00:09:51,230
+If it is incorrect,
+you get a reward of 0.
+
+209
+00:09:51,230 --> 00:09:53,420
+And similarly, now, you
+probably have already
+
+210
+00:09:53,420 --> 00:09:56,870
+played with many of the
+chatbots quite a lot.
+
+211
+00:09:56,870 --> 00:09:59,450
+And you can also define
+a problem similarly,
+
+212
+00:09:59,450 --> 00:10:04,260
+where the goal is to be a good
+companion to the human user.
+
+213
+00:10:04,260 --> 00:10:06,860
+The states could be the
+current conversation.
+
+214
+00:10:06,860 --> 00:10:10,460
+And action that should be
+generated by the chatbots
+
+215
+00:10:10,460 --> 00:10:14,340
+will be the next sentence you
+are given to the human user.
+
+216
+00:10:14,340 --> 00:10:16,830
+And according to the
+human evaluations,
+
+217
+00:10:16,830 --> 00:10:20,210
+we could define the reward
+if the person is happy.
+
+218
+00:10:20,210 --> 00:10:23,340
+If they are satisfied,
+you get a reward of 1.
+
+219
+00:10:23,340 --> 00:10:25,740
+And if you are not
+happy or neutral,
+
+220
+00:10:25,740 --> 00:10:28,310
+you get some other rewards.
+
+221
+00:10:28,310 --> 00:10:31,050
+And more specifically, for
+example, in the robotics domain.
+
+222
+00:10:31,050 --> 00:10:33,840
+And the task could be
+to fold the clothes.
+
+223
+00:10:33,840 --> 00:10:36,500
+And we want the clothes--
+we fold it nicely.
+
+224
+00:10:36,500 --> 00:10:39,020
+And the states is the
+current observations
+
+225
+00:10:39,020 --> 00:10:42,360
+the robot is getting from
+this environment, which
+
+226
+00:10:42,360 --> 00:10:45,900
+could include the
+multi-view RGB or RGBD
+
+227
+00:10:45,900 --> 00:10:47,820
+observations of the environment.
+
+228
+00:10:47,820 --> 00:10:50,380
+And the robot needs
+to decide its actions,
+
+229
+00:10:50,380 --> 00:10:52,200
+how to move its end-effectors.
+
+230
+00:10:52,200 --> 00:10:54,720
+Should it close or
+open its grippers
+
+231
+00:10:54,720 --> 00:10:56,830
+in order to
+manipulate this cloth?
+
+232
+00:10:56,830 --> 00:10:58,750
+And according to
+human evaluations,
+
+233
+00:10:58,750 --> 00:11:01,680
+if the cloth is properly
+folded, it gives the robot
+
+234
+00:11:01,680 --> 00:11:04,660
+a reward of 1, and if
+the cloth is not folded,
+
+235
+00:11:04,660 --> 00:11:06,610
+you give the reward of 0.
+
+236
+00:11:06,610 --> 00:11:10,770
+So here is actually how you
+want to more concretely think
+
+237
+00:11:10,770 --> 00:11:12,400
+about robot learning problem.
+
+238
+00:11:12,400 --> 00:11:15,900
+It really is a way that
+allows the agents to interact
+
+239
+00:11:15,900 --> 00:11:16,990
+with the world.
+
+240
+00:11:16,990 --> 00:11:19,050
+It considers the
+effect of an action
+
+241
+00:11:19,050 --> 00:11:21,840
+and also the sequential
+decision-making problems.
+
+242
+00:11:21,840 --> 00:11:23,820
+That is different from
+what people typically
+
+243
+00:11:23,820 --> 00:11:25,120
+consider in computer vision.
+
+244
+00:11:25,120 --> 00:11:27,945
+We just need to
+predict the outputs.
+
+245
+00:11:27,945 --> 00:11:30,880
+And the goal, states,
+actions, and the rewards
+
+246
+00:11:30,880 --> 00:11:33,090
+and the objective
+functions are the things
+
+247
+00:11:33,090 --> 00:11:34,710
+you need to keep
+in mind whenever
+
+248
+00:11:34,710 --> 00:11:38,490
+you are thinking about
+problems along this direction.
+
+249
+00:11:38,490 --> 00:11:40,970
+So this is about
+problem formulation.
+
+250
+00:11:40,970 --> 00:11:45,490
+So question is how specific the
+reward needs to be designed.
+
+251
+00:11:45,490 --> 00:11:48,610
+In many of the tasks, the reward
+can have many different types
+
+252
+00:11:48,610 --> 00:11:49,875
+of specifications.
+
+253
+00:11:49,875 --> 00:11:51,250
+For example, in
+the self-driving,
+
+254
+00:11:51,250 --> 00:11:54,520
+the reward could be as fast
+as possible or reward could
+
+255
+00:11:54,520 --> 00:11:58,810
+be like we want the passengers
+to feel comfortable as you
+
+256
+00:11:58,810 --> 00:12:00,290
+are driving along the roads.
+
+257
+00:12:00,290 --> 00:12:02,320
+So even for clothes
+folding, depending
+
+258
+00:12:02,320 --> 00:12:04,030
+on the user's
+preference, our clothes
+
+259
+00:12:04,030 --> 00:12:05,810
+can be folded in
+many different ways.
+
+260
+00:12:05,810 --> 00:12:08,930
+Some want the total area
+to be as small as possible.
+
+261
+00:12:08,930 --> 00:12:11,690
+Some want it to be as
+smooth as possible.
+
+262
+00:12:11,690 --> 00:12:14,320
+There could be different
+types of rewards.
+
+263
+00:12:14,320 --> 00:12:16,840
+Here, I'm just talking
+in generic terms.
+
+264
+00:12:16,840 --> 00:12:18,310
+If a person looks
+at the clothes,
+
+265
+00:12:18,310 --> 00:12:20,300
+do they think, this
+is folded, or not?
+
+266
+00:12:20,300 --> 00:12:22,970
+But more specifically, in
+terms of the reward design,
+
+267
+00:12:22,970 --> 00:12:25,060
+there's actually
+a lot of nuances
+
+268
+00:12:25,060 --> 00:12:30,190
+satisfying a specific need
+of a specific application.
+
+269
+00:12:30,190 --> 00:12:31,090
+OK.
+
+270
+00:12:31,090 --> 00:12:31,865
+So I'll continue.
+
+271
+00:12:31,865 --> 00:12:34,240
+So this is how we are thinking
+about those robot learning
+
+272
+00:12:34,240 --> 00:12:36,770
+problem that allows
+the agents to interact
+
+273
+00:12:36,770 --> 00:12:38,540
+with the physical world.
+
+274
+00:12:38,540 --> 00:12:41,010
+Now, I'm moving on
+to robot perception,
+
+275
+00:12:41,010 --> 00:12:43,580
+especially in discussing
+how the perception
+
+276
+00:12:43,580 --> 00:12:45,560
+problem within this
+robot learning domain
+
+277
+00:12:45,560 --> 00:12:48,020
+is different from
+what people typically
+
+278
+00:12:48,020 --> 00:12:50,030
+consider in computer vision.
+
+279
+00:12:50,030 --> 00:12:51,440
+So this image again--
+
+280
+00:12:51,440 --> 00:12:54,020
+you're actually going to see
+this image again and again
+
+281
+00:12:54,020 --> 00:12:55,620
+through today's lecture.
+
+282
+00:12:55,620 --> 00:12:58,040
+So this is, essentially,
+in the question
+
+283
+00:12:58,040 --> 00:13:02,450
+of how we are handling whatever
+information you are getting
+
+284
+00:13:02,450 --> 00:13:04,185
+from the physical world.
+
+285
+00:13:04,185 --> 00:13:06,060
+The physical world can
+give you, for example,
+
+286
+00:13:06,060 --> 00:13:09,840
+high-dimensional RGB observation
+or RGBD observations.
+
+287
+00:13:09,840 --> 00:13:12,230
+It could also include
+some other sensory data
+
+288
+00:13:12,230 --> 00:13:13,945
+like tactile sensings.
+
+289
+00:13:13,945 --> 00:13:15,890
+And this robot
+perception problem
+
+290
+00:13:15,890 --> 00:13:18,890
+is essentially trying
+to distill or harness
+
+291
+00:13:18,890 --> 00:13:23,210
+some structured knowledge from
+those high-dimensional data that
+
+292
+00:13:23,210 --> 00:13:27,470
+is useful for the robot to do
+the downstream decision making.
+
+293
+00:13:27,470 --> 00:13:30,770
+And essentially, the question
+we are trying to tackle
+
+294
+00:13:30,770 --> 00:13:34,560
+is trying to make sense of
+this unstructured real world.
+
+295
+00:13:34,560 --> 00:13:37,660
+And the real world
+can be very messy.
+
+296
+00:13:37,660 --> 00:13:39,660
+So essentially, the
+observations the robots
+
+297
+00:13:39,660 --> 00:13:41,310
+are getting from
+the environments
+
+298
+00:13:41,310 --> 00:13:45,000
+can only contain incomplete
+knowledge of the objects
+
+299
+00:13:45,000 --> 00:13:46,090
+and the environments.
+
+300
+00:13:46,090 --> 00:13:47,590
+There could be occlusions.
+
+301
+00:13:47,590 --> 00:13:52,390
+There could also be errors
+from the sensory data.
+
+302
+00:13:52,390 --> 00:13:56,020
+And the imperfect action
+may also lead to failure.
+
+303
+00:13:56,020 --> 00:13:59,590
+For example, the robots can
+try to grasp some objects,
+
+304
+00:13:59,590 --> 00:14:02,650
+but their grasping behavior
+may not always be successful.
+
+305
+00:14:02,650 --> 00:14:05,170
+Sometimes, you will
+accidentally drop that object,
+
+306
+00:14:05,170 --> 00:14:09,060
+which will also cause evolutions
+and unexpected changes
+
+307
+00:14:09,060 --> 00:14:10,300
+of this environment.
+
+308
+00:14:10,300 --> 00:14:12,780
+They will also need to have
+this perception system that is
+
+309
+00:14:12,780 --> 00:14:14,650
+able to handle those scenarios.
+
+310
+00:14:14,650 --> 00:14:17,170
+And also this
+environment can change.
+
+311
+00:14:17,170 --> 00:14:20,170
+It is dynamic, consists
+of not just rigid object
+
+312
+00:14:20,170 --> 00:14:23,940
+but deformable object--
+clothes, ropes, granular medias.
+
+313
+00:14:23,940 --> 00:14:26,820
+There could be other agents,
+like dogs or other kids
+
+314
+00:14:26,820 --> 00:14:29,790
+or other humans that are also
+in the same environments,
+
+315
+00:14:29,790 --> 00:14:31,330
+messing up with the world.
+
+316
+00:14:31,330 --> 00:14:33,910
+And your perception
+system needs to be
+
+317
+00:14:33,910 --> 00:14:37,870
+able to cope with all
+those kind of changes.
+
+318
+00:14:37,870 --> 00:14:40,430
+So that is why, in
+the robotics domain,
+
+319
+00:14:40,430 --> 00:14:43,900
+people typically not just
+work with a camera data.
+
+320
+00:14:43,900 --> 00:14:47,800
+They try to add as much sensor
+as possible to the robots
+
+321
+00:14:47,800 --> 00:14:51,460
+as long as they can provide
+some useful informations.
+
+322
+00:14:51,460 --> 00:14:54,470
+It's really considered, for
+example, the tactile sensings,
+
+323
+00:14:54,470 --> 00:14:57,745
+the audio information, the
+depth information, et cetera.
+
+324
+00:14:57,745 --> 00:15:01,900
+And typically, we will have
+to design a system that
+
+325
+00:15:01,900 --> 00:15:04,330
+is able to put all
+the sensors together
+
+326
+00:15:04,330 --> 00:15:07,730
+that allows them to
+complement each other,
+
+327
+00:15:07,730 --> 00:15:09,850
+whereas all the information
+might tell you things
+
+328
+00:15:09,850 --> 00:15:11,540
+about the physical context.
+
+329
+00:15:11,540 --> 00:15:13,540
+And the tactile
+information might tell you
+
+330
+00:15:13,540 --> 00:15:15,980
+about whether a graph
+is stable or not.
+
+331
+00:15:15,980 --> 00:15:17,590
+And the camera
+information tells you
+
+332
+00:15:17,590 --> 00:15:19,850
+about something that is
+more on the higher level,
+
+333
+00:15:19,850 --> 00:15:22,330
+on the grand scheme of things,
+about the overall state
+
+334
+00:15:22,330 --> 00:15:23,570
+of this environment.
+
+335
+00:15:23,570 --> 00:15:25,870
+So how these sensors
+can be composed together
+
+336
+00:15:25,870 --> 00:15:28,180
+and work together is
+very, very important
+
+337
+00:15:28,180 --> 00:15:31,430
+to design a capable robotic
+system that are working
+
+338
+00:15:31,430 --> 00:15:34,010
+in the real physical world.
+
+339
+00:15:34,010 --> 00:15:38,010
+And besides the numbers
+of sensory modalities,
+
+340
+00:15:38,010 --> 00:15:40,010
+very important difference
+between a robot vision
+
+341
+00:15:40,010 --> 00:15:42,770
+and computer vision is
+trying to really understand
+
+342
+00:15:42,770 --> 00:15:45,290
+the effect of the actions
+and also the affordance
+
+343
+00:15:45,290 --> 00:15:46,770
+of this environment.
+
+344
+00:15:46,770 --> 00:15:49,100
+On the left is a
+very typical example
+
+345
+00:15:49,100 --> 00:15:51,950
+you have already seen in
+computer vision, which is trying
+
+346
+00:15:51,950 --> 00:15:53,760
+to do instance segmentation.
+
+347
+00:15:53,760 --> 00:15:56,010
+What you are given
+is this 2D image.
+
+348
+00:15:56,010 --> 00:15:59,310
+You have segments, different
+instances from this 2D image,
+
+349
+00:15:59,310 --> 00:16:03,445
+like by drawing a contour
+over this 2D pixels.
+
+350
+00:16:03,445 --> 00:16:05,820
+But what's different in the
+robotics domain, for example,
+
+351
+00:16:05,820 --> 00:16:07,040
+on the right--
+
+352
+00:16:07,040 --> 00:16:09,320
+the robot can, for
+example, given one object.
+
+353
+00:16:09,320 --> 00:16:14,060
+And this object seems to be
+maybe just one object or maybe
+
+354
+00:16:14,060 --> 00:16:16,400
+a lot of pieces that
+are, for example, stacked
+
+355
+00:16:16,400 --> 00:16:17,640
+into each other.
+
+356
+00:16:17,640 --> 00:16:20,900
+So the robot has to know
+what type of actions
+
+357
+00:16:20,900 --> 00:16:23,720
+will allow it to have
+better understanding, better
+
+358
+00:16:23,720 --> 00:16:25,710
+perceptions about
+this environment.
+
+359
+00:16:25,710 --> 00:16:27,710
+Is this one piece of
+object or multiple
+
+360
+00:16:27,710 --> 00:16:29,090
+pieces composed together?
+
+361
+00:16:29,090 --> 00:16:31,560
+So the robot should come up
+with actions like perturb
+
+362
+00:16:31,560 --> 00:16:34,650
+and actively interact with
+the environments for the robot
+
+363
+00:16:34,650 --> 00:16:38,520
+to get a better perception about
+the state of this environment.
+
+364
+00:16:38,520 --> 00:16:44,190
+So that is why a robot vision
+is embodied, active, and also
+
+365
+00:16:44,190 --> 00:16:46,410
+environmentally situated.
+
+366
+00:16:46,410 --> 00:16:49,335
+By embodied, what
+we mean is robots
+
+367
+00:16:49,335 --> 00:16:53,580
+have this kind of physical body
+that is directly experiencing
+
+368
+00:16:53,580 --> 00:16:55,920
+the physical world directly.
+
+369
+00:16:55,920 --> 00:16:58,050
+Their actions are
+part of a dynamic
+
+370
+00:16:58,050 --> 00:17:00,390
+with the world that
+have immediate feedback
+
+371
+00:17:00,390 --> 00:17:02,700
+on their own sensations.
+
+372
+00:17:02,700 --> 00:17:06,720
+And active, meaning the
+robots are active perceivers.
+
+373
+00:17:06,720 --> 00:17:09,960
+It knows why it wishes to sense
+and chooses what to perceive
+
+374
+00:17:09,960 --> 00:17:12,210
+and determines how
+and when and where
+
+375
+00:17:12,210 --> 00:17:14,099
+to achieve that perception.
+
+376
+00:17:14,099 --> 00:17:15,430
+You can move your head around.
+
+377
+00:17:15,430 --> 00:17:17,349
+If you want to know
+what's behind this table,
+
+378
+00:17:17,349 --> 00:17:19,900
+you can just move around to
+see what's behind the table.
+
+379
+00:17:19,900 --> 00:17:21,565
+So this is the
+active part, which
+
+380
+00:17:21,565 --> 00:17:23,190
+is different from
+what people typically
+
+381
+00:17:23,190 --> 00:17:24,609
+consider in computer vision.
+
+382
+00:17:24,609 --> 00:17:29,170
+They are mostly working with a
+passively collected data set.
+
+383
+00:17:29,170 --> 00:17:31,270
+The third point
+is about situated,
+
+384
+00:17:31,270 --> 00:17:33,620
+where the robots are
+situated in the world.
+
+385
+00:17:33,620 --> 00:17:37,480
+They do not deal with abstract
+descriptions but with the here
+
+386
+00:17:37,480 --> 00:17:39,940
+and now of the world
+directly influencing
+
+387
+00:17:39,940 --> 00:17:42,490
+the behavior of the systems.
+
+388
+00:17:42,490 --> 00:17:45,490
+Robots really have to
+understand, especially
+
+389
+00:17:45,490 --> 00:17:48,500
+in clothing, there's
+perception and action loop.
+
+390
+00:17:48,500 --> 00:17:51,310
+It sees the world and
+understand its goals
+
+391
+00:17:51,310 --> 00:17:53,860
+and be able to act
+in the environment
+
+392
+00:17:53,860 --> 00:17:55,700
+upon its perceptions.
+
+393
+00:17:55,700 --> 00:17:58,300
+Sometimes, the robot don't
+have to know the full state
+
+394
+00:17:58,300 --> 00:17:59,270
+of the environment.
+
+395
+00:17:59,270 --> 00:18:01,280
+For example, if I'm
+buttoning my shirt,
+
+396
+00:18:01,280 --> 00:18:04,510
+I only have to know the local
+regions near that button for me
+
+397
+00:18:04,510 --> 00:18:05,720
+to button that shirt.
+
+398
+00:18:05,720 --> 00:18:07,660
+So some of the
+perception has to be
+
+399
+00:18:07,660 --> 00:18:10,540
+tightly coupled and
+co-designed with the task
+
+400
+00:18:10,540 --> 00:18:11,980
+and the downstream
+decision-making
+
+401
+00:18:11,980 --> 00:18:14,740
+systems for the robot to
+focus on the relevant region
+
+402
+00:18:14,740 --> 00:18:18,760
+or task-relevant regions of the
+environment to be properly--
+
+403
+00:18:18,760 --> 00:18:22,600
+a closest perception
+and action loop.
+
+404
+00:18:22,600 --> 00:18:25,750
+So this is about some very
+specific considerations
+
+405
+00:18:25,750 --> 00:18:27,680
+and how robots'
+perception might be
+
+406
+00:18:27,680 --> 00:18:29,180
+different from what
+people typically
+
+407
+00:18:29,180 --> 00:18:31,250
+consider in computer vision.
+
+408
+00:18:31,250 --> 00:18:34,370
+I will be starting to discuss
+some of the algorithms that
+
+409
+00:18:34,370 --> 00:18:36,980
+not only allow the
+robot to see but allow
+
+410
+00:18:36,980 --> 00:18:39,300
+the robot to act in the world.
+
+411
+00:18:39,300 --> 00:18:42,905
+And we'll start with
+reinforcement learning.
+
+412
+00:18:42,905 --> 00:18:46,230
+Remember, earlier, we
+have seen this image.
+
+413
+00:18:46,230 --> 00:18:48,770
+The robot has to act
+upon this environment
+
+414
+00:18:48,770 --> 00:18:51,690
+and get rewards from
+this environment.
+
+415
+00:18:51,690 --> 00:18:54,170
+So one very typical
+way of trying
+
+416
+00:18:54,170 --> 00:18:56,720
+to solve this
+optimization problem
+
+417
+00:18:56,720 --> 00:19:01,310
+is allow the robots to interact
+with the world as extensively
+
+418
+00:19:01,310 --> 00:19:03,680
+and as massively as possible.
+
+419
+00:19:03,680 --> 00:19:06,545
+You just collect all
+the experience data
+
+420
+00:19:06,545 --> 00:19:09,660
+and do this type of
+trials and errors.
+
+421
+00:19:09,660 --> 00:19:13,010
+Allow the robots to understand
+this action leads to high reward
+
+422
+00:19:13,010 --> 00:19:15,210
+and that action leads
+to lower rewards.
+
+423
+00:19:15,210 --> 00:19:18,470
+And we can pivot the
+agents' behaviors
+
+424
+00:19:18,470 --> 00:19:21,990
+towards the actions that give
+the agent some higher rewards.
+
+425
+00:19:21,990 --> 00:19:25,050
+So this is the general ideas
+of reinforcement learning
+
+426
+00:19:25,050 --> 00:19:29,100
+is really a way to allow the
+agents to constantly interact
+
+427
+00:19:29,100 --> 00:19:30,960
+with the environment
+and do this trial
+
+428
+00:19:30,960 --> 00:19:34,960
+and error to maximize the
+reward or minimize the cost.
+
+429
+00:19:34,960 --> 00:19:38,910
+And here I also want to be a
+bit more specific in discussing
+
+430
+00:19:38,910 --> 00:19:41,460
+the difference between
+reinforcement learning
+
+431
+00:19:41,460 --> 00:19:43,410
+and supervised learning.
+
+432
+00:19:43,410 --> 00:19:46,110
+So this is a typical framework
+of how reinforcement learning
+
+433
+00:19:46,110 --> 00:19:46,870
+looks like.
+
+434
+00:19:46,870 --> 00:19:47,970
+You have the environments.
+
+435
+00:19:47,970 --> 00:19:49,840
+Environment gives the
+agent some states.
+
+436
+00:19:49,840 --> 00:19:51,150
+Agents generate actions.
+
+437
+00:19:51,150 --> 00:19:55,830
+And environments give the agent
+a feedback, which is the reward.
+
+438
+00:19:55,830 --> 00:19:58,290
+And environments will change,
+where the environment will
+
+439
+00:19:58,290 --> 00:20:01,120
+give the agents the
+new states, st plus 1,
+
+440
+00:20:01,120 --> 00:20:04,140
+and essentially a sequence,
+like a temporal sequence
+
+441
+00:20:04,140 --> 00:20:06,750
+on the temporal domain where
+the robot has to-- the agent
+
+442
+00:20:06,750 --> 00:20:09,960
+has to make this
+sequential decisions.
+
+443
+00:20:09,960 --> 00:20:13,350
+And here is a typical
+image typically
+
+444
+00:20:13,350 --> 00:20:15,640
+look like for
+supervised learning.
+
+445
+00:20:15,640 --> 00:20:17,080
+So you have the data set.
+
+446
+00:20:17,080 --> 00:20:20,865
+The data set will input
+to the model this x.
+
+447
+00:20:20,865 --> 00:20:23,550
+And this model will
+generate the prediction y.
+
+448
+00:20:23,550 --> 00:20:26,190
+And you will be able to
+calculate the loss according
+
+449
+00:20:26,190 --> 00:20:28,680
+to the model's predictions
+versus the ground
+
+450
+00:20:28,680 --> 00:20:30,520
+truth from this data sets.
+
+451
+00:20:30,520 --> 00:20:34,103
+So this is a typical setup
+of supervised learning.
+
+452
+00:20:34,103 --> 00:20:36,270
+And the key difference--
+some of the key differences
+
+453
+00:20:36,270 --> 00:20:38,760
+between reinforcement learning
+and supervised learning
+
+454
+00:20:38,760 --> 00:20:43,230
+is that the environments
+might be stochastic
+
+455
+00:20:43,230 --> 00:20:45,660
+or the same actions,
+the environment
+
+456
+00:20:45,660 --> 00:20:47,770
+might change in a
+different manner.
+
+457
+00:20:47,770 --> 00:20:50,110
+Let's say, if you are
+pushing a box forward,
+
+458
+00:20:50,110 --> 00:20:53,380
+depending on the distribution
+of the supporting force,
+
+459
+00:20:53,380 --> 00:20:56,850
+the same exact actions will
+lead to-- can potentially
+
+460
+00:20:56,850 --> 00:21:00,040
+lead to the box rotating
+into different angles,
+
+461
+00:21:00,040 --> 00:21:02,760
+meaning there can be
+uncertainties and stochasticity
+
+462
+00:21:02,760 --> 00:21:05,790
+in the environments
+that will lead
+
+463
+00:21:05,790 --> 00:21:08,970
+to a stochastic behavior of
+these environments, which
+
+464
+00:21:08,970 --> 00:21:13,320
+will also give these agents
+stochastic rewards, where
+
+465
+00:21:13,320 --> 00:21:17,290
+the same action may not always
+lead to the same rewards.
+
+466
+00:21:17,290 --> 00:21:19,840
+So this is very different
+from supervised learning.
+
+467
+00:21:19,840 --> 00:21:23,800
+We are dealing with an
+uncertain dynamical system.
+
+468
+00:21:23,800 --> 00:21:27,870
+The second is about the
+question of credit assignments.
+
+469
+00:21:27,870 --> 00:21:30,350
+So for supervised learning,
+you give the inputs,
+
+470
+00:21:30,350 --> 00:21:33,200
+you predict the outputs, and
+you already calculate the loss.
+
+471
+00:21:33,200 --> 00:21:36,040
+Now, you directly know
+what are the mistakes
+
+472
+00:21:36,040 --> 00:21:38,560
+and what are the errors
+you are making by making
+
+473
+00:21:38,560 --> 00:21:40,190
+a specific prediction.
+
+474
+00:21:40,190 --> 00:21:41,710
+But in the
+reinforcement learning
+
+475
+00:21:41,710 --> 00:21:43,640
+or sequential
+decision-making domain,
+
+476
+00:21:43,640 --> 00:21:46,390
+the rewards can be
+delayed, meaning
+
+477
+00:21:46,390 --> 00:21:50,380
+if you play the game of
+Go, only until the very end
+
+478
+00:21:50,380 --> 00:21:53,950
+of this episode, do you
+realize you are winning
+
+479
+00:21:53,950 --> 00:21:56,100
+or you were losing.
+
+480
+00:21:56,100 --> 00:21:58,150
+And that rewards there 01.
+
+481
+00:21:58,150 --> 00:22:02,410
+[INAUDIBLE] is because of some
+very, very early steps, maybe
+
+482
+00:22:02,410 --> 00:22:04,750
+even the first
+steps or some steps
+
+483
+00:22:04,750 --> 00:22:06,200
+during the middle of the games.
+
+484
+00:22:06,200 --> 00:22:08,590
+So how do you properly
+assign the credits
+
+485
+00:22:08,590 --> 00:22:11,470
+you are getting along this
+sequential decision making
+
+486
+00:22:11,470 --> 00:22:15,370
+towards all the actions is
+also another very tricky
+
+487
+00:22:15,370 --> 00:22:18,650
+and important question
+people hope to answer
+
+488
+00:22:18,650 --> 00:22:20,840
+using reinforcement learning.
+
+489
+00:22:20,840 --> 00:22:25,250
+The third thing is the
+nondiffusion abilities
+
+490
+00:22:25,250 --> 00:22:27,230
+of this dynamical systems.
+
+491
+00:22:27,230 --> 00:22:30,570
+For example, for supervised
+learning, you have the inputs.
+
+492
+00:22:30,570 --> 00:22:32,947
+You feed the inputs
+through the model.
+
+493
+00:22:32,947 --> 00:22:33,780
+You get the outputs.
+
+494
+00:22:33,780 --> 00:22:34,830
+You calculate the loss.
+
+495
+00:22:34,830 --> 00:22:37,980
+So everything along this
+process is differentiable.
+
+496
+00:22:37,980 --> 00:22:41,540
+So you can directly gather
+gradients of the loss functions
+
+497
+00:22:41,540 --> 00:22:44,430
+with respect to the
+parameters within the model.
+
+498
+00:22:44,430 --> 00:22:46,280
+But that's typically
+not the case
+
+499
+00:22:46,280 --> 00:22:50,360
+for reinforcement learning where
+the environments can oftentimes
+
+500
+00:22:50,360 --> 00:22:51,840
+not differentiable.
+
+501
+00:22:51,840 --> 00:22:53,780
+So how do you properly
+get the gradients
+
+502
+00:22:53,780 --> 00:22:57,840
+of the rewards with respect
+to the actions can be tricky.
+
+503
+00:22:57,840 --> 00:23:00,650
+Sometimes, people have to
+realize on a massive sampling
+
+504
+00:23:00,650 --> 00:23:04,400
+to do those type of zero order
+estimations of the gradients
+
+505
+00:23:04,400 --> 00:23:06,140
+for you to do proper learning.
+
+506
+00:23:06,140 --> 00:23:09,650
+That also is another difference.
+
+507
+00:23:09,650 --> 00:23:13,625
+The last difference is
+about this nonstationarity
+
+508
+00:23:13,625 --> 00:23:17,700
+of this scenarios
+where the evolutions
+
+509
+00:23:17,700 --> 00:23:19,350
+and the states of
+the environments
+
+510
+00:23:19,350 --> 00:23:21,630
+is really a result
+of your actions.
+
+511
+00:23:21,630 --> 00:23:24,670
+For supervised learning,
+whatever you predict,
+
+512
+00:23:24,670 --> 00:23:27,090
+it doesn't influence
+other data points you
+
+513
+00:23:27,090 --> 00:23:29,380
+are getting from this data set.
+
+514
+00:23:29,380 --> 00:23:32,040
+But your actions will
+influence the next state
+
+515
+00:23:32,040 --> 00:23:34,740
+you are getting in this
+sequential decision-making
+
+516
+00:23:34,740 --> 00:23:35,530
+problems.
+
+517
+00:23:35,530 --> 00:23:38,400
+That is also what makes this
+kind of reinforcement learning
+
+518
+00:23:38,400 --> 00:23:40,920
+problem a little
+bit more nuanced
+
+519
+00:23:40,920 --> 00:23:43,860
+than supervised learning.
+
+520
+00:23:43,860 --> 00:23:46,360
+So here are some more
+specific examples.
+
+521
+00:23:46,360 --> 00:23:48,880
+Like for example,
+playing this Atari games,
+
+522
+00:23:48,880 --> 00:23:50,200
+like I mentioned earlier.
+
+523
+00:23:50,200 --> 00:23:52,980
+The goal could be to complete
+the games with the highest
+
+524
+00:23:52,980 --> 00:23:53,610
+score.
+
+525
+00:23:53,610 --> 00:23:55,800
+And the states would
+be the raw pixel inputs
+
+526
+00:23:55,800 --> 00:23:57,370
+from the gaming screen.
+
+527
+00:23:57,370 --> 00:23:59,110
+And the action could
+be up, down, left,
+
+528
+00:23:59,110 --> 00:24:00,610
+and right from the keyboard.
+
+529
+00:24:00,610 --> 00:24:01,755
+And we're trying to--
+
+530
+00:24:01,755 --> 00:24:05,160
+the rewards are the score
+increase and decrease
+
+531
+00:24:05,160 --> 00:24:07,800
+at each time step.
+
+532
+00:24:07,800 --> 00:24:10,620
+And some typical algorithms
+within this domain
+
+533
+00:24:10,620 --> 00:24:12,790
+either lies in the
+field of, for example,
+
+534
+00:24:12,790 --> 00:24:16,220
+like a Q-learning or, for
+example, policy iterations.
+
+535
+00:24:16,220 --> 00:24:19,660
+Here's my examples of trying
+to learn this Q function.
+
+536
+00:24:19,660 --> 00:24:25,570
+Q function essentially measures
+the discounted expected future
+
+537
+00:24:25,570 --> 00:24:29,890
+accumulated rewards like when
+you apply a specific action a at
+
+538
+00:24:29,890 --> 00:24:31,630
+a specific state s.
+
+539
+00:24:31,630 --> 00:24:33,370
+And you will be
+able to get these Q
+
+540
+00:24:33,370 --> 00:24:37,830
+functions through interactions
+with this gaming environments.
+
+541
+00:24:37,830 --> 00:24:40,580
+And after you have
+learned this Q functions,
+
+542
+00:24:40,580 --> 00:24:43,240
+you can evaluate,
+for example, what
+
+543
+00:24:43,240 --> 00:24:46,850
+are the Q values you are getting
+by applying different actions.
+
+544
+00:24:46,850 --> 00:24:49,940
+In this case, there's left
+and right, ups and downs.
+
+545
+00:24:49,940 --> 00:24:52,280
+So there could potentially
+be four actions.
+
+546
+00:24:52,280 --> 00:24:55,570
+And given these four actions,
+you can look at their Q values
+
+547
+00:24:55,570 --> 00:24:57,430
+and just execute
+the actions that
+
+548
+00:24:57,430 --> 00:24:59,120
+give you the highest Q values.
+
+549
+00:24:59,120 --> 00:25:03,220
+So that is what allows you
+to do this type of decision
+
+550
+00:25:03,220 --> 00:25:06,160
+making in this domain.
+
+551
+00:25:06,160 --> 00:25:08,690
+Because today we're going
+to cover a lot of materials,
+
+552
+00:25:08,690 --> 00:25:12,040
+so we won't go into the details
+of the reinforcement learning.
+
+553
+00:25:12,040 --> 00:25:14,780
+But some of the current
+state-of-the-art reinforcement
+
+554
+00:25:14,780 --> 00:25:18,680
+learning algorithms, including
+SAC, Soft Actor Critic,
+
+555
+00:25:18,680 --> 00:25:22,040
+and also PPO, Proximal
+Policy Optimization.
+
+556
+00:25:22,040 --> 00:25:24,140
+So if you are
+interested, you are
+
+557
+00:25:24,140 --> 00:25:26,820
+very welcome to look at
+those algorithms in detail.
+
+558
+00:25:26,820 --> 00:25:30,800
+There's a lot of open source
+implementations and tutorials
+
+559
+00:25:30,800 --> 00:25:32,000
+online.
+
+560
+00:25:32,000 --> 00:25:33,770
+But here I want to
+highlight to you
+
+561
+00:25:33,770 --> 00:25:36,020
+some of the results
+you could potentially
+
+562
+00:25:36,020 --> 00:25:39,320
+get by going through this
+reinforcement learning,
+
+563
+00:25:39,320 --> 00:25:42,215
+specifically Q-learning process.
+
+564
+00:25:42,215 --> 00:25:44,840
+This is developed by
+Google DeepMind that
+
+565
+00:25:44,840 --> 00:25:47,030
+is trying to develop
+these agents, that
+
+566
+00:25:47,030 --> 00:25:50,900
+is trying to play the game
+Breakout in this kind of Atari
+
+567
+00:25:50,900 --> 00:25:51,810
+world.
+
+568
+00:25:51,810 --> 00:25:55,650
+So just after 10 minutes
+of training, the robot,
+
+569
+00:25:55,650 --> 00:25:59,250
+the agent can already
+touch the ball
+
+570
+00:25:59,250 --> 00:26:03,710
+but, oftentimes, can still
+miss the ball quite often.
+
+571
+00:26:03,710 --> 00:26:06,350
+And after some more times
+of learning, for example,
+
+572
+00:26:06,350 --> 00:26:10,400
+two hours of training,
+and the agents
+
+573
+00:26:10,400 --> 00:26:14,070
+can control this kind
+of paths in a much more
+
+574
+00:26:14,070 --> 00:26:18,100
+reliable and consistent fashion
+that can, nearly all the time,
+
+575
+00:26:18,100 --> 00:26:21,270
+can catch the ball and
+be able to constantly get
+
+576
+00:26:21,270 --> 00:26:27,480
+more and more rewards
+by bouncing back.
+
+577
+00:26:27,480 --> 00:26:31,650
+And after full hours of
+training, something that's
+
+578
+00:26:31,650 --> 00:26:35,490
+interesting happens, where the
+agents come up with, actually,
+
+579
+00:26:35,490 --> 00:26:39,400
+a novel strategy, which possibly
+is not known to many of you,
+
+580
+00:26:39,400 --> 00:26:42,090
+that is, trying to
+push, bounce the ball
+
+581
+00:26:42,090 --> 00:26:46,415
+back to create the tunnel on
+the left side of this wall.
+
+582
+00:26:46,415 --> 00:26:50,010
+And then it will push this ball
+on the upper side of the wall
+
+583
+00:26:50,010 --> 00:26:55,060
+to do this very efficient
+reductions of those bricks.
+
+584
+00:26:55,060 --> 00:26:56,520
+This is the type
+of strategy that
+
+585
+00:26:56,520 --> 00:26:59,130
+can be discovered by
+reinforcement learning.
+
+586
+00:26:59,130 --> 00:27:01,680
+So this is what's nice
+about reinforcement
+
+587
+00:27:01,680 --> 00:27:05,760
+learning, meaning you allow
+the agents to do very extensive
+
+588
+00:27:05,760 --> 00:27:09,280
+and comprehensive exploration
+and interactions with the world.
+
+589
+00:27:09,280 --> 00:27:12,640
+And it is totally possible for
+this reinforcement learning
+
+590
+00:27:12,640 --> 00:27:15,100
+agents to discover
+some strategies that
+
+591
+00:27:15,100 --> 00:27:18,620
+are better than even
+the best human players.
+
+592
+00:27:18,620 --> 00:27:22,260
+A very typical example
+would be the game of Go.
+
+593
+00:27:22,260 --> 00:27:26,480
+So when AlphaGo came
+out in the January 2016,
+
+594
+00:27:26,480 --> 00:27:29,620
+it was also about
+the time when I
+
+595
+00:27:29,620 --> 00:27:32,650
+was trying to decide what
+type of research directions
+
+596
+00:27:32,650 --> 00:27:33,710
+I'm going to go.
+
+597
+00:27:33,710 --> 00:27:36,550
+Before that time, I was
+just working on deep
+
+598
+00:27:36,550 --> 00:27:37,990
+learning for computer vision.
+
+599
+00:27:37,990 --> 00:27:40,610
+But when AlphaGo
+came out, I'm like,
+
+600
+00:27:40,610 --> 00:27:43,010
+I have to work on this kind
+of decision-making problem.
+
+601
+00:27:43,010 --> 00:27:46,280
+So that's why I started to touch
+upon reinforcement learning,
+
+602
+00:27:46,280 --> 00:27:48,470
+imitation learning, and,
+all the way until now,
+
+603
+00:27:48,470 --> 00:27:50,710
+to do robot learning that
+allows the robots to do
+
+604
+00:27:50,710 --> 00:27:53,190
+physical interactions
+with the environments.
+
+605
+00:27:53,190 --> 00:27:55,510
+So I wasn't satisfied
+with just working
+
+606
+00:27:55,510 --> 00:27:57,380
+with a passively
+collected data set,
+
+607
+00:27:57,380 --> 00:28:00,220
+but we really want an agent
+that can do active interactions
+
+608
+00:28:00,220 --> 00:28:01,690
+with the environment.
+
+609
+00:28:01,690 --> 00:28:05,230
+So the question was,
+how does specifically
+
+610
+00:28:05,230 --> 00:28:07,220
+this Q-function works?
+
+611
+00:28:07,220 --> 00:28:10,010
+So you can see, this
+Q takes as input
+
+612
+00:28:10,010 --> 00:28:12,450
+the state s and also the action.
+
+613
+00:28:12,450 --> 00:28:14,870
+And this data would
+essentially be the parameters
+
+614
+00:28:14,870 --> 00:28:17,720
+of this Q function, where
+the Q is instantiated
+
+615
+00:28:17,720 --> 00:28:19,730
+as a neural network.
+
+616
+00:28:19,730 --> 00:28:21,960
+In this specific case,
+like I mentioned earlier,
+
+617
+00:28:21,960 --> 00:28:24,680
+the state is the
+raw pixel inputs
+
+618
+00:28:24,680 --> 00:28:27,240
+that you're actually getting
+from the gaming screen.
+
+619
+00:28:27,240 --> 00:28:29,820
+So the inputs could
+be this four steps,
+
+620
+00:28:29,820 --> 00:28:33,330
+four frames that are directly
+inputted to this Q function.
+
+621
+00:28:33,330 --> 00:28:34,950
+And if you are
+dealing with images,
+
+622
+00:28:34,950 --> 00:28:38,600
+a very straightforward way of
+instantiating this Q function
+
+623
+00:28:38,600 --> 00:28:41,010
+is to use convolutional
+neural networks.
+
+624
+00:28:41,010 --> 00:28:43,040
+So you have convolutional
+layers like shown
+
+625
+00:28:43,040 --> 00:28:44,490
+in this kind of orange blocks.
+
+626
+00:28:44,490 --> 00:28:46,910
+And then you'll be able to go
+through this fully connected
+
+627
+00:28:46,910 --> 00:28:51,030
+layers to directly
+derive this Q value.
+
+628
+00:28:51,030 --> 00:28:54,878
+And in this case, because there
+are four discrete actions--
+
+629
+00:28:54,878 --> 00:28:56,670
+in this case, probably
+just left and right.
+
+630
+00:28:56,670 --> 00:28:59,087
+But let's say there's four
+discrete actions-- up and down,
+
+631
+00:28:59,087 --> 00:28:59,790
+left and right.
+
+632
+00:28:59,790 --> 00:29:02,240
+So you will be able to
+have different Q value
+
+633
+00:29:02,240 --> 00:29:06,060
+estimations that is the results
+of this specific action a.
+
+634
+00:29:06,060 --> 00:29:08,700
+And that's how you can use
+these Q values to make decisions
+
+635
+00:29:08,700 --> 00:29:11,490
+on what action to take
+that is the most effective
+
+636
+00:29:11,490 --> 00:29:12,798
+and maximizing this Q value.
+
+637
+00:29:12,798 --> 00:29:14,090
+Does that answer your question?
+
+639
+00:29:17,835 --> 00:29:20,500
+Yes, this is when
+AlphaGo came out.
+
+640
+00:29:20,500 --> 00:29:22,470
+And obviously, since
+then, there has
+
+641
+00:29:22,470 --> 00:29:24,420
+been a lot of developments
+and evolutions
+
+642
+00:29:24,420 --> 00:29:28,150
+in making this type of gaming
+agents better and better.
+
+643
+00:29:28,150 --> 00:29:31,000
+So then later,
+there's AlphaGo Zero.
+
+644
+00:29:31,000 --> 00:29:34,210
+That is essentially a
+simplified version of AlphaGo,
+
+645
+00:29:34,210 --> 00:29:36,150
+then no longer using
+any imitation learning
+
+646
+00:29:36,150 --> 00:29:39,040
+to do any initialization.
+
+647
+00:29:39,040 --> 00:29:42,540
+And it's able to beat, at
+that time, the number one
+
+648
+00:29:42,540 --> 00:29:45,120
+player, Ke Jie.
+
+649
+00:29:45,120 --> 00:29:48,210
+So this is actually one thing,
+one lesson people learned
+
+650
+00:29:48,210 --> 00:29:51,690
+inside this AI
+communities, which
+
+651
+00:29:51,690 --> 00:29:54,580
+you can call it the bitter
+lesson from the Rich Sutton,
+
+652
+00:29:54,580 --> 00:29:57,810
+where sometimes you want to
+find the simplest recipes that
+
+653
+00:29:57,810 --> 00:30:01,740
+is the most and best
+compatible with the scaling.
+
+654
+00:30:01,740 --> 00:30:04,820
+You want to leverage the
+scale, the power of scalings.
+
+655
+00:30:04,820 --> 00:30:07,480
+And sometimes, making
+this method simpler
+
+656
+00:30:07,480 --> 00:30:09,670
+will actually give
+you better performance
+
+657
+00:30:09,670 --> 00:30:13,030
+by making it more compatible
+with whatever infrastructure
+
+658
+00:30:13,030 --> 00:30:15,200
+you can use for
+scaling things up.
+
+659
+00:30:15,200 --> 00:30:18,790
+And then later, they
+develop Alpha Zero
+
+660
+00:30:18,790 --> 00:30:21,670
+that is able to generalize
+the same set of algorithms
+
+661
+00:30:21,670 --> 00:30:23,200
+into not just chess--
+
+662
+00:30:23,200 --> 00:30:26,500
+not just Go but other
+games like chess and shogi.
+
+663
+00:30:26,500 --> 00:30:30,085
+And then they
+designed MuZero that
+
+664
+00:30:30,085 --> 00:30:32,680
+not just do this kind of
+model-free reinforcement
+
+665
+00:30:32,680 --> 00:30:35,500
+learning, but it's able to
+learn a latent space dynamics
+
+666
+00:30:35,500 --> 00:30:40,090
+model to plan over that gives
+you an even better performance.
+
+667
+00:30:40,090 --> 00:30:42,790
+So for this specific domain,
+I would say, especially
+
+668
+00:30:42,790 --> 00:30:47,380
+in the gaming developments, that
+really empowers a lot of design
+
+669
+00:30:47,380 --> 00:30:51,220
+and developments in how people
+can do better and more assembly
+
+670
+00:30:51,220 --> 00:30:54,280
+efficient and more scalable
+design of those reinforcement
+
+671
+00:30:54,280 --> 00:30:56,305
+learning agents.
+
+672
+00:30:56,305 --> 00:31:01,950
+And in November 2019, Lee Sedol,
+who was beaten by of AlphaGo,
+
+673
+00:31:01,950 --> 00:31:03,780
+announce his retirement.
+
+674
+00:31:03,780 --> 00:31:05,910
+And he realized
+they're just not--
+
+675
+00:31:05,910 --> 00:31:09,560
+it's just not possible, at that
+time, for any human players
+
+676
+00:31:09,560 --> 00:31:14,135
+to beat the best like
+AI agents out there.
+
+677
+00:31:14,135 --> 00:31:16,250
+And obviously, since
+then, there has
+
+678
+00:31:16,250 --> 00:31:20,000
+been other more complex
+games like StarCraft and Dota
+
+679
+00:31:20,000 --> 00:31:23,720
+that shows that as long as you
+put enough compute, as long
+
+680
+00:31:23,720 --> 00:31:28,220
+as you have a very well designed
+algorithms and infrastructure
+
+681
+00:31:28,220 --> 00:31:29,940
+for you to do the
+reinforcement learning,
+
+682
+00:31:29,940 --> 00:31:33,470
+you can get very, very good
+performance in games that
+
+683
+00:31:33,470 --> 00:31:35,900
+are actually noticeably
+and orders of magnitude
+
+684
+00:31:35,900 --> 00:31:39,230
+more complicated
+than the game of Go.
+
+685
+00:31:39,230 --> 00:31:42,530
+So I would say, if you have
+a game, a reasonably designed
+
+686
+00:31:42,530 --> 00:31:45,950
+game, there's a
+very good chance,
+
+687
+00:31:45,950 --> 00:31:48,300
+if you put the
+sufficient resource,
+
+688
+00:31:48,300 --> 00:31:51,230
+you can have very, very
+powerful gaming agents.
+
+689
+00:31:51,230 --> 00:31:54,028
+So not just in games,
+people have also
+
+690
+00:31:54,028 --> 00:31:55,820
+been developing this
+reinforcement learning
+
+691
+00:31:55,820 --> 00:31:58,760
+algorithms and agents
+that can work directly
+
+692
+00:31:58,760 --> 00:32:01,125
+in the real physical world.
+
+693
+00:32:01,125 --> 00:32:04,950
+So this, on the left,
+is a work from ETH
+
+694
+00:32:04,950 --> 00:32:08,140
+that was published in
+Science Robotics 2020.
+
+695
+00:32:08,140 --> 00:32:11,700
+That essentially changed my mind
+about how useful reinforcement
+
+696
+00:32:11,700 --> 00:32:14,290
+learning can be for
+real physical robots
+
+697
+00:32:14,290 --> 00:32:15,930
+because before it
+was just mostly
+
+698
+00:32:15,930 --> 00:32:17,580
+games like the [INAUDIBLE].
+
+699
+00:32:17,580 --> 00:32:19,950
+In games, there's a lot of--
+
+700
+00:32:19,950 --> 00:32:23,140
+you can just spawn as
+many games as possible.
+
+701
+00:32:23,140 --> 00:32:26,250
+But for the real world,
+there's always sim-to-real gap,
+
+702
+00:32:26,250 --> 00:32:28,060
+where you are training
+on the same game,
+
+703
+00:32:28,060 --> 00:32:29,710
+you are also testing
+on the same game.
+
+704
+00:32:29,710 --> 00:32:32,920
+But for robots, if you
+train on a simulation,
+
+705
+00:32:32,920 --> 00:32:35,940
+how much does the sim-to-real
+gap matters for the agents
+
+706
+00:32:35,940 --> 00:32:37,960
+to generalize to the
+real environments?
+
+707
+00:32:37,960 --> 00:32:40,140
+And this paper
+really convinced me
+
+708
+00:32:40,140 --> 00:32:42,810
+that, sometimes, the
+sim-to-real gap just
+
+709
+00:32:42,810 --> 00:32:44,735
+may not matter that much.
+
+710
+00:32:44,735 --> 00:32:46,540
+So we are not
+simulating the bushes.
+
+711
+00:32:46,540 --> 00:32:48,130
+We are not simulating the snows.
+
+712
+00:32:48,130 --> 00:32:50,647
+But the agents that's using
+reinforcement learning,
+
+713
+00:32:50,647 --> 00:32:52,230
+that training
+simulation, can give you
+
+714
+00:32:52,230 --> 00:32:54,120
+some very, very
+robust performance
+
+715
+00:32:54,120 --> 00:32:58,230
+in the real physical world, like
+snows and [INAUDIBLE] very, very
+
+716
+00:32:58,230 --> 00:33:00,420
+slippery surface.
+
+717
+00:33:00,420 --> 00:33:02,370
+On the right is a
+very recent video
+
+718
+00:33:02,370 --> 00:33:07,410
+released by Unitree that shows
+just another level of dexterity
+
+719
+00:33:07,410 --> 00:33:11,470
+for locomotions that can do
+this sim-to-real transfer,
+
+720
+00:33:11,470 --> 00:33:14,010
+allow these robots to
+do very, very crazy
+
+721
+00:33:14,010 --> 00:33:15,820
+and dynamic behaviors.
+
+722
+00:33:15,820 --> 00:33:19,090
+They can navigate into some very
+rough and challenging terrains.
+
+723
+00:33:19,090 --> 00:33:22,450
+I would say, in the domain
+of robot locomotion,
+
+724
+00:33:22,450 --> 00:33:26,170
+it is close to be
+a solved problem.
+
+725
+00:33:26,170 --> 00:33:29,280
+And the solution to
+this problem is exactly
+
+726
+00:33:29,280 --> 00:33:30,670
+reinforcement learning.
+
+727
+00:33:30,670 --> 00:33:33,420
+So this is about locomotion.
+
+728
+00:33:33,420 --> 00:33:37,140
+So other domain is about
+manipulations or the robot
+
+729
+00:33:37,140 --> 00:33:40,910
+has to manipulate the objects
+in the real physical world.
+
+730
+00:33:40,910 --> 00:33:44,790
+So in 2019, when
+OpenAI was still like--
+
+731
+00:33:44,790 --> 00:33:48,150
+touch upon robotics,
+they designed the systems
+
+732
+00:33:48,150 --> 00:33:51,580
+that are trying to do dexterous
+manipulations of Rubik's cube.
+
+733
+00:33:51,580 --> 00:33:54,000
+They are able to do the
+reinforcement learning
+
+734
+00:33:54,000 --> 00:33:56,740
+in simulation and do
+sim-to-real transfer that
+
+735
+00:33:56,740 --> 00:34:00,860
+allows these kind of robots
+to solve this Rubik's cube.
+
+736
+00:34:00,860 --> 00:34:04,328
+But one caveat is that their
+success rate is very, very low.
+
+737
+00:34:04,328 --> 00:34:06,620
+Although these videos seem
+to be very beautifully done,
+
+738
+00:34:06,620 --> 00:34:08,480
+but their success
+rate was very low.
+
+739
+00:34:08,480 --> 00:34:10,840
+And if you really
+look at the papers,
+
+740
+00:34:10,840 --> 00:34:14,000
+they only tested a very
+limited amount of trials.
+
+741
+00:34:14,000 --> 00:34:17,710
+And given that number,
+possibly the reliability
+
+742
+00:34:17,710 --> 00:34:19,940
+is not very satisfying.
+
+743
+00:34:19,940 --> 00:34:22,330
+But still, since
+then, people have
+
+744
+00:34:22,330 --> 00:34:27,130
+been able to extend upon this
+dexterous manipulation problems
+
+745
+00:34:27,130 --> 00:34:30,850
+and allow the robots to do
+enhanced dexterous manipulation
+
+746
+00:34:30,850 --> 00:34:33,850
+and reorientations of
+different types of objects
+
+747
+00:34:33,850 --> 00:34:37,719
+and into different
+target configurations.
+
+748
+00:34:37,719 --> 00:34:40,750
+It's all thanks to the
+developments of reinforcement
+
+749
+00:34:40,750 --> 00:34:42,250
+learning.
+
+750
+00:34:42,250 --> 00:34:47,469
+But we can see, until now,
+our examples in locomotions
+
+751
+00:34:47,469 --> 00:34:49,612
+and in hand manipulation,
+it doesn't really
+
+752
+00:34:49,612 --> 00:34:51,820
+solve the problem for them,
+but if the robot can just
+
+753
+00:34:51,820 --> 00:34:53,903
+fold the clothes for you
+or do the laundry for you
+
+754
+00:34:53,903 --> 00:34:55,790
+in your home.
+
+755
+00:34:55,790 --> 00:34:59,490
+For manipulation, still in this
+kind of very isolated domains,
+
+756
+00:34:59,490 --> 00:35:03,230
+like working with this kind
+of isolated environments.
+
+757
+00:35:03,230 --> 00:35:07,010
+So this is actually some of the
+key challenges and bottlenecks
+
+758
+00:35:07,010 --> 00:35:10,040
+of existing model-free
+reinforcement learning.
+
+759
+00:35:10,040 --> 00:35:12,620
+It is mostly learned
+from the trials and error
+
+760
+00:35:12,620 --> 00:35:16,670
+with the environments, and it
+requires extensive interactions
+
+761
+00:35:16,670 --> 00:35:17,940
+with the world.
+
+762
+00:35:17,940 --> 00:35:20,782
+For example, for
+the AlphaGo Zero,
+
+763
+00:35:20,782 --> 00:35:24,710
+it actually learns from 3,000
+years of human knowledge in 40
+
+764
+00:35:24,710 --> 00:35:26,070
+days, which is amazing.
+
+765
+00:35:26,070 --> 00:35:29,960
+But it still requires
+many, many years
+
+766
+00:35:29,960 --> 00:35:32,930
+of computation, years of
+equivalent computations
+
+767
+00:35:32,930 --> 00:35:34,870
+for the agents to learn.
+
+768
+00:35:34,870 --> 00:35:37,740
+If in domains where there's
+a huge sim-to-real gap
+
+769
+00:35:37,740 --> 00:35:39,890
+and you want to do the
+reinforcement learning
+
+770
+00:35:39,890 --> 00:35:43,130
+in the real physical world,
+that will be a huge bottleneck
+
+771
+00:35:43,130 --> 00:35:45,620
+for learning this
+reinforcement learning agents
+
+772
+00:35:45,620 --> 00:35:47,225
+very effectively.
+
+773
+00:35:47,225 --> 00:35:50,450
+And also, of course, if there
+is sim-to-real gap, if you only
+
+774
+00:35:50,450 --> 00:35:52,660
+can learn the model in
+the real environments,
+
+775
+00:35:52,660 --> 00:35:54,870
+there's a lot of
+safety concerns.
+
+776
+00:35:54,870 --> 00:35:57,270
+For example, here is
+an example showing
+
+777
+00:35:57,270 --> 00:35:58,770
+this kind of
+learning progressions
+
+778
+00:35:58,770 --> 00:36:02,250
+of an agent that is controlling
+these humanoid robots to move
+
+779
+00:36:02,250 --> 00:36:03,010
+forwards.
+
+780
+00:36:03,010 --> 00:36:04,230
+You can see that
+during this learning
+
+781
+00:36:04,230 --> 00:36:05,700
+process, although
+at the very end,
+
+782
+00:36:05,700 --> 00:36:08,140
+the robot is able
+to move forwards,
+
+783
+00:36:08,140 --> 00:36:10,590
+but there's a lot of
+very weird behaviors
+
+784
+00:36:10,590 --> 00:36:12,450
+that you can totally
+imagine if you apply
+
+785
+00:36:12,450 --> 00:36:14,890
+this agent on the
+real physical robots,
+
+786
+00:36:14,890 --> 00:36:17,865
+it will fail catastrophically.
+
+787
+00:36:17,865 --> 00:36:21,910
+And it also have a very
+limited interpretabilities.
+
+788
+00:36:21,910 --> 00:36:24,360
+And sometimes, it's very
+hard to correct things
+
+789
+00:36:24,360 --> 00:36:26,280
+when things go wrong.
+
+790
+00:36:26,280 --> 00:36:28,950
+And one interesting
+thing, if you really
+
+791
+00:36:28,950 --> 00:36:31,020
+think about how humans
+learn to interact
+
+792
+00:36:31,020 --> 00:36:34,150
+with the environment versus
+pure reinforcement learning,
+
+793
+00:36:34,150 --> 00:36:38,160
+you realize that we humans have
+a very intuitive understanding
+
+794
+00:36:38,160 --> 00:36:39,370
+of this environment.
+
+795
+00:36:39,370 --> 00:36:41,340
+We can imagine how
+the environment
+
+796
+00:36:41,340 --> 00:36:44,530
+is going to change if we
+apply a specific action.
+
+797
+00:36:44,530 --> 00:36:47,220
+So it's exactly this
+predictive capabilities
+
+798
+00:36:47,220 --> 00:36:50,470
+that allows we, humans, to
+plan our behavior in achieving
+
+799
+00:36:50,470 --> 00:36:52,255
+some specific targets.
+
+800
+00:36:52,255 --> 00:36:55,600
+And this predictive capabilities
+is also actually learned
+
+801
+00:36:55,600 --> 00:36:57,940
+from we human's
+physical interactions
+
+802
+00:36:57,940 --> 00:37:02,140
+and everyday experiences
+with the real physical world.
+
+803
+00:37:02,140 --> 00:37:04,010
+So going beyond the
+reinforcement learning,
+
+804
+00:37:04,010 --> 00:37:06,940
+the next topic I
+want to discuss will
+
+805
+00:37:06,940 --> 00:37:10,960
+be how we can endow the robots
+with similar capabilities
+
+806
+00:37:10,960 --> 00:37:13,760
+in imagining the
+effect of their actions
+
+807
+00:37:13,760 --> 00:37:15,530
+and to do model-based planning.
+
+808
+00:37:15,530 --> 00:37:18,230
+For the specific examples,
+we have a simulation.
+
+809
+00:37:18,230 --> 00:37:20,900
+Typically, the simulation people
+use would be, for example,
+
+810
+00:37:20,900 --> 00:37:23,910
+Isaac Gym or Isaac Sim
+developed by NVIDIA.
+
+811
+00:37:23,910 --> 00:37:27,100
+And there are essentially a
+bunch of rigid body simulations
+
+812
+00:37:27,100 --> 00:37:30,340
+where the robot's just
+touching this kind of a polygon
+
+813
+00:37:30,340 --> 00:37:34,790
+type of representation, like
+a representation of the floor.
+
+814
+00:37:34,790 --> 00:37:36,830
+It is not simulating,
+for example, the bushes.
+
+815
+00:37:36,830 --> 00:37:38,895
+It is not simulating
+those snows.
+
+816
+00:37:38,895 --> 00:37:40,810
+But what people
+do is to randomize
+
+817
+00:37:40,810 --> 00:37:43,960
+the simulated environments
+a lot and randomize
+
+818
+00:37:43,960 --> 00:37:47,200
+the friction, the geometry, and
+many other physical parameters
+
+819
+00:37:47,200 --> 00:37:51,960
+inside this environment such
+that people will assume whatever
+
+820
+00:37:51,960 --> 00:37:55,350
+you encounter in the real
+physical world is just one data
+
+821
+00:37:55,350 --> 00:37:57,630
+point within the
+distributions you
+
+822
+00:37:57,630 --> 00:37:59,800
+randomize within
+your simulation.
+
+823
+00:37:59,800 --> 00:38:02,370
+So if your policies
+can be robust,
+
+824
+00:38:02,370 --> 00:38:05,107
+robust in controlling this
+robots within that distribution,
+
+825
+00:38:05,107 --> 00:38:06,690
+and if the real world
+is just one data
+
+826
+00:38:06,690 --> 00:38:09,550
+point within that distribution,
+the policy can generalize.
+
+827
+00:38:09,550 --> 00:38:12,130
+And so far, at least from
+this empirical evidence,
+
+828
+00:38:12,130 --> 00:38:14,020
+this type of assumption
+actually holds,
+
+829
+00:38:14,020 --> 00:38:16,530
+and the policy actually works
+very reliably and robustly
+
+830
+00:38:16,530 --> 00:38:18,390
+in the real physical world.
+
+831
+00:38:18,390 --> 00:38:20,800
+So the question is about,
+what is the actual command?
+
+832
+00:38:20,800 --> 00:38:23,530
+So actually, in many
+of the existing demos,
+
+833
+00:38:23,530 --> 00:38:26,430
+there can be a person
+providing high-level commands
+
+834
+00:38:26,430 --> 00:38:27,100
+to the robot.
+
+835
+00:38:27,100 --> 00:38:29,490
+For example, which direction
+should the robots walk?
+
+836
+00:38:29,490 --> 00:38:32,430
+So the robot rotates in
+place or just still keep
+
+837
+00:38:32,430 --> 00:38:33,510
+walking forwards.
+
+838
+00:38:33,510 --> 00:38:37,270
+Conditioned on that high-level
+actions provided by human,
+
+839
+00:38:37,270 --> 00:38:40,000
+the robot has to decide this
+kind of low-level actions.
+
+840
+00:38:40,000 --> 00:38:41,550
+The low-level actions
+are typically,
+
+841
+00:38:41,550 --> 00:38:45,480
+for example, the
+joint torque that
+
+842
+00:38:45,480 --> 00:38:47,730
+are applied to each and
+every one of the joints
+
+843
+00:38:47,730 --> 00:38:49,270
+on top of this robot.
+
+844
+00:38:49,270 --> 00:38:52,020
+So that is how this
+typically looks
+
+845
+00:38:52,020 --> 00:38:54,147
+like, meaning humans
+give high-level commands,
+
+846
+00:38:54,147 --> 00:38:55,480
+conditional high-level commands.
+
+847
+00:38:55,480 --> 00:38:57,450
+The robot has to use
+this policy to decide
+
+848
+00:38:57,450 --> 00:39:00,570
+this kind of low-level
+actions, which is instantiated
+
+849
+00:39:00,570 --> 00:39:02,520
+using joint torque.
+
+850
+00:39:02,520 --> 00:39:05,850
+So like I mentioned,
+one biggest lesson I
+
+851
+00:39:05,850 --> 00:39:08,727
+learned from this line
+of work on locomotion
+
+852
+00:39:08,727 --> 00:39:10,810
+is that the simulation
+doesn't have to be perfect.
+
+853
+00:39:10,810 --> 00:39:12,460
+As long as you
+randomize it enough,
+
+854
+00:39:12,460 --> 00:39:15,960
+it can generalize very robustly
+in the real environments.
+
+855
+00:39:15,960 --> 00:39:19,200
+But such lesson hasn't really
+been generalized very well
+
+856
+00:39:19,200 --> 00:39:21,330
+in the manipulation domain.
+
+857
+00:39:21,330 --> 00:39:23,850
+So in the manipulation domain,
+how accurate the simulation
+
+858
+00:39:23,850 --> 00:39:26,460
+needs to be and how much
+does the sim-to-real gap
+
+859
+00:39:26,460 --> 00:39:29,950
+matters is still a research
+question people hope to answer.
+
+860
+00:39:29,950 --> 00:39:32,140
+So I can give you
+one specific example.
+
+861
+00:39:32,140 --> 00:39:34,840
+If in the simulation you
+are pushing a box forwards,
+
+862
+00:39:34,840 --> 00:39:37,420
+if in simulation, the box
+rotates for 10 degrees
+
+863
+00:39:37,420 --> 00:39:39,670
+but in reality it
+rotates for 12 degrees,
+
+864
+00:39:39,670 --> 00:39:41,170
+it may not matter that much.
+
+865
+00:39:41,170 --> 00:39:44,680
+But if in the real world,
+your grasping was successful.
+
+866
+00:39:44,680 --> 00:39:46,720
+But in simulation,
+the object just
+
+867
+00:39:46,720 --> 00:39:49,370
+flies away because of some
+kind of numerical issues.
+
+868
+00:39:49,370 --> 00:39:52,520
+Or if the object slips
+away between your fingers,
+
+869
+00:39:52,520 --> 00:39:54,555
+that's problematic.
+
+870
+00:39:54,555 --> 00:39:56,912
+So there are regions where
+sim-to-real gap matter.
+
+871
+00:39:56,912 --> 00:39:58,870
+There are other regions
+sim-to-real gap may not
+
+872
+00:39:58,870 --> 00:40:01,070
+matter that much in the
+manipulation domain.
+
+873
+00:40:01,070 --> 00:40:02,830
+And people still
+are trying to answer
+
+874
+00:40:02,830 --> 00:40:06,890
+and trying to understand how
+sim-to-real gap can happen
+
+875
+00:40:06,890 --> 00:40:09,280
+and what are some of the
+most important recipes
+
+876
+00:40:09,280 --> 00:40:11,470
+and characteristics that
+this simulation needs
+
+877
+00:40:11,470 --> 00:40:15,220
+to have for the most reliable
+sim-to-real transfer.
+
+878
+00:40:15,220 --> 00:40:17,660
+So If I understand your
+questions correctly,
+
+879
+00:40:17,660 --> 00:40:18,790
+you are asking--
+
+880
+00:40:18,790 --> 00:40:21,700
+there are still a person
+providing high-level commands
+
+881
+00:40:21,700 --> 00:40:22,305
+to the robots.
+
+882
+00:40:22,305 --> 00:40:23,680
+So the question
+is, can the robot
+
+883
+00:40:23,680 --> 00:40:25,760
+come up with better
+plans than the human?
+
+884
+00:40:25,760 --> 00:40:28,880
+So I can actually give you
+a more nuanced perspective.
+
+885
+00:40:28,880 --> 00:40:31,400
+Although many of these
+videos seems very nice,
+
+886
+00:40:31,400 --> 00:40:34,990
+there is a human operator
+operating the robots
+
+887
+00:40:34,990 --> 00:40:37,550
+to choose which route to go.
+
+888
+00:40:37,550 --> 00:40:40,430
+For example, what people
+typically do is-- for example,
+
+889
+00:40:40,430 --> 00:40:42,370
+let's say, there's some
+kind of rough terrains
+
+890
+00:40:42,370 --> 00:40:43,920
+or some pile of rocks.
+
+891
+00:40:43,920 --> 00:40:47,480
+And the humans can actually
+try to command the robot
+
+892
+00:40:47,480 --> 00:40:50,010
+to go forward, trying to
+climb those kind of rocks.
+
+893
+00:40:50,010 --> 00:40:52,010
+If that fails,
+humans can actually
+
+894
+00:40:52,010 --> 00:40:54,560
+provide some other high-level
+commands to get around
+
+895
+00:40:54,560 --> 00:40:55,850
+this pile of rocks.
+
+896
+00:40:55,850 --> 00:40:57,800
+So there can be some
+kind of learning also
+
+897
+00:40:57,800 --> 00:40:59,960
+on the human side in
+understanding the capabilities
+
+898
+00:40:59,960 --> 00:41:01,600
+of those robots.
+
+899
+00:41:01,600 --> 00:41:04,280
+So this is also why
+some of this video
+
+900
+00:41:04,280 --> 00:41:08,180
+can actually look very nice
+because humans select the routes
+
+901
+00:41:08,180 --> 00:41:10,850
+that the human knows can
+show the limits and also
+
+902
+00:41:10,850 --> 00:41:13,625
+the capabilities of this kind
+of low-level controllers.
+
+903
+00:41:13,625 --> 00:41:15,510
+And how to do that autonomously?
+
+904
+00:41:15,510 --> 00:41:18,200
+That's actually a very
+interesting question
+
+905
+00:41:18,200 --> 00:41:19,930
+people are also
+doing research upon.
+
+907
+00:41:22,925 --> 00:41:25,230
+So then I'm going to continue.
+
+908
+00:41:25,230 --> 00:41:28,850
+So I've discussed some of the
+successful examples and power
+
+909
+00:41:28,850 --> 00:41:30,683
+of reinforcement
+learning and also
+
+910
+00:41:30,683 --> 00:41:32,850
+discussed the limitations
+of reinforcement learning.
+
+911
+00:41:32,850 --> 00:41:35,720
+And we still haven't really
+seen very, very successful
+
+912
+00:41:35,720 --> 00:41:38,330
+and wide-scale deployments
+of reinforcement
+
+913
+00:41:38,330 --> 00:41:40,140
+learning in manipulation yet.
+
+914
+00:41:40,140 --> 00:41:42,790
+And we, humans, not just
+learn from trials and error.
+
+915
+00:41:42,790 --> 00:41:45,130
+We actually build this
+type of internal model.
+
+916
+00:41:45,130 --> 00:41:47,460
+So we're asking the question,
+can we actually learn
+
+917
+00:41:47,460 --> 00:41:49,800
+the models from the
+robot's interactions
+
+918
+00:41:49,800 --> 00:41:53,070
+with the environments and using
+that model for the robot to do
+
+919
+00:41:53,070 --> 00:41:55,320
+better physical interactions?
+
+920
+00:41:55,320 --> 00:41:58,110
+So specifically, what we are
+touching upon, again, back
+
+921
+00:41:58,110 --> 00:42:00,120
+to this figure, is
+how we can learn
+
+922
+00:42:00,120 --> 00:42:03,610
+and approximations of
+the real physical world,
+
+923
+00:42:03,610 --> 00:42:07,155
+and how can this
+approximated physical world
+
+924
+00:42:07,155 --> 00:42:10,140
+that runs on the
+virtual domain can help
+
+925
+00:42:10,140 --> 00:42:12,720
+guide the robot's actions
+and decide what action
+
+926
+00:42:12,720 --> 00:42:15,420
+to take in the physical world?
+
+927
+00:42:15,420 --> 00:42:17,410
+So let's say, if you
+already have the model,
+
+928
+00:42:17,410 --> 00:42:19,868
+for example, let's say, you
+have already learned the models
+
+929
+00:42:19,868 --> 00:42:24,160
+like we humans have in
+our mental environments,
+
+930
+00:42:24,160 --> 00:42:26,670
+we can predict, given
+the current state st
+
+931
+00:42:26,670 --> 00:42:29,670
+and also the action t, how
+the state of the environment
+
+932
+00:42:29,670 --> 00:42:33,030
+will change into
+states t plus 1.
+
+933
+00:42:33,030 --> 00:42:34,890
+And then we can use
+this, essentially,
+
+934
+00:42:34,890 --> 00:42:37,570
+as a forward model that, given
+the current state and action,
+
+935
+00:42:37,570 --> 00:42:38,935
+predict the next state.
+
+936
+00:42:38,935 --> 00:42:41,350
+So what actually is
+the problem for us
+
+937
+00:42:41,350 --> 00:42:43,600
+to do the planning,
+which is essentially
+
+938
+00:42:43,600 --> 00:42:45,817
+an inverse of this
+forward model?
+
+939
+00:42:45,817 --> 00:42:48,400
+Well, the planning is to give
+the current state and the target
+
+940
+00:42:48,400 --> 00:42:51,670
+states and to come up with the
+action that can allow the robot
+
+941
+00:42:51,670 --> 00:42:54,252
+to achieve the target states.
+
+942
+00:42:54,252 --> 00:42:56,210
+Given the current state
+shown in the blue dots,
+
+943
+00:42:56,210 --> 00:42:58,735
+we have the targets
+shown in the red.
+
+944
+00:42:58,735 --> 00:43:00,610
+We can have maybe some
+initial guesses of how
+
+945
+00:43:00,610 --> 00:43:02,060
+the actions might look like.
+
+946
+00:43:02,060 --> 00:43:05,200
+And our model, our
+approximated learned models,
+
+947
+00:43:05,200 --> 00:43:07,150
+will be able to
+predict the sequence
+
+948
+00:43:07,150 --> 00:43:09,460
+evolutions of the
+states, which is
+
+949
+00:43:09,460 --> 00:43:13,270
+shown in this green trajectory.
+
+950
+00:43:13,270 --> 00:43:16,510
+And then we can measure the
+distance between this green dots
+
+951
+00:43:16,510 --> 00:43:18,920
+and the red dots
+and backpropagates
+
+952
+00:43:18,920 --> 00:43:24,445
+or doing optimizations using
+the gradients of their distance
+
+953
+00:43:24,445 --> 00:43:27,350
+with respect to all the
+actions along the trajectories
+
+954
+00:43:27,350 --> 00:43:29,330
+to do this type
+of optimizations,
+
+955
+00:43:29,330 --> 00:43:32,110
+in order to know what
+actions can guide us
+
+956
+00:43:32,110 --> 00:43:35,890
+to getting us closer to the
+targets shown in the red.
+
+957
+00:43:35,890 --> 00:43:38,670
+And obviously, the model
+may not be accurate enough,
+
+958
+00:43:38,670 --> 00:43:41,810
+so we typically only
+executes the first actions,
+
+959
+00:43:41,810 --> 00:43:44,730
+and we obtain the new
+states from the environment.
+
+960
+00:43:44,730 --> 00:43:47,210
+And we can re-optimize
+the action sequence using
+
+961
+00:43:47,210 --> 00:43:49,130
+gradient descent or
+any other optimization
+
+962
+00:43:49,130 --> 00:43:53,345
+techniques you use to do this
+trajectory optimizations.
+
+963
+00:43:53,345 --> 00:43:56,870
+And one of the key benefits,
+especially recently
+
+964
+00:43:56,870 --> 00:44:00,480
+with the development of GPUs
+and also neural dynamics model,
+
+965
+00:44:00,480 --> 00:44:02,930
+is that you can use
+the GPU for parallel
+
+966
+00:44:02,930 --> 00:44:05,120
+and simultaneously
+sampling to allow
+
+967
+00:44:05,120 --> 00:44:07,760
+you to do large-scale
+sampling and optimizations
+
+968
+00:44:07,760 --> 00:44:12,560
+of those action sequences, which
+is actually quite efficient.
+
+969
+00:44:12,560 --> 00:44:14,490
+So given this, the
+general framework,
+
+970
+00:44:14,490 --> 00:44:17,430
+you have the model, which is
+this kind of forward process.
+
+971
+00:44:17,430 --> 00:44:19,460
+And you can always
+use the forward model
+
+972
+00:44:19,460 --> 00:44:22,130
+to do this inverse
+optimizations to come up
+
+973
+00:44:22,130 --> 00:44:25,100
+with the actions that can
+get you closer to your target
+
+974
+00:44:25,100 --> 00:44:26,335
+configuration.
+
+975
+00:44:26,335 --> 00:44:28,340
+And one of the key
+questions has always
+
+976
+00:44:28,340 --> 00:44:30,588
+been, what should be
+the right representation
+
+977
+00:44:30,588 --> 00:44:31,380
+of the environment?
+
+978
+00:44:31,380 --> 00:44:33,230
+What should be the
+right and most effective
+
+979
+00:44:33,230 --> 00:44:34,580
+state representation s?
+
+980
+00:44:34,580 --> 00:44:36,370
+And how we can learn
+this model based
+
+981
+00:44:36,370 --> 00:44:38,185
+on the state representation.
+
+982
+00:44:38,185 --> 00:44:40,030
+And over the years,
+there has been
+
+983
+00:44:40,030 --> 00:44:43,330
+many different investigations
+on choosing or investigating
+
+984
+00:44:43,330 --> 00:44:45,820
+different types of
+state representations.
+
+985
+00:44:45,820 --> 00:44:48,500
+Some earlier work, including
+how can using, for example,
+
+986
+00:44:48,500 --> 00:44:51,520
+just 2D images as a
+representation of the states
+
+987
+00:44:51,520 --> 00:44:53,600
+and trying to learn
+pixel dynamics,
+
+988
+00:44:53,600 --> 00:44:57,400
+meaning how the image might
+change if you apply a specific
+
+989
+00:44:57,400 --> 00:44:58,160
+action.
+
+990
+00:44:58,160 --> 00:45:00,520
+This is a work called deep
+visual foresight, which
+
+991
+00:45:00,520 --> 00:45:02,620
+set off some of
+the initial works
+
+992
+00:45:02,620 --> 00:45:06,040
+in the whole domains
+of word models.
+
+993
+00:45:06,040 --> 00:45:08,600
+And by learning this kind of
+pixel-based dynamics models,
+
+994
+00:45:08,600 --> 00:45:10,480
+people can come
+up with strategies
+
+995
+00:45:10,480 --> 00:45:12,250
+that is able to, for
+example, minimize
+
+996
+00:45:12,250 --> 00:45:14,920
+the distance between the
+current observations and some
+
+997
+00:45:14,920 --> 00:45:18,040
+can rotate the objects and push
+the objects around in order
+
+998
+00:45:18,040 --> 00:45:20,870
+to achieve the targets
+shown in green,
+
+999
+00:45:20,870 --> 00:45:23,950
+and the current state
+is shown in red.
+
+1000
+00:45:23,950 --> 00:45:26,030
+So this is about pixel dynamics.
+
+1001
+00:45:26,030 --> 00:45:29,050
+And what people can also
+do is to use keypoints
+
+1002
+00:45:29,050 --> 00:45:31,180
+as a representation
+of the environments
+
+1003
+00:45:31,180 --> 00:45:33,890
+to learn keypoints
+dynamics models.
+
+1004
+00:45:33,890 --> 00:45:37,520
+And here, what we can do
+is to track the movement
+
+1005
+00:45:37,520 --> 00:45:42,290
+of the keypoints on top of this
+box over the 3D space and also
+
+1006
+00:45:42,290 --> 00:45:46,160
+neural dynamics model of those
+keypoints as a result of some
+
+1007
+00:45:46,160 --> 00:45:47,220
+pushing actions.
+
+1008
+00:45:47,220 --> 00:45:49,880
+And then we can allow
+the robots to use
+
+1009
+00:45:49,880 --> 00:45:53,750
+this forward predictive models
+to plan the robot's behaviors
+
+1010
+00:45:53,750 --> 00:45:56,360
+to track some specific
+trajectories in order
+
+1011
+00:45:56,360 --> 00:46:01,100
+to push this box to achieve
+our target configurations.
+
+1012
+00:46:01,100 --> 00:46:03,080
+So besides using
+keypoints, so what
+
+1013
+00:46:03,080 --> 00:46:06,890
+if you encountered some objects
+with even higher degrees
+
+1014
+00:46:06,890 --> 00:46:08,315
+of freedom?
+
+1015
+00:46:08,315 --> 00:46:10,790
+So if you go one
+level finer, you
+
+1016
+00:46:10,790 --> 00:46:15,090
+can also represent those objects
+using a set of particles,
+
+1017
+00:46:15,090 --> 00:46:16,855
+essentially a set of points.
+
+1018
+00:46:16,855 --> 00:46:19,610
+Here, which is
+actually a work that
+
+1019
+00:46:19,610 --> 00:46:22,140
+was done while I was
+here as a postdoc,
+
+1020
+00:46:22,140 --> 00:46:25,050
+we were representing this
+pile of granular pieces,
+
+1021
+00:46:25,050 --> 00:46:27,080
+using a bunch of
+particles and trying
+
+1022
+00:46:27,080 --> 00:46:30,050
+to predict how those
+particles will move around
+
+1023
+00:46:30,050 --> 00:46:32,650
+if you apply a specific action.
+
+1024
+00:46:32,650 --> 00:46:34,780
+And this forward model
+can allow the robots
+
+1025
+00:46:34,780 --> 00:46:37,540
+to do this inverse
+decision making that
+
+1026
+00:46:37,540 --> 00:46:40,120
+handle a wide range
+of granular objects
+
+1027
+00:46:40,120 --> 00:46:42,200
+of different granular sizes.
+
+1028
+00:46:42,200 --> 00:46:43,750
+And we come up with
+strategies that
+
+1029
+00:46:43,750 --> 00:46:46,570
+can gather those
+pieces into the target
+
+1030
+00:46:46,570 --> 00:46:48,950
+region shown in
+the bottom right,
+
+1031
+00:46:48,950 --> 00:46:51,610
+like a corner of each segment.
+
+1032
+00:46:51,610 --> 00:46:55,850
+And the same model with good
+feedback from the environments
+
+1033
+00:46:55,850 --> 00:46:59,410
+allow the robots to correct
+from the model's error
+
+1034
+00:46:59,410 --> 00:47:02,800
+and come up with strategies that
+can be very reliably aggregate
+
+1035
+00:47:02,800 --> 00:47:06,550
+all the object pieces
+into the target region.
+
+1036
+00:47:06,550 --> 00:47:08,230
+And obviously,
+this model not just
+
+1037
+00:47:08,230 --> 00:47:11,170
+can generalize to
+different granular pieces
+
+1038
+00:47:11,170 --> 00:47:12,920
+of different granular sizes.
+
+1039
+00:47:12,920 --> 00:47:17,063
+It can also change to different
+target configurations.
+
+1040
+00:47:17,063 --> 00:47:18,730
+Here, you will very
+quickly realize what
+
+1041
+00:47:18,730 --> 00:47:20,710
+the target configurations are.
+
+1042
+00:47:20,710 --> 00:47:23,320
+The robot has to come
+up with a strategy that
+
+1043
+00:47:23,320 --> 00:47:27,620
+to do nontrivial redistributions
+of the granular pieces.
+
+1044
+00:47:27,620 --> 00:47:29,650
+And after the
+redistribution, it has
+
+1045
+00:47:29,650 --> 00:47:31,370
+to align the
+fine-grained details
+
+1046
+00:47:31,370 --> 00:47:33,210
+with the targets like shape.
+
+1047
+00:47:33,210 --> 00:47:36,660
+You want to accomplish this
+like a pile rearrangement task.
+
+1048
+00:47:36,660 --> 00:47:39,980
+The task here is actually to
+rearrange this granular pieces
+
+1049
+00:47:39,980 --> 00:47:42,860
+into different letter shapes,
+all the way from letter A
+
+1050
+00:47:42,860 --> 00:47:45,860
+to letter Z. And with this
+kind of forward models,
+
+1051
+00:47:45,860 --> 00:47:47,960
+we'll be very
+successful in coming up
+
+1052
+00:47:47,960 --> 00:47:49,920
+with a sequence of
+strategies, of course,
+
+1053
+00:47:49,920 --> 00:47:51,530
+with feedback from
+the environments
+
+1054
+00:47:51,530 --> 00:47:54,260
+to allow the robot to rearrange
+this kind of object pieces
+
+1055
+00:47:54,260 --> 00:47:55,500
+into the target regions.
+
+1056
+00:47:55,500 --> 00:47:58,940
+And this is actually a
+highly nontrivial task.
+
+1057
+00:47:58,940 --> 00:48:03,600
+And going beyond that, we also
+have this subsequent work,
+
+1058
+00:48:03,600 --> 00:48:05,390
+which I was also
+involved and done
+
+1059
+00:48:05,390 --> 00:48:07,640
+when I was here at Stanford.
+
+1060
+00:48:07,640 --> 00:48:11,000
+And we designed this kind of
+dumpling-making robots, that is,
+
+1061
+00:48:11,000 --> 00:48:15,440
+actually equipped the robots
+with 15 different 3D-printed
+
+1062
+00:48:15,440 --> 00:48:16,140
+tools.
+
+1063
+00:48:16,140 --> 00:48:19,310
+We have four RGBD cameras
+looking at the environment
+
+1064
+00:48:19,310 --> 00:48:22,560
+to do a reconstruction of
+the geometry of the store.
+
+1065
+00:48:22,560 --> 00:48:25,610
+And the robots will have
+to decide what tool to use
+
+1066
+00:48:25,610 --> 00:48:30,390
+and what action to take to
+get this dumpling into--
+
+1067
+00:48:30,390 --> 00:48:32,610
+getting this dough
+into a dumpling.
+
+1068
+00:48:32,610 --> 00:48:34,140
+And the key enabling
+factor is also
+
+1069
+00:48:34,140 --> 00:48:39,460
+this forward predictive models
+represented using particles.
+
+1070
+00:48:39,460 --> 00:48:41,970
+Or here, the red
+dots are representing
+
+1071
+00:48:41,970 --> 00:48:43,890
+the shape of the tool,
+and the blue dots
+
+1072
+00:48:43,890 --> 00:48:46,330
+are representing the
+shape of the objects.
+
+1073
+00:48:46,330 --> 00:48:49,600
+The first row is our model's
+open loop prediction,
+
+1074
+00:48:49,600 --> 00:48:53,770
+and second row is what actually
+happens in the real environment.
+
+1075
+00:48:53,770 --> 00:48:56,250
+So this learned model
+that directly learns
+
+1076
+00:48:56,250 --> 00:48:58,545
+from this real-world
+interactions
+
+1077
+00:48:58,545 --> 00:49:02,100
+can very accurately predict the
+change of the shape of the dough
+
+1078
+00:49:02,100 --> 00:49:04,720
+when using different tools,
+applying different actions,
+
+1079
+00:49:04,720 --> 00:49:09,030
+and in the end allows us to have
+this integrated system that can
+
+1080
+00:49:09,030 --> 00:49:10,962
+make a dumpling out of a dough.
+
+1081
+00:49:10,962 --> 00:49:12,420
+What's interesting
+about this video
+
+1082
+00:49:12,420 --> 00:49:14,700
+is there's a person
+constantly perturbing
+
+1083
+00:49:14,700 --> 00:49:17,130
+the robot from doing its job.
+
+1084
+00:49:17,130 --> 00:49:20,580
+The robot will take the
+real-time visual feedback
+
+1085
+00:49:20,580 --> 00:49:22,650
+from this environment
+to real-time
+
+1086
+00:49:22,650 --> 00:49:24,900
+understanding the
+shape of the dough
+
+1087
+00:49:24,900 --> 00:49:28,180
+and then using the current
+observations and also
+
+1088
+00:49:28,180 --> 00:49:30,970
+the learned dynamics model that
+predicts how the environment is
+
+1089
+00:49:30,970 --> 00:49:32,637
+going to change, how
+the dose shape will
+
+1090
+00:49:32,637 --> 00:49:35,860
+change if you use a tool
+to apply a specific action,
+
+1091
+00:49:35,860 --> 00:49:37,700
+and, based on this
+forward model,
+
+1092
+00:49:37,700 --> 00:49:40,210
+is making this inverse decision.
+
+1093
+00:49:40,210 --> 00:49:42,440
+This decision is
+happening at two levels,
+
+1094
+00:49:42,440 --> 00:49:45,385
+both at the high level,
+which is to decide
+
+1095
+00:49:45,385 --> 00:49:48,620
+what tool to use, which is a
+task-level decision making.
+
+1096
+00:49:48,620 --> 00:49:50,890
+And given these
+tools, the robot also
+
+1097
+00:49:50,890 --> 00:49:53,770
+have to make a lower-level,
+emotion-level decisions
+
+1098
+00:49:53,770 --> 00:49:57,430
+in deciding what specific action
+to take in order to progress
+
+1099
+00:49:57,430 --> 00:49:59,450
+into the next task stage.
+
+1100
+00:49:59,450 --> 00:50:01,900
+Humans are just so annoying,
+adding pieces, folding
+
+1101
+00:50:01,900 --> 00:50:02,480
+the dough.
+
+1102
+00:50:02,480 --> 00:50:05,500
+The robot is very robust to
+this external disturbance
+
+1103
+00:50:05,500 --> 00:50:08,295
+in continuing its progress
+in doing the task.
+
+1104
+00:50:08,295 --> 00:50:09,620
+Here's what's interesting.
+
+1105
+00:50:09,620 --> 00:50:13,490
+After the robot casts a circle,
+the human shows no mercy,
+
+1106
+00:50:13,490 --> 00:50:15,130
+destroys everything.
+
+1107
+00:50:15,130 --> 00:50:16,600
+The robot knows
+you actually have
+
+1108
+00:50:16,600 --> 00:50:18,460
+to start from the
+very beginning,
+
+1109
+00:50:18,460 --> 00:50:20,680
+redo the task from
+the beginning in order
+
+1110
+00:50:20,680 --> 00:50:23,770
+to progress with this
+kind of task objective.
+
+1111
+00:50:23,770 --> 00:50:26,090
+So this really shows
+the patience and also
+
+1112
+00:50:26,090 --> 00:50:28,940
+the robustness of our
+systems with this type
+
+1113
+00:50:28,940 --> 00:50:30,180
+of external disturbance.
+
+1114
+00:50:30,180 --> 00:50:32,810
+And all of these
+capabilities is enabled
+
+1115
+00:50:32,810 --> 00:50:34,760
+by this kind of neural
+dynamics model that
+
+1116
+00:50:34,760 --> 00:50:36,410
+predicts how the
+shape of the dough
+
+1117
+00:50:36,410 --> 00:50:39,360
+will change if you
+apply a specific action.
+
+1118
+00:50:39,360 --> 00:50:41,900
+In the end, the robot
+will place the skin
+
+1119
+00:50:41,900 --> 00:50:45,170
+on top of this dumpling clip
+and move this kind of fillings
+
+1120
+00:50:45,170 --> 00:50:48,020
+on top of this dumpling
+skin and use a hook
+
+1121
+00:50:48,020 --> 00:50:50,120
+to close the dumpling
+clip in order
+
+1122
+00:50:50,120 --> 00:50:52,430
+to use this general
+purpose robot equipped
+
+1123
+00:50:52,430 --> 00:50:57,860
+with 15 general purpose tools to
+make a dumpling out of a dough.
+
+1124
+00:50:57,860 --> 00:50:59,810
+So this is about how
+we can learn the model
+
+1125
+00:50:59,810 --> 00:51:03,440
+and how that model can be useful
+for downstream model-based
+
+1126
+00:51:03,440 --> 00:51:04,760
+planning.
+
+1127
+00:51:04,760 --> 00:51:08,630
+So for this specific
+case, if we want
+
+1128
+00:51:08,630 --> 00:51:10,580
+to describe it
+more rigorously, we
+
+1129
+00:51:10,580 --> 00:51:12,710
+are not using
+reinforcement learning.
+
+1130
+00:51:12,710 --> 00:51:15,660
+We just learn the model and
+use that model to do planning,
+
+1131
+00:51:15,660 --> 00:51:18,560
+although the plan can be
+distilled into a policy that
+
+1132
+00:51:18,560 --> 00:51:21,170
+can be executed in the
+real environment in a more
+
+1133
+00:51:21,170 --> 00:51:22,290
+efficient manner.
+
+1134
+00:51:22,290 --> 00:51:25,280
+But some people also call
+it model-based reinforcement
+
+1135
+00:51:25,280 --> 00:51:25,780
+learning.
+
+1136
+00:51:25,780 --> 00:51:27,850
+Decide which background
+you are coming from.
+
+1137
+00:51:27,850 --> 00:51:29,400
+You can either call
+it model learning
+
+1138
+00:51:29,400 --> 00:51:30,442
+and model-based planning.
+
+1139
+00:51:30,442 --> 00:51:33,040
+You can also call it model-based
+reinforcement learning.
+
+1140
+00:51:33,040 --> 00:51:36,690
+But the key idea is you want to
+learn the model from the robot's
+
+1141
+00:51:36,690 --> 00:51:39,280
+physical interactions with
+the real physical world
+
+1142
+00:51:39,280 --> 00:51:40,980
+and using that
+learned model that
+
+1143
+00:51:40,980 --> 00:51:42,870
+is very effective
+in helping the robot
+
+1144
+00:51:42,870 --> 00:51:45,960
+to decide its behaviors
+to progress with the task
+
+1145
+00:51:45,960 --> 00:51:47,580
+objective.
+
+1146
+00:51:47,580 --> 00:51:49,920
+So in this specific case,
+the high-level planning
+
+1147
+00:51:49,920 --> 00:51:52,870
+and low-level decision making
+is done by two different models.
+
+1148
+00:51:52,870 --> 00:51:56,310
+So over the high level, we
+are given the current state,
+
+1149
+00:51:56,310 --> 00:51:58,810
+current observation of the
+environments and the target's
+
+1150
+00:51:58,810 --> 00:52:00,810
+the robot able to
+achieve, essentially
+
+1151
+00:52:00,810 --> 00:52:04,050
+a classifier that classify
+which tool to use.
+
+1152
+00:52:04,050 --> 00:52:06,810
+And conditional on this
+classifier, tool label,
+
+1153
+00:52:06,810 --> 00:52:09,300
+this is a low-level
+policy that decides
+
+1154
+00:52:09,300 --> 00:52:11,820
+what specific action to
+take in order to progress
+
+1155
+00:52:11,820 --> 00:52:14,160
+into the next task stage.
+
+1156
+00:52:14,160 --> 00:52:15,010
+Very good question.
+
+1157
+00:52:15,010 --> 00:52:17,350
+So back then, this
+work was done in 2023.
+
+1158
+00:52:17,350 --> 00:52:21,130
+At that time, visual language
+model wasn't very powerful.
+
+1159
+00:52:21,130 --> 00:52:25,750
+So at that time, what we did
+was to allow a human operator
+
+1160
+00:52:25,750 --> 00:52:28,360
+to do the data
+collection, demonstration
+
+1161
+00:52:28,360 --> 00:52:30,530
+of the task for 10 times.
+
+1162
+00:52:30,530 --> 00:52:33,190
+We use that data to train
+this kind of classifier
+
+1163
+00:52:33,190 --> 00:52:35,090
+to classify what tool to use.
+
+1164
+00:52:35,090 --> 00:52:38,390
+That allows us to actually jump
+back and forth over this chain.
+
+1165
+00:52:38,390 --> 00:52:41,330
+Like I mentioned earlier,
+after the robot cuts a circle,
+
+1166
+00:52:41,330 --> 00:52:42,650
+the human destroys everything.
+
+1167
+00:52:42,650 --> 00:52:45,460
+The robot knows to jump back
+to some earlier stages that
+
+1168
+00:52:45,460 --> 00:52:47,380
+fits to its current
+observation in order
+
+1169
+00:52:47,380 --> 00:52:52,360
+to do the proper recovery from
+the external disturbances.
+
+1170
+00:52:52,360 --> 00:52:54,670
+So in this specific case,
+what we have been doing
+
+1171
+00:52:54,670 --> 00:52:57,400
+is a combination of
+sampling-based trajectory
+
+1172
+00:52:57,400 --> 00:53:00,178
+optimization versus
+policy learning.
+
+1173
+00:53:00,178 --> 00:53:02,470
+So what we have been doing
+is to give the current state
+
+1174
+00:53:02,470 --> 00:53:03,470
+of this dough.
+
+1175
+00:53:03,470 --> 00:53:05,662
+We have our forward
+predictive models.
+
+1176
+00:53:05,662 --> 00:53:07,870
+We'll be able to sample a
+bunch of actions and sample
+
+1177
+00:53:07,870 --> 00:53:11,620
+a bunch of tools to predict
+what is the evolutions
+
+1178
+00:53:11,620 --> 00:53:13,765
+of the shape of that dough.
+
+1179
+00:53:13,765 --> 00:53:15,640
+And then we'll compare
+the model's prediction
+
+1180
+00:53:15,640 --> 00:53:18,080
+with the targets
+we hope to achieve,
+
+1181
+00:53:18,080 --> 00:53:20,170
+which is similar to
+what I showed earlier.
+
+1182
+00:53:20,170 --> 00:53:23,010
+For example, our model
+predicts the shape of the dough
+
+1183
+00:53:23,010 --> 00:53:25,920
+will go into this green
+dots, but the target
+
+1184
+00:53:25,920 --> 00:53:28,840
+is this red dots, while
+comparing their distance.
+
+1185
+00:53:28,840 --> 00:53:30,780
+And then that
+allows us to select
+
+1186
+00:53:30,780 --> 00:53:34,080
+the most effective actions
+that can get us to the target
+
+1187
+00:53:34,080 --> 00:53:35,830
+to be as close as possible.
+
+1188
+00:53:35,830 --> 00:53:37,930
+And we can do a lot
+of samples like this.
+
+1189
+00:53:37,930 --> 00:53:41,350
+But sampling during the test
+time is very time-consuming.
+
+1190
+00:53:41,350 --> 00:53:44,340
+So we do this type of sampling
+in an offline fashion, which
+
+1191
+00:53:44,340 --> 00:53:45,400
+gives us a data set.
+
+1192
+00:53:45,400 --> 00:53:48,330
+And we can use that data set
+to train a policy that can
+
+1193
+00:53:48,330 --> 00:53:50,945
+be inferred at a very, very--
+
+1194
+00:53:50,945 --> 00:53:52,320
+using a very short
+period of time
+
+1195
+00:53:52,320 --> 00:53:54,360
+to do the inference
+during the test time.
+
+1196
+00:53:54,360 --> 00:53:56,470
+There is still a neural
+network as the policies.
+
+1197
+00:53:56,470 --> 00:53:56,970
+Yeah.
+
+1198
+00:53:56,970 --> 00:54:01,200
+Although the policy is learned
+by distilling from our models
+
+1199
+00:54:01,200 --> 00:54:04,320
+predictions over a
+huge amount of samples.
+
+1200
+00:54:04,320 --> 00:54:07,920
+For this specific work, there
+is no physics-based simulation
+
+1201
+00:54:07,920 --> 00:54:08,680
+at all.
+
+1202
+00:54:08,680 --> 00:54:11,280
+We actually have a baseline
+that uses a state-of-the-art
+
+1203
+00:54:11,280 --> 00:54:13,770
+deformable object simulator,
+which is called MPM,
+
+1204
+00:54:13,770 --> 00:54:15,250
+Material Point Methods.
+
+1205
+00:54:15,250 --> 00:54:19,143
+What we realize is that even
+if we do very extensive system
+
+1206
+00:54:19,143 --> 00:54:21,060
+identification, like
+estimating the parameters
+
+1207
+00:54:21,060 --> 00:54:24,220
+of those physics-based
+deformable object simulator,
+
+1208
+00:54:24,220 --> 00:54:27,360
+the identified model is
+noticeably less accurate
+
+1209
+00:54:27,360 --> 00:54:28,860
+than the model that
+directly learned
+
+1210
+00:54:28,860 --> 00:54:30,340
+from the real-world
+interactions.
+
+1211
+00:54:30,340 --> 00:54:31,870
+Like I showed
+earlier, for example,
+
+1212
+00:54:31,870 --> 00:54:34,120
+the first row is our model's
+open loop prediction.
+
+1213
+00:54:34,120 --> 00:54:35,830
+The second row is
+the ground truth.
+
+1214
+00:54:35,830 --> 00:54:37,770
+Our model's prediction
+aligns very well
+
+1215
+00:54:37,770 --> 00:54:39,270
+with the ground
+truth, which is just
+
+1216
+00:54:39,270 --> 00:54:42,840
+much more accurate than whatever
+physics-based simulator is
+
+1217
+00:54:42,840 --> 00:54:43,370
+out there.
+
+1219
+00:54:46,100 --> 00:54:46,600
+OK.
+
+1220
+00:54:46,600 --> 00:54:49,860
+So if there are no more
+questions, I will continue.
+
+1221
+00:54:49,860 --> 00:54:52,320
+So what do we have discussed
+in this kind of model learning
+
+1222
+00:54:52,320 --> 00:54:54,090
+and how this
+learned model can be
+
+1223
+00:54:54,090 --> 00:54:56,955
+effective for the downstream
+model-based planning.
+
+1224
+00:54:56,955 --> 00:55:01,235
+And next category of algorithms
+is imitation learning.
+
+1225
+00:55:01,235 --> 00:55:04,680
+So just to recap
+a little bit, we
+
+1226
+00:55:04,680 --> 00:55:06,420
+discussed
+reinforcement learning.
+
+1227
+00:55:06,420 --> 00:55:08,190
+That is directly
+learning the policies
+
+1228
+00:55:08,190 --> 00:55:10,793
+by doing trials and error
+with the environments, which
+
+1229
+00:55:10,793 --> 00:55:13,210
+has a lot of troubles, for
+example, the sample efficiency,
+
+1230
+00:55:13,210 --> 00:55:14,385
+the safety concerns.
+
+1231
+00:55:14,385 --> 00:55:16,510
+And for the model learning,
+what we have been doing
+
+1232
+00:55:16,510 --> 00:55:19,660
+is actually forced
+back to the category
+
+1233
+00:55:19,660 --> 00:55:22,510
+of supervised learning,
+where we have the evolutions
+
+1234
+00:55:22,510 --> 00:55:23,470
+of the environments.
+
+1235
+00:55:23,470 --> 00:55:25,750
+You use that data
+to do supervised
+
+1236
+00:55:25,750 --> 00:55:27,850
+learning to train this
+model and using this model
+
+1237
+00:55:27,850 --> 00:55:29,830
+to do model-based planning.
+
+1238
+00:55:29,830 --> 00:55:32,230
+And instead of just
+using supervised
+
+1239
+00:55:32,230 --> 00:55:35,390
+learning to train the model,
+people are also asking,
+
+1240
+00:55:35,390 --> 00:55:38,270
+can we do supervised learning
+also for the policies?
+
+1241
+00:55:38,270 --> 00:55:41,140
+This is the general idea of
+imitation learning, meaning
+
+1242
+00:55:41,140 --> 00:55:46,570
+can we have a big data set
+that shows how a task needs
+
+1243
+00:55:46,570 --> 00:55:49,270
+to be done and
+using this data set
+
+1244
+00:55:49,270 --> 00:55:50,900
+to train this kind of policies?
+
+1245
+00:55:50,900 --> 00:55:52,520
+I'm showing this figure again.
+
+1246
+00:55:52,520 --> 00:55:54,530
+This is trying to learn
+this kind of policy,
+
+1247
+00:55:54,530 --> 00:55:57,680
+taking the states as inputs
+that predict the actions.
+
+1248
+00:55:57,680 --> 00:56:00,820
+And all of this kind of learning
+signals and learning procedures
+
+1249
+00:56:00,820 --> 00:56:03,770
+are done through a
+large-scale collected data,
+
+1250
+00:56:03,770 --> 00:56:09,010
+from human demoing to the robots
+how a task needs to be done.
+
+1251
+00:56:09,010 --> 00:56:11,960
+So learning from demonstration
+is, of course, not new.
+
+1252
+00:56:11,960 --> 00:56:14,010
+It has been investigated
+for decades.
+
+1253
+00:56:14,010 --> 00:56:16,130
+It's also constantly
+how we human is actually
+
+1254
+00:56:16,130 --> 00:56:19,310
+learning to perform a lot
+of physical interactions
+
+1255
+00:56:19,310 --> 00:56:22,450
+or social activities
+in the real world,
+
+1256
+00:56:22,450 --> 00:56:24,650
+since we are very, very young.
+
+1257
+00:56:24,650 --> 00:56:28,760
+So one of the most
+earlier classic imitation
+
+1258
+00:56:28,760 --> 00:56:32,750
+learning algorithms is called
+behavior cloning, essentially
+
+1259
+00:56:32,750 --> 00:56:35,870
+trying to learn this kind of
+mapping that maps currently
+
+1260
+00:56:35,870 --> 00:56:39,390
+from this observation
+o into the action a.
+
+1261
+00:56:39,390 --> 00:56:42,410
+And this policy is represented
+using this function
+
+1262
+00:56:42,410 --> 00:56:45,530
+pi parameterized by the theta.
+
+1263
+00:56:45,530 --> 00:56:48,410
+So one of the key issues
+for behavior cloning
+
+1264
+00:56:48,410 --> 00:56:51,990
+is called cascading error
+because, like I mentioned,
+
+1265
+00:56:51,990 --> 00:56:54,320
+the key difference
+between the robot learning
+
+1266
+00:56:54,320 --> 00:56:56,300
+or agents' interaction
+with the environment
+
+1267
+00:56:56,300 --> 00:56:59,610
+is it is a sequential
+decision-making problem.
+
+1268
+00:56:59,610 --> 00:57:02,298
+It differs from a typical
+supervised learning
+
+1269
+00:57:02,298 --> 00:57:03,840
+in the typical
+computer vision domain
+
+1270
+00:57:03,840 --> 00:57:06,320
+in that your error
+can accumulate
+
+1271
+00:57:06,320 --> 00:57:08,485
+and be amplified over time.
+
+1272
+00:57:08,485 --> 00:57:09,860
+Let's say, at the
+very beginning,
+
+1273
+00:57:09,860 --> 00:57:11,730
+you made a very small error.
+
+1274
+00:57:11,730 --> 00:57:15,240
+That small error can lead
+to a state that slightly
+
+1275
+00:57:15,240 --> 00:57:17,490
+deviates from the
+distribution of data
+
+1276
+00:57:17,490 --> 00:57:19,230
+used to train your model.
+
+1277
+00:57:19,230 --> 00:57:21,700
+That will lead the policy to
+make an even larger error.
+
+1278
+00:57:21,700 --> 00:57:26,350
+And this error will be amplified
+over the temporal horizons.
+
+1279
+00:57:26,350 --> 00:57:27,930
+That leads to a
+trajectory that can
+
+1280
+00:57:27,930 --> 00:57:31,270
+deviate quite a lot from the
+demonstration trajectories.
+
+1281
+00:57:31,270 --> 00:57:34,680
+So that's the typical issues
+of behavioral cloning.
+
+1282
+00:57:34,680 --> 00:57:37,080
+So that's why,
+oftentimes, when people
+
+1283
+00:57:37,080 --> 00:57:39,370
+are trying to make
+imitation learning work,
+
+1284
+00:57:39,370 --> 00:57:42,580
+people will follow this type
+of pipeline, where, on the top,
+
+1285
+00:57:42,580 --> 00:57:45,850
+we have the demonstration
+collected by the experts.
+
+1286
+00:57:45,850 --> 00:57:49,470
+Then we'll use that as a
+training data to do supervised
+
+1287
+00:57:49,470 --> 00:57:51,210
+learning to train this policy.
+
+1288
+00:57:51,210 --> 00:57:53,910
+And we'll rule out the policy
+in the real environment
+
+1289
+00:57:53,910 --> 00:57:56,555
+and observe those failure cases.
+
+1290
+00:57:56,555 --> 00:57:59,070
+And we either collect
+additional data
+
+1291
+00:57:59,070 --> 00:58:01,560
+or provide corrective
+behaviors that
+
+1292
+00:58:01,560 --> 00:58:03,990
+allows these data sets
+to not only contain
+
+1293
+00:58:03,990 --> 00:58:07,380
+the initial demonstrations but
+also those corrective behaviors
+
+1294
+00:58:07,380 --> 00:58:11,170
+that gets the errors
+from the policies back
+
+1295
+00:58:11,170 --> 00:58:13,970
+to the canonical trajectory
+or get back to the trajectory.
+
+1296
+00:58:13,970 --> 00:58:16,520
+They can still successfully
+accomplish the task.
+
+1297
+00:58:16,520 --> 00:58:18,910
+So this is actually
+a typical life cycle.
+
+1298
+00:58:18,910 --> 00:58:21,520
+We are trying to develop
+any imitation learning
+
+1299
+00:58:21,520 --> 00:58:23,830
+agents or imitation
+learning algorithms
+
+1300
+00:58:23,830 --> 00:58:26,665
+in the real physical world.
+
+1301
+00:58:26,665 --> 00:58:29,920
+And along these lines,
+because if people
+
+1302
+00:58:29,920 --> 00:58:32,030
+do this kind of
+imitation learning,
+
+1303
+00:58:32,030 --> 00:58:35,110
+there's not a very
+explicit definition
+
+1304
+00:58:35,110 --> 00:58:37,400
+of what the task actually is.
+
+1305
+00:58:37,400 --> 00:58:41,750
+The task is implicitly hidden
+within those demonstrations.
+
+1306
+00:58:41,750 --> 00:58:44,365
+So there's a class
+of algorithms called
+
+1307
+00:58:44,365 --> 00:58:47,020
+inverse reinforcement
+learning, where on the left
+
+1308
+00:58:47,020 --> 00:58:49,780
+is what people typically
+think about for reinforcement
+
+1309
+00:58:49,780 --> 00:58:52,390
+learning, whereas on the
+right, where people are trying
+
+1310
+00:58:52,390 --> 00:58:54,160
+to use this inverse
+reinforcement learning
+
+1311
+00:58:54,160 --> 00:58:58,270
+to summarize the rewards
+from your demonstrations
+
+1312
+00:58:58,270 --> 00:59:00,755
+and be able to use
+that reward to do
+
+1313
+00:59:00,755 --> 00:59:02,380
+typical reinforcement
+learning to learn
+
+1314
+00:59:02,380 --> 00:59:04,020
+this kind of algorithms.
+
+1315
+00:59:04,020 --> 00:59:06,880
+Some of the earlier
+success examples
+
+1316
+00:59:06,880 --> 00:59:08,860
+were actually also
+developed at Stanford
+
+1317
+00:59:08,860 --> 00:59:11,930
+by Pieter Abbeel
+and also Andrew Ng.
+
+1318
+00:59:11,930 --> 00:59:16,400
+It allows them to control
+helicopters to do some very,
+
+1319
+00:59:16,400 --> 00:59:17,720
+very crazy behaviors.
+
+1320
+00:59:17,720 --> 00:59:19,810
+And this is actually
+a very old work.
+
+1321
+00:59:19,810 --> 00:59:25,660
+And be able to achieve this type
+of agile and effective behaviors
+
+1322
+00:59:25,660 --> 00:59:27,550
+on these real
+physical helicopters
+
+1323
+00:59:27,550 --> 00:59:30,050
+is very impressive at that time.
+
+1324
+00:59:30,050 --> 00:59:32,830
+So this is the power of
+learning from demonstrations
+
+1325
+00:59:32,830 --> 00:59:35,120
+and using that demonstration
+to summarize the rewards.
+
+1326
+00:59:35,120 --> 00:59:37,130
+And in connections with
+reinforcement learning,
+
+1327
+00:59:37,130 --> 00:59:39,805
+this is what we are
+able to achieve.
+
+1328
+00:59:39,805 --> 00:59:42,550
+So obviously, over
+the years, people
+
+1329
+00:59:42,550 --> 00:59:45,430
+have been making the
+imitation learning algorithms
+
+1330
+00:59:45,430 --> 00:59:47,560
+more and more
+effective, especially
+
+1331
+00:59:47,560 --> 00:59:50,465
+in connecting with, for
+example, energy-based models.
+
+1332
+00:59:50,465 --> 00:59:52,840
+So instead of learning this
+kind of explicit policy shown
+
+1333
+00:59:52,840 --> 00:59:55,660
+on the left, they directly do
+the mapping from the observation
+
+1334
+00:59:55,660 --> 00:59:56,960
+all through the actions.
+
+1335
+00:59:56,960 --> 00:59:59,580
+If you are coming up with this
+kind of implicit policies,
+
+1336
+00:59:59,580 --> 01:00:01,840
+that takes the idea
+from energy-based models
+
+1337
+01:00:01,840 --> 01:00:04,000
+that direct taking the
+observation and actions
+
+1338
+01:00:04,000 --> 01:00:09,230
+to predict the score and using
+this kind of energy-based model
+
+1339
+01:00:09,230 --> 01:00:12,710
+to do inference to get this
+kind of predicted actions a
+
+1340
+01:00:12,710 --> 01:00:17,150
+has allows the robots to
+handle demonstrations that
+
+1341
+01:00:17,150 --> 01:00:19,490
+are very multi-modal
+or handle scenarios
+
+1342
+01:00:19,490 --> 01:00:21,530
+where the optimization
+landscapes may not
+
+1343
+01:00:21,530 --> 01:00:23,010
+be very, very smooth.
+
+1344
+01:00:23,010 --> 01:00:26,300
+And the robot is able to come
+up with this kind of strategies,
+
+1345
+01:00:26,300 --> 01:00:28,740
+distill these policies
+from the demonstrations
+
+1346
+01:00:28,740 --> 01:00:32,630
+in doing this kind of
+content-rich manipulation tasks.
+
+1347
+01:00:32,630 --> 01:00:34,672
+In order to say--
+
+1348
+01:00:34,672 --> 01:00:37,730
+some of the recent,
+very recent success
+
+1349
+01:00:37,730 --> 01:00:42,230
+of robot learning as a whole
+is the results of this work
+
+1350
+01:00:42,230 --> 01:00:45,470
+called diffusion policy,
+which, again, is also
+
+1351
+01:00:45,470 --> 01:00:48,470
+taking some of the
+advances in the community
+
+1352
+01:00:48,470 --> 01:00:49,670
+of generative models.
+
+1353
+01:00:49,670 --> 01:00:52,290
+For this one, for the
+implicit behavior cloning,
+
+1354
+01:00:52,290 --> 01:00:54,290
+people are drawing
+inspiration from development
+
+1355
+01:00:54,290 --> 01:00:55,320
+of energy-based model.
+
+1356
+01:00:55,320 --> 01:00:58,010
+Energy-based model is a type
+of generative model developed
+
+1357
+01:00:58,010 --> 01:01:00,310
+in the deep learning community.
+
+1358
+01:01:00,310 --> 01:01:03,650
+And there's another class
+of more powerful models
+
+1359
+01:01:03,650 --> 01:01:07,030
+in the deep learning community
+is called diffusion models.
+
+1360
+01:01:07,030 --> 01:01:10,710
+And people are also trying to
+use the diffusion models to use
+
+1361
+01:01:10,710 --> 01:01:17,130
+it as a policy function class to
+allow the agents to also inherit
+
+1362
+01:01:17,130 --> 01:01:20,640
+the benefits and the properties
+from those diffusion models.
+
+1363
+01:01:20,640 --> 01:01:24,340
+So this work was originally
+done at Columbia.
+
+1364
+01:01:24,340 --> 01:01:27,100
+That's where I am right now.
+
+1365
+01:01:27,100 --> 01:01:31,500
+And the leads, like the PI of
+this work, now come to Stanford.
+
+1366
+01:01:31,500 --> 01:01:35,550
+You can see, many of the work
+I selected has a lot of roots
+
+1367
+01:01:35,550 --> 01:01:37,080
+here at Stanford.
+
+1368
+01:01:37,080 --> 01:01:41,170
+She is currently at the W
+departments at Stanford.
+
+1369
+01:01:41,170 --> 01:01:44,910
+And this policy really
+shows a very diverse set
+
+1370
+01:01:44,910 --> 01:01:47,280
+of capabilities,
+allow the robots
+
+1371
+01:01:47,280 --> 01:01:51,630
+to do not just planner
+pushing, but many fine-grained
+
+1372
+01:01:51,630 --> 01:01:52,660
+manipulation task.
+
+1373
+01:01:52,660 --> 01:01:55,000
+Not only pick and place,
+but for example here,
+
+1374
+01:01:55,000 --> 01:01:57,000
+spread butter on
+top of the spreads
+
+1375
+01:01:57,000 --> 01:02:02,770
+and also scrambled eggs,
+also peeling the potatoes
+
+1376
+01:02:02,770 --> 01:02:04,940
+and sliding the books.
+
+1377
+01:02:04,940 --> 01:02:06,580
+So it really shows
+that this type
+
+1378
+01:02:06,580 --> 01:02:09,730
+of recipe, where you collect
+a bunch of demonstrations
+
+1379
+01:02:09,730 --> 01:02:13,670
+and using the best policies,
+learning mechanisms,
+
+1380
+01:02:13,670 --> 01:02:17,350
+you can get a policy that works
+in the real physical world
+
+1381
+01:02:17,350 --> 01:02:20,377
+in a very, very efficient
+manner, meaning you
+
+1382
+01:02:20,377 --> 01:02:21,710
+collect the data in the morning.
+
+1383
+01:02:21,710 --> 01:02:23,270
+You train the policy
+in the nuance.
+
+1384
+01:02:23,270 --> 01:02:26,650
+In the afternoon, you can
+have a working policy working
+
+1385
+01:02:26,650 --> 01:02:28,160
+in the real physical world.
+
+1386
+01:02:28,160 --> 01:02:30,310
+So obviously, there's
+a lot of caveats
+
+1387
+01:02:30,310 --> 01:02:33,340
+in how reliable your policy
+is and how generalizable
+
+1388
+01:02:33,340 --> 01:02:37,690
+your policy is, how diversified
+the initial configuration can
+
+1389
+01:02:37,690 --> 01:02:40,610
+be for the policy to
+still work very robustly.
+
+1390
+01:02:40,610 --> 01:02:44,560
+But still, imitation learning is
+the most efficient way for you
+
+1391
+01:02:44,560 --> 01:02:46,600
+to get a policy that
+can do something
+
+1392
+01:02:46,600 --> 01:02:49,310
+interesting in the
+real physical world.
+
+1393
+01:02:49,310 --> 01:02:52,885
+And for the policies to be
+very effective and robust
+
+1394
+01:02:52,885 --> 01:02:55,150
+to the real-world
+variations, this type
+
+1395
+01:02:55,150 --> 01:02:58,000
+of iterative data
+collections will
+
+1396
+01:02:58,000 --> 01:02:59,980
+need to be in place
+for the policy
+
+1397
+01:02:59,980 --> 01:03:03,500
+to cover those kind of
+unexpected behaviors
+
+1398
+01:03:03,500 --> 01:03:06,530
+or some kind of
+deviating behaviors.
+
+1399
+01:03:06,530 --> 01:03:08,430
+So this is about
+imitation learning.
+
+1400
+01:03:08,430 --> 01:03:09,870
+So any questions?
+
+1402
+01:03:13,040 --> 01:03:15,120
+OK, so if there's
+no more questions,
+
+1403
+01:03:15,120 --> 01:03:17,660
+I will use the remaining
+time to discuss
+
+1404
+01:03:17,660 --> 01:03:20,510
+some of the recent
+developments that
+
+1405
+01:03:20,510 --> 01:03:23,480
+drive all the craziness
+about robot learning, which
+
+1406
+01:03:23,480 --> 01:03:26,695
+is robotic foundation models.
+
+1407
+01:03:26,695 --> 01:03:30,120
+And of course, this is
+a very involved domain.
+
+1408
+01:03:30,120 --> 01:03:32,240
+Actually, for each
+one of these items,
+
+1409
+01:03:32,240 --> 01:03:35,190
+you can actually have
+a course around them.
+
+1410
+01:03:35,190 --> 01:03:38,580
+So for today's lecture, I'm
+just skimming through them very,
+
+1411
+01:03:38,580 --> 01:03:39,450
+very quickly.
+
+1412
+01:03:39,450 --> 01:03:42,140
+I only tell you the gist,
+the high-level knowledge
+
+1413
+01:03:42,140 --> 01:03:45,380
+you need to get by
+looking at those terms.
+
+1414
+01:03:45,380 --> 01:03:47,855
+And for robotic
+foundation models,
+
+1415
+01:03:47,855 --> 01:03:53,690
+it is a type of model that is
+very similar to reinforcement
+
+1416
+01:03:53,690 --> 01:03:57,890
+learning or imitation learning
+in their function class.
+
+1417
+01:03:57,890 --> 01:03:59,970
+There's no explicit
+representation for them
+
+1418
+01:03:59,970 --> 01:04:01,670
+of the states or
+this kind of model.
+
+1419
+01:04:01,670 --> 01:04:03,420
+For example, this
+robotic foundation model
+
+1420
+01:04:03,420 --> 01:04:06,250
+doesn't learn the model
+of the environments.
+
+1421
+01:04:06,250 --> 01:04:09,690
+It is still a policy that
+maps from the observation
+
+1422
+01:04:09,690 --> 01:04:11,880
+and goes into the actions.
+
+1423
+01:04:11,880 --> 01:04:13,380
+That's still like
+a representative--
+
+1424
+01:04:13,380 --> 01:04:16,265
+can be very nicely represented
+using these figures.
+
+1425
+01:04:16,265 --> 01:04:17,640
+So you have this
+agents, which is
+
+1426
+01:04:17,640 --> 01:04:19,530
+a policy that takes
+the current state
+
+1427
+01:04:19,530 --> 01:04:21,060
+and also the goal as inputs.
+
+1428
+01:04:21,060 --> 01:04:23,340
+And you're trying to
+generate these actions that
+
+1429
+01:04:23,340 --> 01:04:26,592
+can be executed in the
+real physical world.
+
+1430
+01:04:26,592 --> 01:04:28,050
+But you might say
+that this is very
+
+1431
+01:04:28,050 --> 01:04:30,640
+similar to imitation learning
+and reinforcement learning.
+
+1432
+01:04:30,640 --> 01:04:34,300
+So what's special about this
+robotic foundation models?
+
+1433
+01:04:34,300 --> 01:04:36,270
+So this is actually
+all rooted back
+
+1434
+01:04:36,270 --> 01:04:39,700
+to all the developments within
+the foundation model domain,
+
+1435
+01:04:39,700 --> 01:04:42,120
+especially those
+language-related foundation
+
+1436
+01:04:42,120 --> 01:04:45,150
+model and also those vision
+language-related foundation
+
+1437
+01:04:45,150 --> 01:04:47,980
+models, meaning it is a policy.
+
+1438
+01:04:47,980 --> 01:04:51,660
+But it needs to generalize much
+better than a policy that just
+
+1439
+01:04:51,660 --> 01:04:54,240
+works for one specific task.
+
+1440
+01:04:54,240 --> 01:04:55,930
+Here is actually my definitions.
+
+1441
+01:04:55,930 --> 01:04:59,350
+I'm drawing analogies from the
+current developments of vision
+
+1442
+01:04:59,350 --> 01:05:03,370
+language models, meaning
+their outputs may not always
+
+1443
+01:05:03,370 --> 01:05:06,100
+be the perfect one,
+but it will always
+
+1444
+01:05:06,100 --> 01:05:08,630
+generate something
+reasonable as you prompts
+
+1445
+01:05:08,630 --> 01:05:10,150
+this kind of foundation model.
+
+1446
+01:05:10,150 --> 01:05:13,180
+So what we hope to achieve with
+this robotic foundation model
+
+1447
+01:05:13,180 --> 01:05:16,000
+is the synthesized
+action may not always
+
+1448
+01:05:16,000 --> 01:05:18,400
+be the optimal
+actions as conditioned
+
+1449
+01:05:18,400 --> 01:05:19,940
+by the observation and the task.
+
+1450
+01:05:19,940 --> 01:05:21,790
+But the general
+trajectory will always
+
+1451
+01:05:21,790 --> 01:05:24,130
+be beautiful and
+reasonable to execute
+
+1452
+01:05:24,130 --> 01:05:26,170
+in the real physical world.
+
+1453
+01:05:26,170 --> 01:05:28,790
+Beautiful meaning you shouldn't
+use any jiggling motions.
+
+1454
+01:05:28,790 --> 01:05:30,650
+It should be smooth
+and continuous.
+
+1455
+01:05:30,650 --> 01:05:32,890
+Reasonable meaning you
+should listen to the language
+
+1456
+01:05:32,890 --> 01:05:35,595
+instructions you are
+given to the robots.
+
+1457
+01:05:35,595 --> 01:05:39,280
+So obviously, there are also
+many different names describing
+
+1458
+01:05:39,280 --> 01:05:40,700
+exactly the same things.
+
+1459
+01:05:40,700 --> 01:05:42,820
+Some people call it
+Vision Language Action
+
+1460
+01:05:42,820 --> 01:05:44,150
+Models like VLAs.
+
+1461
+01:05:44,150 --> 01:05:46,880
+Some people call it
+large behavior models.
+
+1462
+01:05:46,880 --> 01:05:49,970
+But in the essence, they are
+all describing the same thing,
+
+1463
+01:05:49,970 --> 01:05:52,810
+meaning this policy, taking
+the observation and language
+
+1464
+01:05:52,810 --> 01:05:55,100
+instructions or whatever,
+like a task specification.
+
+1465
+01:05:55,100 --> 01:05:57,950
+You're trying to generate the
+actions that generalize widely
+
+1466
+01:05:57,950 --> 01:06:01,420
+across a wide
+range of scenarios.
+
+1467
+01:06:01,420 --> 01:06:04,650
+So this area is
+actually quite noisy.
+
+1468
+01:06:04,650 --> 01:06:07,100
+Noisy meaning it's
+very, very hard
+
+1469
+01:06:07,100 --> 01:06:10,610
+to quantify the progress
+of different kinds
+
+1470
+01:06:10,610 --> 01:06:12,308
+of robotic foundation models.
+
+1471
+01:06:12,308 --> 01:06:14,100
+Because you're calling
+it foundation model,
+
+1472
+01:06:14,100 --> 01:06:14,933
+what does that mean?
+
+1473
+01:06:14,933 --> 01:06:18,080
+That means you expect this
+model to generalize very broadly
+
+1474
+01:06:18,080 --> 01:06:19,740
+over a wide range of scenarios.
+
+1475
+01:06:19,740 --> 01:06:21,950
+If that's your
+expectation, you actually
+
+1476
+01:06:21,950 --> 01:06:23,900
+need significant evidence
+to show it actually
+
+1477
+01:06:23,900 --> 01:06:24,930
+generalizes broadly.
+
+1478
+01:06:24,930 --> 01:06:27,950
+So that's why evaluation and
+quantitative measurements
+
+1479
+01:06:27,950 --> 01:06:30,000
+of their progress
+is very challenging.
+
+1480
+01:06:30,000 --> 01:06:33,390
+But still, by looking at
+their empirical videos,
+
+1481
+01:06:33,390 --> 01:06:36,560
+you can still see a lot of
+very interesting and concrete
+
+1482
+01:06:36,560 --> 01:06:39,240
+progress over the
+past two years.
+
+1483
+01:06:39,240 --> 01:06:41,180
+So a lot of the
+earlier investigation
+
+1484
+01:06:41,180 --> 01:06:45,230
+starts with RT-1,
+which was released
+
+1485
+01:06:45,230 --> 01:06:47,545
+in the December of 2022.
+
+1486
+01:06:47,545 --> 01:06:51,810
+And since then, I would say
+maybe roughly every half a year,
+
+1487
+01:06:51,810 --> 01:06:55,900
+there's a new model, for
+example, RT-2, RT-X, OpenVLA,
+
+1488
+01:06:55,900 --> 01:06:58,900
+and some of the recent
+ones like Pi-Zero,
+
+1489
+01:06:58,900 --> 01:07:02,970
+that is making concrete progress
+along these lines of developing
+
+1490
+01:07:02,970 --> 01:07:06,070
+more and more generalizable
+robotic foundation models.
+
+1491
+01:07:06,070 --> 01:07:09,520
+And actually, this
+year, there's a boost.
+
+1492
+01:07:09,520 --> 01:07:13,690
+There's a [INAUDIBLE] first
+of a lot of foundation models,
+
+1493
+01:07:13,690 --> 01:07:17,500
+like Helix, Hi-Robot, Gemini
+Robotics, Pi-0.5, et cetera.
+
+1494
+01:07:17,500 --> 01:07:19,140
+So there's a lot
+of investigations
+
+1495
+01:07:19,140 --> 01:07:21,330
+and also investments
+in this domain
+
+1496
+01:07:21,330 --> 01:07:24,430
+in not only like a
+capital investment
+
+1497
+01:07:24,430 --> 01:07:27,990
+but talent investments in
+developing better, better,
+
+1498
+01:07:27,990 --> 01:07:29,580
+and better and
+more generalizable
+
+1499
+01:07:29,580 --> 01:07:31,625
+robotic foundation models.
+
+1500
+01:07:31,625 --> 01:07:34,980
+So due to the time, I clearly
+cannot go into the details
+
+1501
+01:07:34,980 --> 01:07:36,120
+of all these models.
+
+1502
+01:07:36,120 --> 01:07:37,620
+So if you are
+interested, I actually
+
+1503
+01:07:37,620 --> 01:07:40,050
+gave a tutorial two
+months ago at [INAUDIBLE],
+
+1504
+01:07:40,050 --> 01:07:42,570
+specifically describing
+and discussing some
+
+1505
+01:07:42,570 --> 01:07:44,470
+of the models along this axis.
+
+1506
+01:07:44,470 --> 01:07:47,320
+If you are interested,
+please go and watch it.
+
+1507
+01:07:47,320 --> 01:07:51,670
+And for today, I'll be mostly
+giving you a high-level overview
+
+1508
+01:07:51,670 --> 01:07:55,420
+of what actually is essential
+for this kind of foundation
+
+1509
+01:07:55,420 --> 01:07:58,810
+models and what it actually
+looks like, with any examples
+
+1510
+01:07:58,810 --> 01:08:01,330
+from Pi-Zero.
+
+1511
+01:08:01,330 --> 01:08:06,670
+So Pi-Zero was first
+released in October 2024.
+
+1512
+01:08:06,670 --> 01:08:09,220
+I think this is the
+word that convinced me
+
+1513
+01:08:09,220 --> 01:08:11,080
+that this type of
+robotic foundation model
+
+1514
+01:08:11,080 --> 01:08:14,860
+can do some very reliable
+dexterous manipulations
+
+1515
+01:08:14,860 --> 01:08:16,399
+in the real-world environments.
+
+1516
+01:08:16,399 --> 01:08:18,729
+It can handle cloth
+folding and box
+
+1517
+01:08:18,729 --> 01:08:22,330
+folding and many other different
+types of manipulation tasks
+
+1518
+01:08:22,330 --> 01:08:24,700
+at a very reliable manner.
+
+1519
+01:08:24,700 --> 01:08:26,620
+And here is how the
+framework actually
+
+1520
+01:08:26,620 --> 01:08:29,109
+looks like on the high level.
+
+1521
+01:08:29,109 --> 01:08:32,369
+On the left is data sets.
+
+1522
+01:08:32,369 --> 01:08:34,870
+So for any model to be
+called the foundation model,
+
+1523
+01:08:34,870 --> 01:08:36,620
+it needs a fuel for
+that foundation model.
+
+1524
+01:08:36,620 --> 01:08:38,684
+And that fuel is data.
+
+1525
+01:08:38,684 --> 01:08:41,470
+So they aggregate a lot of
+data both within academia
+
+1526
+01:08:41,470 --> 01:08:43,750
+and also data
+collected by themselves
+
+1527
+01:08:43,750 --> 01:08:45,513
+across many different
+embodiments,
+
+1528
+01:08:45,513 --> 01:08:46,930
+where the robot
+is doing some kind
+
+1529
+01:08:46,930 --> 01:08:50,100
+of interesting and useful task
+in the real-world environments.
+
+1530
+01:08:50,100 --> 01:08:54,020
+And they use this data
+to do pre-training.
+
+1531
+01:08:54,020 --> 01:08:56,060
+And one important caveats
+of this pre-training
+
+1532
+01:08:56,060 --> 01:08:59,569
+is this starts with a
+pre-trained visual language
+
+1533
+01:08:59,569 --> 01:09:01,430
+model, the vision
+language model that's
+
+1534
+01:09:01,430 --> 01:09:05,689
+already trained on vast amount
+of vision-language-related data
+
+1535
+01:09:05,689 --> 01:09:08,899
+that can naturally adapt those
+kind of semantically knowledge
+
+1536
+01:09:08,899 --> 01:09:10,410
+from those models.
+
+1537
+01:09:10,410 --> 01:09:13,399
+And together, by doing
+code fine-tuning, what
+
+1538
+01:09:13,399 --> 01:09:16,790
+they call code fine-tuning,
+using both objective for action
+
+1539
+01:09:16,790 --> 01:09:19,279
+predictions and also
+the objective adapted
+
+1540
+01:09:19,279 --> 01:09:22,200
+from those vision question
+answering those type of tasks,
+
+1541
+01:09:22,200 --> 01:09:25,490
+you will be able to first
+preserve the semantic knowledge
+
+1542
+01:09:25,490 --> 01:09:26,550
+within those models.
+
+1543
+01:09:26,550 --> 01:09:30,560
+But at the same time, you can
+predict the robot actions.
+
+1544
+01:09:30,560 --> 01:09:32,430
+And this is the
+pre-training stage.
+
+1545
+01:09:32,430 --> 01:09:36,439
+A very important design for
+many of the existing robotic
+
+1546
+01:09:36,439 --> 01:09:39,029
+foundation models is
+called post-training,
+
+1547
+01:09:39,029 --> 01:09:42,200
+which is also inspired by
+many of the developments
+
+1548
+01:09:42,200 --> 01:09:44,450
+in the large language
+model communities
+
+1549
+01:09:44,450 --> 01:09:46,410
+where you have this base model.
+
+1550
+01:09:46,410 --> 01:09:48,978
+Base model can give you some
+reasonable baseline performance.
+
+1551
+01:09:48,978 --> 01:09:51,270
+But if you really want the
+performance to be very, very
+
+1552
+01:09:51,270 --> 01:09:53,130
+good on a specific
+task, you actually
+
+1553
+01:09:53,130 --> 01:09:56,890
+have to collect task-specific
+data to fine-tune the models,
+
+1554
+01:09:56,890 --> 01:09:59,730
+do post-training on the
+data for that specific task
+
+1555
+01:09:59,730 --> 01:10:02,625
+for the performance
+to be satisfied.
+
+1556
+01:10:02,625 --> 01:10:04,740
+So they are evaluating
+their whole systems
+
+1557
+01:10:04,740 --> 01:10:06,520
+over three different categories.
+
+1558
+01:10:06,520 --> 01:10:09,160
+The first one is directly
+using their base model.
+
+1559
+01:10:09,160 --> 01:10:11,280
+And their base model can
+already be good enough
+
+1560
+01:10:11,280 --> 01:10:15,450
+for some very simple
+in-distribution data.
+
+1561
+01:10:15,450 --> 01:10:18,432
+The task is actually
+the task that
+
+1562
+01:10:18,432 --> 01:10:19,890
+might have already
+been encountered
+
+1563
+01:10:19,890 --> 01:10:22,470
+during the pre-training stage.
+
+1564
+01:10:22,470 --> 01:10:25,540
+For different task but
+slightly more complicated,
+
+1565
+01:10:25,540 --> 01:10:28,260
+you can do post-training
+to allow the base
+
+1566
+01:10:28,260 --> 01:10:32,445
+model to further improve on
+those in-distribution tasks.
+
+1567
+01:10:32,445 --> 01:10:34,320
+And for unseen
+task, typically you
+
+1568
+01:10:34,320 --> 01:10:36,360
+have to do post-training
+by collecting
+
+1569
+01:10:36,360 --> 01:10:40,050
+those task-specific data and
+fine-tune your pre-trained model
+
+1570
+01:10:40,050 --> 01:10:43,170
+on these tasks for
+you to be performance.
+
+1571
+01:10:43,170 --> 01:10:46,285
+And this Pi-Zero model
+is actually open sourced.
+
+1572
+01:10:46,285 --> 01:10:48,800
+And you can just
+download the checkpoints.
+
+1573
+01:10:48,800 --> 01:10:50,530
+The students in my
+lab have already
+
+1574
+01:10:50,530 --> 01:10:53,298
+been starting to play
+with their models
+
+1575
+01:10:53,298 --> 01:10:54,590
+and trying to do post-training.
+
+1576
+01:10:54,590 --> 01:10:58,010
+And we're starting to see
+some very promising results.
+
+1577
+01:10:58,010 --> 01:11:01,540
+So if you are interested, I
+highly encourage you to try it.
+
+1578
+01:11:01,540 --> 01:11:02,780
+That is a very good question.
+
+1579
+01:11:02,780 --> 01:11:05,050
+So you are essentially
+asking about the efficiency
+
+1580
+01:11:05,050 --> 01:11:07,190
+of the existing robotic
+foundation models.
+
+1581
+01:11:07,190 --> 01:11:10,300
+So there's a lot of reasons
+why the policy is actually
+
+1582
+01:11:10,300 --> 01:11:11,630
+slower than humans.
+
+1583
+01:11:11,630 --> 01:11:14,590
+One of the major reasons
+is actually adapted
+
+1584
+01:11:14,590 --> 01:11:17,170
+from how the data was
+collected, how the demonstration
+
+1585
+01:11:17,170 --> 01:11:18,410
+data was collected.
+
+1586
+01:11:18,410 --> 01:11:20,660
+Typically, for many
+of these scenarios,
+
+1587
+01:11:20,660 --> 01:11:22,360
+the demonstration
+data was collected
+
+1588
+01:11:22,360 --> 01:11:26,560
+by human teleoperating the
+robots on that exact same robots
+
+1589
+01:11:26,560 --> 01:11:30,340
+to do the data collection in,
+for example, folding this box.
+
+1590
+01:11:30,340 --> 01:11:32,500
+And human teleoperations
+is actually
+
+1591
+01:11:32,500 --> 01:11:36,230
+slower than humans just using
+their hands to do these tasks,
+
+1592
+01:11:36,230 --> 01:11:38,930
+even if you have gone
+through hours of training.
+
+1593
+01:11:38,930 --> 01:11:41,410
+This is because you are just
+using a different embodiment
+
+1594
+01:11:41,410 --> 01:11:45,510
+than an embodiment that you
+person is the most familiar with
+
+1595
+01:11:45,510 --> 01:11:48,920
+and, also at the same time,
+because the robot arms are still
+
+1596
+01:11:48,920 --> 01:11:50,670
+a certain distance
+away from you.
+
+1597
+01:11:50,670 --> 01:11:51,840
+There will be occlusion.
+
+1598
+01:11:51,840 --> 01:11:54,180
+Sometimes, you have to look
+very closely, carefully,
+
+1599
+01:11:54,180 --> 01:11:57,140
+like changing your heads,
+changing the viewing
+
+1600
+01:11:57,140 --> 01:11:58,830
+angles in order to
+really understand,
+
+1601
+01:11:58,830 --> 01:12:02,220
+is it the time to progress into
+the next task stage or not?
+
+1602
+01:12:02,220 --> 01:12:05,900
+There's a lot of caveats
+and inefficiencies
+
+1603
+01:12:05,900 --> 01:12:08,520
+of the current data
+collection regimes.
+
+1604
+01:12:08,520 --> 01:12:11,180
+That is why the policy
+directly trained on those data
+
+1605
+01:12:11,180 --> 01:12:14,100
+turned out to be slower
+than the human speeds.
+
+1606
+01:12:14,100 --> 01:12:16,400
+So that's why there's
+a lot of investigations
+
+1607
+01:12:16,400 --> 01:12:18,860
+in how we can do those
+kind of data collections
+
+1608
+01:12:18,860 --> 01:12:21,900
+to be even more efficient,
+to be at human speeds.
+
+1609
+01:12:21,900 --> 01:12:24,857
+That is actually a very
+active research direction.
+
+1610
+01:12:24,857 --> 01:12:26,190
+So this is a very good question.
+
+1611
+01:12:26,190 --> 01:12:28,610
+So for this box
+folding task, I would
+
+1612
+01:12:28,610 --> 01:12:31,140
+argue this is already a
+very long horizon task.
+
+1613
+01:12:31,140 --> 01:12:35,660
+So I was very impressed by how
+good this one single policy is
+
+1614
+01:12:35,660 --> 01:12:37,680
+able to handle this
+long horizon task.
+
+1615
+01:12:37,680 --> 01:12:39,170
+But you could
+argue, if you really
+
+1616
+01:12:39,170 --> 01:12:42,887
+want this policy to be useful
+in a more larger scale,
+
+1617
+01:12:42,887 --> 01:12:44,970
+like in the wild scenarios
+for them, in your home,
+
+1618
+01:12:44,970 --> 01:12:47,610
+you not only want the
+robot to fold the box.
+
+1619
+01:12:47,610 --> 01:12:50,030
+You want it to fold the
+shirts and clean the beds
+
+1620
+01:12:50,030 --> 01:12:52,320
+and clean all the
+messes on the floor.
+
+1621
+01:12:52,320 --> 01:12:54,590
+If in those type of scenarios--
+
+1622
+01:12:54,590 --> 01:12:56,900
+currently, me,
+personally, I don't
+
+1623
+01:12:56,900 --> 01:12:59,870
+believe one gigantic
+policy is able to adapt
+
+1624
+01:12:59,870 --> 01:13:01,110
+to those scenarios.
+
+1625
+01:13:01,110 --> 01:13:03,020
+Some higher-level
+abstractions or some kind
+
+1626
+01:13:03,020 --> 01:13:04,940
+of scene graph, some
+symbolic representations
+
+1627
+01:13:04,940 --> 01:13:08,760
+needs to be in place as a
+condition for this vision
+
+1628
+01:13:08,760 --> 01:13:10,940
+language action models
+for those policy
+
+1629
+01:13:10,940 --> 01:13:13,610
+to be the most effective
+and useful to steer
+
+1630
+01:13:13,610 --> 01:13:15,590
+into different type
+of tasks and scale
+
+1631
+01:13:15,590 --> 01:13:19,070
+to larger-scale environments
+and more complicated tasks.
+
+1632
+01:13:19,070 --> 01:13:21,530
+So this started with a
+pre-trained vision language
+
+1633
+01:13:21,530 --> 01:13:22,140
+model.
+
+1634
+01:13:22,140 --> 01:13:24,890
+So that's why there's already
+a lot of semantic knowledge
+
+1635
+01:13:24,890 --> 01:13:27,800
+that are learned through this
+large-scale pre-training using
+
+1636
+01:13:27,800 --> 01:13:29,130
+this vision language data.
+
+1637
+01:13:29,130 --> 01:13:31,700
+So that is why some
+of the generalization
+
+1638
+01:13:31,700 --> 01:13:34,310
+are coming for free, meaning
+the base model can actually
+
+1639
+01:13:34,310 --> 01:13:37,400
+have surprisingly good
+levels of generalization
+
+1640
+01:13:37,400 --> 01:13:38,790
+at the semantic level.
+
+1641
+01:13:38,790 --> 01:13:41,632
+And I just have to fine-tune
+this model with those robot data
+
+1642
+01:13:41,632 --> 01:13:43,090
+to make sure it
+can also generalize
+
+1643
+01:13:43,090 --> 01:13:46,777
+not as a semantic level but
+also as an action level.
+
+1644
+01:13:46,777 --> 01:13:48,610
+So we can have the
+question maybe at the end
+
+1645
+01:13:48,610 --> 01:13:50,090
+because we are
+already about time.
+
+1646
+01:13:50,090 --> 01:13:51,340
+I still have maybe one--
+
+1647
+01:13:51,340 --> 01:13:53,210
+the last, maybe,
+two, three minutes,
+
+1648
+01:13:53,210 --> 01:13:56,240
+I will discuss some of
+the remaining challenges,
+
+1649
+01:13:56,240 --> 01:13:59,270
+especially along the development
+of robot learning models.
+
+1650
+01:13:59,270 --> 01:14:03,220
+So one of the major challenges
+the whole community recognizes
+
+1651
+01:14:03,220 --> 01:14:05,080
+is evaluation.
+
+1652
+01:14:05,080 --> 01:14:06,670
+Evaluation currently
+is primarily
+
+1653
+01:14:06,670 --> 01:14:07,790
+done in the real world.
+
+1654
+01:14:07,790 --> 01:14:11,030
+For example, this is a
+picture of a Google Robotics.
+
+1655
+01:14:11,030 --> 01:14:14,500
+They have a grid of this kind
+of teleoperating Aloha systems
+
+1656
+01:14:14,500 --> 01:14:17,920
+that they are doing data
+collection and also evaluation.
+
+1657
+01:14:17,920 --> 01:14:21,230
+And real-world evaluation
+is both costly and noisy.
+
+1658
+01:14:21,230 --> 01:14:24,428
+Their exact words to me
+was, for evaluation, they
+
+1659
+01:14:24,428 --> 01:14:26,470
+have large enough budget
+such that they can still
+
+1660
+01:14:26,470 --> 01:14:27,140
+make progress.
+
+1661
+01:14:27,140 --> 01:14:29,273
+This was their
+exact words, meaning
+
+1662
+01:14:29,273 --> 01:14:31,940
+if you were to do the evaluation
+or I were to do the evaluation,
+
+1663
+01:14:31,940 --> 01:14:34,280
+the results can be very
+different from each other,
+
+1664
+01:14:34,280 --> 01:14:36,700
+depending on how we specify
+the initial configuration
+
+1665
+01:14:36,700 --> 01:14:38,600
+and how the lighting
+condition might change.
+
+1666
+01:14:38,600 --> 01:14:40,600
+Even the friction
+parameters of any factor
+
+1667
+01:14:40,600 --> 01:14:43,090
+can make a huge
+difference in how robust
+
+1668
+01:14:43,090 --> 01:14:44,518
+your downstream policy is.
+
+1669
+01:14:44,518 --> 01:14:46,060
+So this is very
+costly, and they have
+
+1670
+01:14:46,060 --> 01:14:49,060
+to wait for two days for
+the results to come back.
+
+1671
+01:14:49,060 --> 01:14:52,960
+And currently, there's
+very weak correlation
+
+1672
+01:14:52,960 --> 01:14:55,730
+between the training loss
+and real-world success rates.
+
+1673
+01:14:55,730 --> 01:14:58,390
+So this is another very
+important caveat and difference
+
+1674
+01:14:58,390 --> 01:15:00,063
+between supervised
+learning and also
+
+1675
+01:15:00,063 --> 01:15:01,730
+this kind of sequential
+decision making,
+
+1676
+01:15:01,730 --> 01:15:05,080
+this kind of policy learning
+is, for supervised learning,
+
+1677
+01:15:05,080 --> 01:15:08,578
+your training loss directly
+measures how good your model is.
+
+1678
+01:15:08,578 --> 01:15:10,120
+But for this kind
+of policy learning,
+
+1679
+01:15:10,120 --> 01:15:13,510
+your training loss measures how
+good this one-step prediction
+
+1680
+01:15:13,510 --> 01:15:16,670
+is, which sometimes may
+not be and, actually,
+
+1681
+01:15:16,670 --> 01:15:20,290
+oftentimes is not indicative
+of the performance of policy
+
+1682
+01:15:20,290 --> 01:15:23,990
+over long task horizons,
+even if your loss is low.
+
+1683
+01:15:23,990 --> 01:15:25,700
+But for long horizon
+task execution,
+
+1684
+01:15:25,700 --> 01:15:28,860
+your policy can
+actually be worse.
+
+1685
+01:15:28,860 --> 01:15:32,320
+And the training objective
+versus the task-specific metrics
+
+1686
+01:15:32,320 --> 01:15:34,690
+like training
+versus test horizons
+
+1687
+01:15:34,690 --> 01:15:36,630
+are some of the
+reasons explaining
+
+1688
+01:15:36,630 --> 01:15:39,170
+why it is very hard
+to come up with even
+
+1689
+01:15:39,170 --> 01:15:41,060
+approximate or
+approximate metrics
+
+1690
+01:15:41,060 --> 01:15:42,810
+to measure the
+performance of the policy.
+
+1691
+01:15:42,810 --> 01:15:46,460
+And people have to rely
+on real-world evaluations.
+
+1692
+01:15:46,460 --> 01:15:48,290
+So then the question
+is, what about
+
+1693
+01:15:48,290 --> 01:15:50,580
+doing the evaluation in
+the simulated environments?
+
+1694
+01:15:50,580 --> 01:15:52,170
+There has been a lot
+of investigation,
+
+1695
+01:15:52,170 --> 01:15:53,630
+for example, of
+behavior, which is
+
+1696
+01:15:53,630 --> 01:15:56,100
+done in physics lab
+here also at Stanford
+
+1697
+01:15:56,100 --> 01:15:58,225
+and also the Habitat
+3.0 from Meta.
+
+1698
+01:15:58,225 --> 01:15:59,600
+Now, people are
+trying to come up
+
+1699
+01:15:59,600 --> 01:16:02,220
+with this expensive
+simulated environments,
+
+1700
+01:16:02,220 --> 01:16:05,090
+trying to do evaluation and
+measurements of the robot
+
+1701
+01:16:05,090 --> 01:16:06,030
+policies.
+
+1702
+01:16:06,030 --> 01:16:09,240
+And obviously, there
+has their own issues,
+
+1703
+01:16:09,240 --> 01:16:12,090
+especially with regard
+to sim-to-real gap.
+
+1704
+01:16:12,090 --> 01:16:15,450
+How can you do very accurate
+simulation of rigid body,
+
+1705
+01:16:15,450 --> 01:16:16,770
+deformable object, and clothes?
+
+1706
+01:16:16,770 --> 01:16:19,830
+They have good correlations
+with the real-world performance.
+
+1707
+01:16:19,830 --> 01:16:22,925
+And asset is also
+another major issue,
+
+1708
+01:16:22,925 --> 01:16:25,340
+where large-scale
+generalizations and generations
+
+1709
+01:16:25,340 --> 01:16:27,920
+of those assets is a huge pain.
+
+1710
+01:16:27,920 --> 01:16:31,080
+I can elaborate but
+maybe after the lectures.
+
+1711
+01:16:31,080 --> 01:16:33,590
+And also, how do you digitize
+the real world is an issue.
+
+1712
+01:16:33,590 --> 01:16:35,170
+And how to do
+procedural generations
+
+1713
+01:16:35,170 --> 01:16:37,870
+of realistic and diverse
+things are all issues
+
+1714
+01:16:37,870 --> 01:16:41,020
+of using simulation to do
+evaluations for robot learning
+
+1715
+01:16:41,020 --> 01:16:42,310
+policies.
+
+1716
+01:16:42,310 --> 01:16:44,950
+And really, when you find the
+correlation between sim and real
+
+1717
+01:16:44,950 --> 01:16:48,810
+and it's calling upon the
+ImageNet in Embodied AI,
+
+1718
+01:16:48,810 --> 01:16:51,040
+the reason why
+ImageNet was successful
+
+1719
+01:16:51,040 --> 01:16:54,680
+is because, at least for a few
+years, any progress in ImageNet,
+
+1720
+01:16:54,680 --> 01:16:56,990
+meaning progress in deep
+learning and computer vision,
+
+1721
+01:16:56,990 --> 01:16:58,157
+we want the same thing.
+
+1722
+01:16:58,157 --> 01:16:59,740
+We want to have this
+platform, meaning
+
+1723
+01:16:59,740 --> 01:17:02,260
+any progress on that
+benchmark or platform,
+
+1724
+01:17:02,260 --> 01:17:04,250
+meaning progress
+in robot learnings.
+
+1725
+01:17:04,250 --> 01:17:07,270
+So that's something
+that we really want.
+
+1726
+01:17:07,270 --> 01:17:10,540
+And I can maybe skip through.
+
+1727
+01:17:10,540 --> 01:17:13,300
+We talk about how to build
+this foundational policies that
+
+1728
+01:17:13,300 --> 01:17:15,130
+can also be investigations
+on how to build
+
+1729
+01:17:15,130 --> 01:17:16,940
+a foundational world model.
+
+1730
+01:17:16,940 --> 01:17:18,760
+Especially, now,
+people are collecting
+
+1731
+01:17:18,760 --> 01:17:21,040
+large-scale, action-conditioned
+robot interaction
+
+1732
+01:17:21,040 --> 01:17:23,180
+data to train this
+foundation policy.
+
+1733
+01:17:23,180 --> 01:17:24,850
+But there's a lot of
+dynamics knowledge
+
+1734
+01:17:24,850 --> 01:17:26,180
+embedded in those data.
+
+1735
+01:17:26,180 --> 01:17:28,520
+If we just use those data
+to do policy learning,
+
+1736
+01:17:28,520 --> 01:17:29,750
+that would be such a waste.
+
+1737
+01:17:29,750 --> 01:17:31,690
+So we are also thinking
+about how can we
+
+1738
+01:17:31,690 --> 01:17:33,820
+use this large-scale,
+action-conditioned robot
+
+1739
+01:17:33,820 --> 01:17:36,310
+interaction data that
+was already collected
+
+1740
+01:17:36,310 --> 01:17:38,950
+to train those foundational
+policy to train
+
+1741
+01:17:38,950 --> 01:17:42,490
+this foundational world model
+and how they can do interplay
+
+1742
+01:17:42,490 --> 01:17:43,790
+between each other.
+
+1743
+01:17:43,790 --> 01:17:45,340
+And there are some
+existing works
+
+1744
+01:17:45,340 --> 01:17:48,250
+that are thinking about along
+the direction of building
+
+1745
+01:17:48,250 --> 01:17:50,240
+this kind of foundational
+world models.
+
+1746
+01:17:50,240 --> 01:17:53,980
+And there's some very
+interesting characteristics you
+
+1747
+01:17:53,980 --> 01:17:56,630
+might think about, like
+do you want it to be 3D?
+
+1748
+01:17:56,630 --> 01:17:57,930
+Do you want structural prior?
+
+1749
+01:17:57,930 --> 01:17:59,680
+How much learning
+versus how much physics?
+
+1750
+01:17:59,680 --> 01:18:03,340
+And how you can correlate
+with the real physical world.
+
+1751
+01:18:03,340 --> 01:18:06,800
+And maybe, actually, I
+think we are about time.
+
+1752
+01:18:06,800 --> 01:18:08,630
+So I will end it here.
+
+1753
+01:18:08,630 --> 01:18:12,850
+And this is the future we hope
+to achieve to really build
+
+1754
+01:18:12,850 --> 01:18:16,120
+this foundational robotic
+model that can work very widely
+
+1755
+01:18:16,120 --> 01:18:19,090
+and generalize very well
+in the unstructured data
+
+1756
+01:18:19,090 --> 01:18:20,660
+environments around us.
+
+1757
+01:18:20,660 --> 01:18:23,210
+And next lectures will
+be human-centered AI.
+
+1758
+01:18:23,210 --> 01:18:25,880
+And that will be the
+end of today's lecture.
+
+1759
+01:18:25,880 --> 01:18:27,750
+Thank you so much.
