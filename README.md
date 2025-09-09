@@ -35,13 +35,13 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
     - 다음과 같은 비디오 다운로더가 필요합니다 [4k video downloader](https://www.4kdownload.com/ko/products/product-videodownloader)
     - 다음 플레이리스트의 강의를 다운로드 하세요 [cs231n sp25 Playlist](https://www.youtube.com/playlist?list=PLoROMvodv4rOmsNzYBMe0gJY2XS8AQg16)
     
-2. 해당 프로젝트 파일을 다음처럼 다운로드 합니다. (주의: 영상과 같은 곳에 자막파일 .srt를 놓아야 합니다. mp4 파일과 이름이 같아야합니다.)
+2. 해당 프로젝트 파일을 다운로드 합니다. (주의: 영상과 같은 곳에 자막파일 .srt를 놓아야 합니다. mp4 파일과 이름이 같아야합니다.)
 
         root
         └── eng
             └── Subtitles in English
         └── kor 
-            └── 한글 자막
+            └── 한글 자막       <-- 한글 자막이 나오기 원하면 영상을 이곳에 넣어야 합니다. (vlc 기준)
 
 ----------
 ## 제작자(Creator & Maintainer)
