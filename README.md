@@ -2,6 +2,7 @@
 Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니다.
 
 영상 플레이리스트: [CS231N Spring 2025 Playlist](https://youtube.com/playlist?list=PLoROMvodv4rOmsNzYBMe0gJY2XS8AQg16&si=usJZq4ZMXOzC0GtE)
+
 학업계획서, 과제, 강의 슬라이드는 사이트 참고: [CS231n Website](http://cs231n.stanford.edu/)
 
 ---------
