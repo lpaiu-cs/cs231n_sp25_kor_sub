@@ -6,7 +6,7 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
 학업계획서, 과제, 강의 슬라이드는 사이트 참고: [CS231n Website](http://cs231n.stanford.edu/)
 
 ---------
-## 알려드립니다
+## 알려드립니다(Announcement)
 > cs231n sp25의 한글번역 프로젝트입니다.
 > 이 프로젝트의 자막번역은 gpt4o-mini api를 이용하였습니다.
 > 앞으로 영어 실력의 중요성은 점차 낮아질 것으로 생각합니다. 영어가 중요하지 않은건 아니지만 차후 이전보다 기술혁신에 의해 언어장벽이 점차 낮아지길 기원합니다. 물론 학문적 맥락을 이해할 수 있는 정도의 언어 능력은 여전히 필요할 것입니다.
@@ -15,13 +15,13 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
 버그 문의는 lpaiu.cs@gmail.com 으로 부탁드립니다. (2025.09.09)
 
 ----------
-## 교수자
+## 교수자(Instructors)
     Fei-Fei Li: http://vision.stanford.edu/feifeili/  
     Justin Johnson: http://cs.stanford.edu/people/jcjohns/  
     Serena Yeung: http://ai.stanford.edu/~syyeung/  
 
 ----------
-## 필요사항
+## 필요사항(Requirements)
     강의 수강을 위해서는 강의영상과 자막을 싱크할 플레이어가 필요합니다
         추천 플레이어
             Windows : PotPlayer(kakao)
@@ -29,7 +29,7 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
             MacOS   : VLC 미디어 재생기
 
 ----------
-## 사용법
+## 사용법(Usage)
 
 1. 유튜브에서 영상을 다운로드 해야 합니다
     - 다음과 같은 비디오 다운로더가 필요합니다 [4k video downloader](https://www.4kdownload.com/ko/products/product-videodownloader)
@@ -44,7 +44,7 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
             └── 한글 자막
 
 ----------
-## 제작자
+## 제작자(Creator & Maintainer)
 - 김준영 (고려대학교 컴퓨터학과 22학번)
 
 ----------
