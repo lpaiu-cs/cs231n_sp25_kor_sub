@@ -16,9 +16,10 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
 
 ----------
 ## 교수자(Instructors)
-    Fei-Fei Li: http://vision.stanford.edu/feifeili/  
-    Justin Johnson: http://cs.stanford.edu/people/jcjohns/  
-    Serena Yeung: http://ai.stanford.edu/~syyeung/  
+    Fei-Fei Li    : https://profiles.stanford.edu/fei-fei-li 
+    Ehsan Adeli   : https://stanford.edu/~eadeli/  
+    Justin Johnson: https://web.eecs.umich.edu/~justincj/
+    Zane Durante  : https://zanedurante.github.io/
 
 ----------
 ## 필요사항(Requirements)
