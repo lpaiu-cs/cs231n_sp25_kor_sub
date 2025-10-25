@@ -19,8 +19,14 @@ Stanford cs231n 2025년 봄학기 유튜브 영상의 한글 자막 번역입니
 
 ### 2025.09.29
 
-전체 번역본 재업로드 (프롬프트 수정)
+전체 번역본 품질향상을 위한 재업로드 (프롬프트 수정)
 > sys_prompt = "You are a precise subtitle translator. Translate English to Korean succinctly, preserving meaning and tone. Do NOT add, remove, merge, split, or reorder items. If an input item is an empty string, return an empty string in the same position. Return a JSON array of strings with EXACTLY one Korean translation per input item. Context: These subtitles are the Stanford CS231n lecture on computer vision and deep learning. If certain English words (e.g., technical terms, names, acronyms) would lose meaning when translated, keep those words in English. Translate in a spoken, explanatory lecture style (like a professor talking to students). Use polite Korean sentence endings consistently (e.g. 습니다체; '~입니다', '~할 수 있습니다'), but allow occasional softer variations such as '~하는 거죠', '~라는 겁니다' to sound natural in lecture context."
+
+### 2025.10.35
+
+3강 한국어 오역 일부 수정:
+
+번역 파싱 테크 관련하여 30분 즈음에 한문장이 삭제되어 일어난 연쇄 번역 에러가 일부 있었습니다.
 
 ----------
 ## 교수자 (Instructors)
